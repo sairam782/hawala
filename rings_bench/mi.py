@@ -12,13 +12,14 @@ import argparse, json, os, sys, time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+OUT_DIR = Path(os.environ.get("MT2_OUT_DIR") or (HERE / "out"))
 sys.path.insert(0, str(HERE))
 import bench  # noqa: E402  (sets the kit path, env defaults)
 from mt2kit import trace  # noqa: E402
 import facts  # noqa: E402
 
 PID = os.environ["PRISMTRACE_PROJECT_ID"]
-EVAL_FILE = HERE / "out" / "evaluator.json"
+EVAL_FILE = OUT_DIR / "evaluator.json"
 
 TEMPLATE = (
     "You are checking a financial-crime analyst agent's answer against an answer key.\n"
@@ -115,7 +116,7 @@ def cmd_replay(a):
              "output_text": out_text[:4000], "start_time": iso(2), "status": "ok"}]}
         sp = trace.api("POST", "/api/spans/ingest", span)
         done += 1 if sp else 0
-        with (HERE / "out" / "replays.jsonl").open("a", encoding="utf-8") as f:
+        with (OUT_DIR / "replays.jsonl").open("a", encoding="utf-8") as f:
             f.write(json.dumps({"agent": agent, "version": a.version, "unit": uid, "new_trace_id": new_id, "row_id": tr.get("id"),
                                 "replay_of": r["run_id"], "our_ok": r.get("ok"), "error": r.get("error")}) + chr(10))
     print(f"replayed {done} of {len(want)} units for {agent} (traces + spans)")
@@ -155,7 +156,7 @@ def cmd_results(a):
     # join on the internal trace row id, which our trace records keep in prism.trace
     recs = bench.traces_all()
     by_row = {(r.get("prism") or {}).get("trace"): r for r in recs if isinstance((r.get("prism") or {}).get("trace"), str)}
-    rp = HERE / "out" / "replays.jsonl"  # replayed traces carry their own row ids
+    rp = OUT_DIR / "replays.jsonl"  # replayed traces carry their own row ids
     if rp.exists():
         for line in rp.read_text(encoding="utf-8").splitlines():
             if line.strip():
@@ -171,7 +172,7 @@ def cmd_results(a):
         t["right" if lab == "right" else "wrong" if lab == "wrong" else "other"] += 1
         out.append({"agent": key[0], "version": key[1], "unit": md.get("unit"), "expected": md.get("expected"),
                     "our_ok": (r or {}).get("ok"), "prism_label": lab, "score": x.get("score"), "reasoning": str(x.get("reasoning", ""))[:300]})
-    (HERE / "out" / "eval_results.json").write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
+    (OUT_DIR / "eval_results.json").write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
     agree = sum(1 for o in out if o["our_ok"] is not None and (o["prism_label"] == "right") == bool(o["our_ok"]))
     print(f"{len(out)} scored rows; PRISM judge agrees with our local scorer on {agree}")
     for k, t in sorted(tally.items()):

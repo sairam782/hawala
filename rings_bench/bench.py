@@ -18,8 +18,9 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 KIT = Path(r"C:\Projects\Verticals\Hackathons\kit\mt2_kit")
 sys.path.insert(0, str(KIT))
-os.environ.setdefault("MT2_OUT_DIR", str(HERE / "out"))
+os.environ.setdefault("MT2_OUT_DIR", str(HERE / "out"))  # the kit writes traces.jsonl and batches here
 os.environ.setdefault("MT2_BUDGET_USD", "40")
+OUT_DIR = Path(os.environ["MT2_OUT_DIR"])
 os.environ.setdefault("PRISMTRACE_PROJECT_ID", "46117a99-720a-4ac6-b217-08ff50f0e478")  # MONG Workspace (practice; swap for the team key)
 
 from mt2kit import llm, trace, batch  # noqa: E402
@@ -286,7 +287,7 @@ def context_for(unit, version):
 
 def traces_for(model, version):
     """Local trace records (out/traces.jsonl) for this agent, latest per unit."""
-    p = HERE / "out" / "traces.jsonl"
+    p = OUT_DIR / "traces.jsonl"
     want = agent_name(model, version)
     recs = {}
     if p.exists():
@@ -375,11 +376,11 @@ def cmd_rootcause(a):
     for c in ours:
         print(" ", c.get("id"), c.get("agent_name"), "members", c.get("member_count") or len(c.get("members") or []),
               "|", c.get("cause_class"), "|", str(c.get("label") or c.get("title"))[:140])
-    (HERE / "out" / "clusters.json").write_text(json.dumps(ours, indent=1), encoding="utf-8")
+    (OUT_DIR / "clusters.json").write_text(json.dumps(ours, indent=1), encoding="utf-8")
 
 
 def traces_all():
-    p = HERE / "out" / "traces.jsonl"
+    p = OUT_DIR / "traces.jsonl"
     out = []
     if p.exists():
         for line in p.read_text(encoding="utf-8").splitlines():
@@ -451,7 +452,7 @@ def score_batch(model, version, recs, units):
 def cmd_results(a):
     units = load_units()
     models, all_runs = [], []
-    for p in sorted((HERE / "out").glob("batch_*.jsonl")):
+    for p in sorted((OUT_DIR).glob("batch_*.jsonl")):
         name = p.stem[len("batch_"):]
         full_name = name  # the batch file keeps the slice prefix; only the model/version parse drops it
         if "__" not in name:
