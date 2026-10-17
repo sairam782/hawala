@@ -68,7 +68,7 @@
 
 
   /* ---------- PRISM traces (window.TRACES from traces_demo.js): one row of step pills per recorded run ---------- */
-  const SHORT = { load_rows: 'rows', pass_through_chains: 'chains', parse_answer: 'parse', kb_search: 'KB search', 'final answer': 'answer', 'run failed': 'failed' };
+  const SHORT = { load_rows: 'Load rows', degrees: 'Degrees', loops: 'Loops', bursts: 'Bursts', pass_through_chains: 'Chains', kb_search: 'Knowledge Base', model: 'Model', parse_answer: 'Parse', 'final answer': 'Answer', 'run failed': 'Failed' };
   const cut = (v, n) => { v = clean(v == null ? '' : typeof v === 'string' ? v : JSON.stringify(v)); return v.length > n ? v.slice(0, n) + '...' : v; };
   function traceRows(unitId) {
     const T = window.TRACES && window.TRACES.by_unit ? window.TRACES.by_unit[unitId] : null; if (!T) return '';
@@ -76,17 +76,17 @@
       if (!run || !run.steps || !run.steps.length) return '';
       const pills = run.steps.map(st => {
         const kind = st.type === 'llm_call' ? 'llm' : st.type === 'final_answer' ? 'final' : st.label === 'kb_search' || st.type === 'retrieval' ? 'kb' : 'tool';
-        const icon = kind === 'llm' ? '◆' : kind === 'final' ? '✓' : kind === 'kb' ? '▤' : '⚙';
         const bad = st.status && st.status !== 'success';
         const t = '<b>' + esc(st.label) + '</b> <span class="muted">' + esc(st.type) + (st.ms != null ? ', ' + st.ms + ' ms' : '') + (bad ? ', ' + esc(st.status) : '') + '</span>' +
           (st.in ? '<br><span class="muted">in</span> <span class="mono">' + esc(cut(st.in, 180)) + '</span>' : '') +
           (st.out ? '<br><span class="muted">out</span> <span class="mono">' + esc(cut(st.out, 220)) + '</span>' : '');
-        return '<span class="zm-step zm-st-' + kind + (bad ? ' zm-st-bad' : '') + '" tabindex="0" data-tip="' + esc(t) + '"><i aria-hidden="true">' + (bad ? '✕' : icon) + '</i>' + esc(SHORT[st.label] || st.label) + '</span>';
+        const ic = bad ? '<i aria-hidden="true">✕</i>' : kind === 'final' ? '<i aria-hidden="true">✓</i>' : '';
+        return '<span class="zm-step zm-st-' + kind + (bad ? ' zm-st-bad' : '') + '" tabindex="0" data-tip="' + esc(t) + '">' + ic + esc(SHORT[st.label] || sentence(st.label)) + '</span>';
       }).join('<span class="zm-link" aria-hidden="true"></span>');
       return '<div class="zm-trace" title="' + esc(clean(window.TRACES.note || '')) + '"><span class="zm-trtitle">' + title + '</span><span class="zm-steps">' + pills + '</span>' +
-        '<span class="zm-trmeta mono" title="' + esc((run.agent || '') + ', trace ' + (run.trace_id || '') + ', trajectory ' + (run.trajectory_id || '')) + '">' + esc(run.agent || '') + ' · trace ' + esc(String(run.trace_id || '').slice(0, 8)) + '</span><span class="zm-prism">recorded in PRISM</span></div>';
+        '<span class="zm-trend"><span class="zm-trmeta mono" title="' + esc((run.agent || '') + ', trace ' + (run.trace_id || '') + ', trajectory ' + (run.trajectory_id || '')) + '">' + esc(run.agent || '') + ' ' + esc(String(run.trace_id || '').slice(0, 8)) + '</span><span class="zm-prism">recorded in PRISM</span></span></div>';
     };
-    return row(T.first_pass, 'PRISM trace, first pass') + row(T.investigator, 'PRISM trace, investigator');
+    return row(T.first_pass, 'PRISM trace · first pass') + row(T.investigator, 'PRISM trace · investigator');
   }
 
   function el(tag, attrs, parent) { const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
@@ -141,12 +141,13 @@
       ? '<span class="zm-tag ibm">IBM ring' + (shapeRaw ? ', ' + esc(String(shapeRaw).toLowerCase()) : '') + '</span>' + (caughtN ? '<span class="zm-tag ok">' + esc(pretty(model.id)) + ' flagged ' + caughtN + ' of ' + truth.size + ' laundering transfers</span>' : '') +
         (INV && (INV.ring_found || invCaught) ? '<span class="zm-tag inv">' + esc(invName) + ' found it on investigation' + (invCaught ? ', flagging ' + invCaught + ' of ' + truth.size : '') + '</span>' : '')
       : '<span class="zm-tag">No IBM laundering here</span>';
-    const fp = run ? '<p class="zm-call"><b>First pass, ' + esc(pretty(model.id)) + ' ' + esc(model.ver) + ':</b> ' + esc(run.verdict === 'ring' ? 'ring' : run.verdict || 'no answer') +
-      (run.confidence ? ', ' + esc(run.confidence) + ' confidence' : '') + (run.ring_found === true || run.ring_found === 'True' ? ' <span class="zm-ok">found the ring</span>' : '') +
-      (run.why ? '<span class="zm-why" title="' + esc(clean(run.why)) + '"> ' + esc(clean(run.why)) + '</span>' : '') + '</p>'
+    const reason = w => clean(String(w || '').replace(/^\s*Downgraded by [^:]*:[\s\S]*?Model's reason:\s*/i, '').replace(/^\s*(Downgraded|Upgraded|Overridden)[^.]*\.\s*/i, ''));
+    const callLine = (who, verdict, conf, why) => { const head = who + ': ' + (verdict || 'no answer') + (conf ? ' (' + conf + ' confidence)' : ''); const r = reason(why);
+      return '<p class="zm-call" title="' + esc(head + (r ? '. ' + r : '')) + '"><b>' + esc(who) + ':</b> ' + esc(verdict || 'no answer') + (conf ? ' (' + esc(conf) + ' confidence)' : '') +
+        (r ? ' <span class="zm-why">' + esc(r) + '</span>' : '') + '</p>'; };
+    const fp = run ? callLine('First pass, ' + pretty(model.id) + ' ' + model.ver, run.verdict, run.confidence, run.why)
       : '<p class="zm-call muted">No first-pass run recorded for ' + esc(pretty(model.id)) + ' ' + esc(model.ver) + ' here.</p>';
-    const inv = INV ? '<p class="zm-call"><b>Investigator, ' + esc(invName) + ':</b> ' + esc(INV.verdict) + (INV.confidence ? ', ' + esc(INV.confidence) + ' confidence' : '') +
-      (INV.ring_found ? ' <span class="zm-ok">found the ring</span>' : '') + (INV.why ? '<span class="zm-why" title="' + esc(clean(INV.why)) + '"> ' + esc(clean(INV.why)) + '</span>' : '') + '</p>' : '';
+    const inv = INV ? callLine('Investigator, ' + invName, INV.verdict, INV.confidence, INV.why) : '';
     head.innerHTML = '<div class="zm-title"><h3>Neighborhood around <span class="mono">' + esc(seed) + '</span></h3>' +
       '<span class="zm-count mono">' + esc(unitId) + ' · ' + plural(accts.length, 'account') + ' · ' + plural(rows.length, 'transfer') + '</span>' + lead +
       '<button type="button" class="zm-follow" aria-pressed="false" title="Pick one account, then a second, to trace money between them">Follow the money</button>' +
