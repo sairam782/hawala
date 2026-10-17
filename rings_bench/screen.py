@@ -51,6 +51,7 @@ BENCH_MODELS = {"anthropic/claude-haiku-5-5", "anthropic/claude-sonnet-5-5", "de
                 "mistral/mistral-large-4", "moonshot/kimi-k3", "openai/gpt-6-luna", "openai/gpt-6-sol",
                 "xai/grok-4.7", "z-ai/glm-5.3"}
 NEW_MODEL_CAP = 8000
+NEW_REASONING_CAP = 24000  # kimi-k2.6 and kimi-k2.7-code-highspeed spent all 9000 thinking and answered nothing (14:20)
 
 
 def family(model):
@@ -59,7 +60,9 @@ def family(model):
 
 def max_tokens_for(model):
     cap = MAX_TOKENS.get(family(model), 3000)
-    return cap if model in BENCH_MODELS else max(cap, NEW_MODEL_CAP)
+    if model in BENCH_MODELS:
+        return cap
+    return max(cap, NEW_REASONING_CAP if family(model) in REASONING_LOW else NEW_MODEL_CAP)
 
 
 # ---------------------------------------------------------------- key, catalog, HTTP
@@ -206,16 +209,51 @@ def norm_verdict(v):
     return "ring" if v.startswith("ring") or v in ("yes", "scheme", "suspicious", "laundering") else "ordinary"
 
 
+def strip_comments(text):
+    """Drop // and /* */ comments that sit outside JSON strings (ministral writes them inside the object)."""
+    out, i, n, in_str, esc = [], 0, len(text), False, False
+    while i < n:
+        c = text[i]
+        if in_str:
+            out.append(c)
+            if esc:
+                esc = False
+            elif c == "\\":
+                esc = True
+            elif c == '"':
+                in_str = False
+            i += 1
+        elif c == '"':
+            in_str = True; out.append(c); i += 1
+        elif text.startswith("//", i):
+            j = text.find("\n", i); i = n if j < 0 else j
+        elif text.startswith("/*", i):
+            j = text.find("*/", i + 2); i = n if j < 0 else j + 2
+        else:
+            out.append(c); i += 1
+    return "".join(out)
+
+
+def loads_lenient(s):
+    """json.loads that also takes raw line breaks inside strings and trailing commas. Never invents content."""
+    try:
+        return json.loads(s, strict=False)
+    except ValueError:
+        return json.loads(re.sub(r",(\s*[}\]])", r"\1", s), strict=False)
+
+
 def parse_json(text):
-    """The whole text as JSON, else the last balanced {...} that parses and carries a verdict, else any that parses."""
+    """The whole text as JSON, else the last balanced {...} that parses and carries a verdict, else any that parses.
+    Lenient about comments, raw line breaks in strings and trailing commas (14:20: ten ministral answers were
+    readable JSON in every other way)."""
     text = (text or "").strip()
     try:
-        obj = json.loads(text)
+        obj = loads_lenient(text)
         if isinstance(obj, dict):
             return obj
     except ValueError:
         pass
-    text = re.sub(r"```(?:json)?", "", text)
+    text = strip_comments(re.sub(r"```(?:json)?", "", text))
     found = []
     for i, ch in enumerate(text):
         if ch != "{":
@@ -236,7 +274,7 @@ def parse_json(text):
                 depth -= 1
                 if depth == 0:
                     try:
-                        obj = json.loads(text[i:j + 1])
+                        obj = loads_lenient(text[i:j + 1])
                         if isinstance(obj, dict):
                             found.append(obj)
                     except ValueError:
@@ -261,6 +299,15 @@ def load_units(subset=None):
 
 def batch_path(model, version):
     return OUT / f"{TAG}__{model.replace('/', '_')}__{version}.jsonl"
+
+
+TRANSPORT = re.compile(r"^(HTTP (0|429|5\d\d)\b|HTTP 200 but not JSON|no answer)")
+
+
+def is_transport(rec):
+    """A call that died on the network or at the provider (timeouts, 429, 5xx), not a model that failed to answer.
+    Only these are fair to retry: retrying "no JSON in the answer" would give one model a second try nobody else got."""
+    return bool(rec.get("technical")) and bool(TRANSPORT.match(rec.get("error") or ""))
 
 
 def load_batch(model, version):
@@ -295,7 +342,7 @@ def run_one(model, version, unit, key, limiter, pin, pout):
     tin, tout = int(usage.get("prompt_tokens") or 0), int(usage.get("completion_tokens") or 0)
     rec.update({"model_served": data.get("model", model), "latency_ms": ms, "input_tokens": tin, "output_tokens": tout,
                 "cost_usd": round(tin * pin + tout * pout, 6), "usage": usage,
-                "finish_reason": (data.get("choices") or [{}])[0].get("finish_reason"), "answer_text": text[:4000]})
+                "finish_reason": (data.get("choices") or [{}])[0].get("finish_reason"), "answer_text": text[:20000]})
     parsed, from_reasoning = parse_json(text), False
     if parsed is None:  # empty answer but a draft object inside the reasoning text, as bench.py does
         rc = msg.get("reasoning_content") or msg.get("reasoning") or ""
@@ -305,16 +352,7 @@ def run_one(model, version, unit, key, limiter, pin, pout):
     if parsed is None:
         rec.update({"ok": False, "technical": True, "error": "no JSON object in the answer"})
         return rec
-    row_ids = {x[0] for x in unit["rows"]}
-    flagged = [t for t in (parsed.get("flagged_transfer_ids") or []) if isinstance(t, str)]
-    verdict = norm_verdict(parsed.get("verdict"))
-    rec.update({"ok": verdict == unit["expected"], "technical": False, "verdict": verdict,
-                "pattern": norm_pattern(parsed.get("pattern")), "pattern_raw": str(parsed.get("pattern", ""))[:60],
-                "flagged": flagged, "flagged_in_unit": [t for t in flagged if t in row_ids],
-                "flagged_outside_unit": [t for t in flagged if t not in row_ids],
-                "confidence": str(parsed.get("confidence", ""))[:10].lower(), "why": str(parsed.get("why", ""))[:600],
-                "from_reasoning": from_reasoning})
-    return rec
+    return finish_record(rec, parsed, unit, from_reasoning)
 
 
 # ---------------------------------------------------------------- scoring (bench.py's score_batch rules, plus F1)
@@ -494,7 +532,9 @@ def cmd_run(a):
         have = load_batch(m, a.version)
         for u in units:
             r = have.get(u["id"])
-            if r and (not r.get("technical") or not a.retry_failed):
+            out_of_tokens = r and r.get("technical") and r.get("finish_reason") == "length"
+            if r and not (a.retry_failed and r.get("technical")) and not (a.retry_transport and is_transport(r)) \
+                    and not (a.retry_length and out_of_tokens):
                 continue
             jobs.append((m, u))
     print(f"{len(jobs)} calls to make", flush=True)
@@ -620,6 +660,44 @@ def cmd_score(a):
     for p in pairs:
         print(f"  P({p['a']} beats {p['b']}) = {p['p_a_beats_b']}")
     print("written", DATA_DIR / f"{name}.json")
+
+
+def finish_record(rec, parsed, unit, from_reasoning=False):
+    row_ids = {x[0] for x in unit["rows"]}
+    flagged = [t for t in (parsed.get("flagged_transfer_ids") or []) if isinstance(t, str)]
+    verdict = norm_verdict(parsed.get("verdict"))
+    rec.update({"ok": verdict == unit["expected"], "technical": False, "error": None, "verdict": verdict,
+                "pattern": norm_pattern(parsed.get("pattern")), "pattern_raw": str(parsed.get("pattern", ""))[:60],
+                "flagged": flagged, "flagged_in_unit": [t for t in flagged if t in row_ids],
+                "flagged_outside_unit": [t for t in flagged if t not in row_ids],
+                "confidence": str(parsed.get("confidence", ""))[:10].lower(), "why": str(parsed.get("why", ""))[:600],
+                "from_reasoning": from_reasoning})
+    return rec
+
+
+def cmd_reparse(a):
+    """Re-read stored answers that failed to parse, with the current parser. No model call, nothing re-asked."""
+    units = {u["id"]: u for u in load_units()}
+    fixed = left = 0
+    for p in sorted(OUT.glob(f"{TAG}__*__*.jsonl")):
+        recs = load_batch_file(p)
+        new = []
+        for uid, r in recs.items():
+            if not (r.get("technical") and r.get("error") == "no JSON object in the answer" and r.get("answer_text")):
+                continue
+            if len(r["answer_text"]) >= 4000 and r.get("output_tokens", 0) > 1200:
+                left += 1; continue  # stored text may be cut; only a new call can tell
+            parsed = parse_json(r["answer_text"])
+            if parsed is None or uid not in units:
+                left += 1; continue
+            new.append(finish_record(dict(r, reparsed_at=time.strftime("%Y-%m-%d %H:%M:%S")), parsed, units[uid]))
+        if new:
+            with open(p, "a", encoding="utf-8") as fh:
+                for r in new:
+                    fh.write(json.dumps(r, ensure_ascii=False) + "\n")
+            fixed += len(new)
+            print(f"  {p.name}: {len(new)} re-read")
+    print(f"re-read {fixed} answers; {left} still unreadable")
 
 
 def cmd_subset(a):
@@ -776,17 +854,21 @@ def main():
     r.add_argument("--units", type=int, default=0, help="first N units only (0 = all)")
     r.add_argument("--workers", type=int, default=6); r.add_argument("--rpm", type=int, default=50)
     r.add_argument("--budget", type=float, default=25.0, help="stop starting calls once out/screen has spent this much")
-    r.add_argument("--retry-failed", action="store_true"); r.add_argument("--skip-bad", action="store_true")
+    r.add_argument("--retry-failed", action="store_true", help="retry every failed call (unfair: also re-asks models that gave no answer)")
+    r.add_argument("--retry-transport", action="store_true", help="retry only calls that died on the network or at the provider")
+    r.add_argument("--retry-length", action="store_true", help="retry calls that ran out of tokens before answering")
+    r.add_argument("--skip-bad", action="store_true")
     r.add_argument("--subset", default=None, help="a subset name made by `screen.py subset` (e.g. screen20)")
     s = sub.add_parser("score")
     s.add_argument("--version", default="v2"); s.add_argument("--boot", type=int, default=2000)
     s.add_argument("--partial", action="store_true"); s.add_argument("--subset", default=None)
     sub.add_parser("report")
+    sub.add_parser("reparse")
     b = sub.add_parser("subset")
     b.add_argument("--name", default="screen20"); b.add_argument("--seed", type=int, default=20261017)
     a = ap.parse_args()
     {"catalog": cmd_catalog, "estimate": cmd_estimate, "probe": cmd_probe, "run": cmd_run, "score": cmd_score, "subset": cmd_subset,
-     "report": cmd_report}[a.cmd](a)
+     "report": cmd_report, "reparse": cmd_reparse}[a.cmd](a)
 
 
 if __name__ == "__main__":
