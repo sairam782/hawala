@@ -30,7 +30,7 @@ window.BENCH = {
   "v5": "v3 with a framing that states the base rate, describes ordinary business, requires a cited fact and allows cannot tell",
   "v2x": "v2 with the payment format hidden from the model, to measure reliance on the ACH tell"
  },
- "written": "2026-10-17 13:12",
+ "written": "2026-10-17 13:20",
  "models": [
   {
    "id": "anthropic/claude-sonnet-5-5",
@@ -43,7 +43,7 @@ window.BENCH = {
    "tp": 78,
    "fp": 232,
    "fn": 24,
-   "rings_found": 13,
+   "rings_found": 10,
    "rings_total": 20,
    "pattern_named_ok": 8,
    "false_rings": 10,
@@ -78,7 +78,7 @@ window.BENCH = {
     },
     "chain": {
      "rings": 2,
-     "found": 2,
+     "found": 1,
      "verdict_right": 2
     },
     "mesh": {
@@ -93,7 +93,7 @@ window.BENCH = {
     },
     "lone": {
      "rings": 8,
-     "found": 2,
+     "found": 0,
      "verdict_right": 5
     }
    },
@@ -112,7 +112,7 @@ window.BENCH = {
    "tp": 70,
    "fp": 234,
    "fn": 32,
-   "rings_found": 12,
+   "rings_found": 9,
    "rings_total": 20,
    "pattern_named_ok": 6,
    "false_rings": 12,
@@ -147,7 +147,7 @@ window.BENCH = {
     },
     "chain": {
      "rings": 2,
-     "found": 1,
+     "found": 0,
      "verdict_right": 1
     },
     "mesh": {
@@ -162,7 +162,7 @@ window.BENCH = {
     },
     "lone": {
      "rings": 8,
-     "found": 2,
+     "found": 0,
      "verdict_right": 3
     }
    },
@@ -181,7 +181,7 @@ window.BENCH = {
    "tp": 68,
    "fp": 187,
    "fn": 34,
-   "rings_found": 11,
+   "rings_found": 8,
    "rings_total": 20,
    "pattern_named_ok": 6,
    "false_rings": 7,
@@ -216,7 +216,7 @@ window.BENCH = {
     },
     "chain": {
      "rings": 2,
-     "found": 1,
+     "found": 0,
      "verdict_right": 1
     },
     "mesh": {
@@ -231,7 +231,7 @@ window.BENCH = {
     },
     "lone": {
      "rings": 8,
-     "found": 2,
+     "found": 0,
      "verdict_right": 3
     }
    },
@@ -250,7 +250,7 @@ window.BENCH = {
    "tp": 70,
    "fp": 200,
    "fn": 32,
-   "rings_found": 11,
+   "rings_found": 9,
    "rings_total": 20,
    "pattern_named_ok": 7,
    "false_rings": 14,
@@ -300,7 +300,7 @@ window.BENCH = {
     },
     "lone": {
      "rings": 8,
-     "found": 2,
+     "found": 0,
      "verdict_right": 3
     }
    },
@@ -319,7 +319,7 @@ window.BENCH = {
    "tp": 67,
    "fp": 231,
    "fn": 35,
-   "rings_found": 11,
+   "rings_found": 9,
    "rings_total": 20,
    "pattern_named_ok": 8,
    "false_rings": 12,
@@ -369,7 +369,7 @@ window.BENCH = {
     },
     "lone": {
      "rings": 8,
-     "found": 2,
+     "found": 0,
      "verdict_right": 4
     }
    },
@@ -1741,7 +1741,7 @@ window.BENCH = {
    "tp": 1,
    "fp": 13,
    "fn": 1,
-   "ring_found": true,
+   "ring_found": false,
    "correct": true,
    "technical_failure": false,
    "error": null,
@@ -2138,7 +2138,7 @@ window.BENCH = {
    "tp": 1,
    "fp": 31,
    "fn": 0,
-   "ring_found": true,
+   "ring_found": false,
    "correct": true,
    "technical_failure": false,
    "error": null,
@@ -2386,7 +2386,7 @@ window.BENCH = {
    "tp": 1,
    "fp": 15,
    "fn": 0,
-   "ring_found": true,
+   "ring_found": false,
    "correct": true,
    "technical_failure": false,
    "error": null,
@@ -4092,7 +4092,7 @@ window.BENCH = {
    "tp": 1,
    "fp": 16,
    "fn": 1,
-   "ring_found": true,
+   "ring_found": false,
    "correct": true,
    "technical_failure": false,
    "error": null,
@@ -4488,7 +4488,7 @@ window.BENCH = {
    "tp": 1,
    "fp": 31,
    "fn": 0,
-   "ring_found": true,
+   "ring_found": false,
    "correct": true,
    "technical_failure": false,
    "error": null,
@@ -4742,7 +4742,7 @@ window.BENCH = {
    "tp": 1,
    "fp": 15,
    "fn": 0,
-   "ring_found": true,
+   "ring_found": false,
    "correct": true,
    "technical_failure": false,
    "error": null,
@@ -6324,7 +6324,7 @@ window.BENCH = {
    "tp": 1,
    "fp": 16,
    "fn": 1,
-   "ring_found": true,
+   "ring_found": false,
    "correct": true,
    "technical_failure": false,
    "error": null,
@@ -6720,7 +6720,7 @@ window.BENCH = {
    "tp": 1,
    "fp": 31,
    "fn": 0,
-   "ring_found": true,
+   "ring_found": false,
    "correct": true,
    "technical_failure": false,
    "error": null,
@@ -6963,7 +6963,7 @@ window.BENCH = {
    "tp": 1,
    "fp": 15,
    "fn": 0,
-   "ring_found": true,
+   "ring_found": false,
    "correct": true,
    "technical_failure": false,
    "error": null,
@@ -8891,7 +8891,7 @@ window.BENCH = {
    "tp": 1,
    "fp": 31,
    "fn": 0,
-   "ring_found": true,
+   "ring_found": false,
    "correct": true,
    "technical_failure": false,
    "error": null,
@@ -9177,7 +9177,7 @@ window.BENCH = {
    "tp": 1,
    "fp": 15,
    "fn": 0,
-   "ring_found": true,
+   "ring_found": false,
    "correct": true,
    "technical_failure": false,
    "error": null,
@@ -11233,7 +11233,7 @@ window.BENCH = {
    "tp": 1,
    "fp": 31,
    "fn": 0,
-   "ring_found": true,
+   "ring_found": false,
    "correct": true,
    "technical_failure": false,
    "error": null,
@@ -11463,7 +11463,7 @@ window.BENCH = {
    "tp": 1,
    "fp": 15,
    "fn": 0,
-   "ring_found": true,
+   "ring_found": false,
    "correct": true,
    "technical_failure": false,
    "error": null,

@@ -38,8 +38,8 @@ FAILED run with reason `missed_ring:<shape>` or `false_ring`; a model error (tim
 
 ## Scoring (local, the independent check)
 Per run: verdict vs expected; flagged transfer ids vs IBM's labels inside the unit (tp, fp, fn). Per model-version:
-precision and recall over all transfers; rings found = ring units with verdict ring and at least half the ring's
-transfers flagged (the Oct 15 rule); false rings = ordinary units called ring; pattern named right; cost (Nicrron
+precision and recall over all transfers; rings found = ring units with verdict ring, at least half the ring's
+transfers flagged (the Oct 15 rule), and no sweep: wrong flags in the unit may not outnumber the ring (max 2); false rings = ordinary units called ring; pattern named right; cost (Nicrron
 price list, estimated); median latency.
 
 ## Honest limits

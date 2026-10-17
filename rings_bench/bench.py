@@ -434,7 +434,10 @@ def score_batch(model, version, recs, units):
         if u["expected"] == "ring":
             if verdict == "ring":
                 by_shape[u["shape"]]["verdict_right"] += 1
-            found = verdict == "ring" and t >= math.ceil(len(truth) / 2)
+            # caught = ring verdict, at least half the labeled transfers flagged, and no sweep: the wrong flags in
+            # the unit may not outnumber the ring itself (a single-transfer ring "caught" by flagging 27 rows is not
+            # a catch; found by the board review, 13:20)
+            found = verdict == "ring" and t >= math.ceil(len(truth) / 2) and f_ <= max(2, len(truth))
             if found:
                 rings_found += 1; by_shape[u["shape"]]["found"] += 1
                 named_ok += o.get("pattern") == u["shape"]

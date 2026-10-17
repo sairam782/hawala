@@ -21,7 +21,7 @@
   "v5": "v3 with a framing that states the base rate, describes ordinary business, requires a cited fact and allows cannot tell",
   "v2x": "v2 with the payment format hidden from the model, to measure reliance on the ACH tell"
  },
- "written": "2026-10-17 13:12",
+ "written": "2026-10-17 13:20",
  "models": [
   {
    "id": "anthropic/claude-sonnet-5-5",
