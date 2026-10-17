@@ -5,82 +5,88 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
 <title>Rings in Time</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
+<!-- fonts never block the page: the stylesheet switches on when it arrives; real fallbacks are in style.css -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="style.css">
 <!-- data: each file is optional; the page falls back to a labeled SAMPLE -->
 <script src="../../../data/slice.js"></script>
 <script src="../../../data/units.js"></script>
 <script src="../../../data/bench_results.js"></script>
-<!-- three.js from the CDN, then the local copy if the CDN is unreachable -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
-<script>if (!window.THREE) document.write('<script src="three.min.js"><\/script>');</script>
+<!-- three.js r160 from this folder only: no outside request can block or blank the page -->
+<script src="three.min.js"></script>
 </head>
 <body>
 <header class="top">
   <div class="brand">
     <h1>Rings in time</h1>
-    <p class="sub">Accounts sit on the map; days run into depth. Every transfer is drawn at the moment it happened.</p>
+    <p class="sub">One laundering group at a time: its accounts on the map, its transfers at the moment they happened.</p>
   </div>
   <div class="badges" id="badges"></div>
 </header>
 
+<section class="iconbar" aria-label="IBM's laundering groups">
+  <p class="ihead" id="iconHead"></p>
+  <div class="icons" id="icons"></div>
+</section>
+
 <div class="layout">
   <section class="stagecol">
     <div class="stage" id="stage">
-      <canvas id="cv" aria-label="Transfer network with time as depth"></canvas>
+      <canvas id="cv" aria-label="The selected group, with time as depth"></canvas>
       <div class="daylabels" id="dayLabels" aria-hidden="true"></div>
+      <div class="caption">
+        <h2 id="capShape"></h2>
+        <p id="capFacts"></p>
+        <p class="why" id="capWhy"></p>
+      </div>
       <div class="viewname" id="viewName"></div>
-      <div class="nogl" id="noGl" hidden>This page needs WebGL to draw the network. The results and the caught list below still read correctly.</div>
+      <div class="nogl" id="noGl" hidden>This page needs WebGL to draw the group. The results and the caught list still read correctly.</div>
     </div>
     <div class="controls">
-      <div class="ctl view" role="group" aria-label="Camera">
-        <button type="button" class="btn" id="btnMap" aria-pressed="true">Map</button>
-        <button type="button" class="btn" id="btnTime" aria-pressed="false">Timeline</button>
-        <label class="plabel" for="tilt">Tilt</label>
-        <input type="range" id="tilt" min="0" max="90" step="1" value="0" aria-label="Tilt from map (0) to timeline (90)">
+      <div class="ctl" role="group" aria-label="Camera">
+        <button type="button" class="btn" id="btnMap" aria-pressed="false">Map</button>
+        <button type="button" class="btn" id="btnTime" aria-pressed="true">Timeline</button>
+        <input type="range" id="tilt" min="0" max="68" step="1" value="68" aria-label="Tilt from map to timeline">
       </div>
       <div class="ctl scrub" role="group" aria-label="Day scrub">
-        <button type="button" class="btn" id="btnPlay">Play the ten days</button>
-        <input type="range" id="cut" min="0" max="11" step="0.05" value="11" aria-label="Show transfers up to this day">
+        <input type="range" id="cut" min="0" max="1" step="0.005" value="1" aria-label="Draw the group up to this moment">
         <span class="fig readout" id="cutRead"></span>
       </div>
+      <button type="button" class="btn play" id="btnPlay">Play the caught rings</button>
+      <label class="chk"><input type="checkbox" id="ctxToggle"> Neighborhood traffic</label>
     </div>
+    <section class="roster" aria-label="Caught rings">
+      <div class="rhead"><h2>Caught</h2><span class="fig" id="rosterCount"></span></div>
+      <div class="cards" id="cards"></div>
+    </section>
   </section>
 
   <aside class="side">
     <div class="pick">
-      <label class="plabel" for="modelPick">Model</label>
-      <select id="modelPick"></select>
+      <select id="modelPick" aria-label="Model"></select>
       <div class="vers" id="versRow" role="group" aria-label="Version"></div>
-      <p class="vnote" id="versNote"></p>
     </div>
     <div class="result">
-      <h2 class="headline" id="headline"></h2>
-      <p class="limit" id="limit"></p>
+      <p class="headline" id="headline"></p>
       <p class="strong" id="strong"></p>
     </div>
     <div class="legend" aria-label="Key">
-      <h3>Key</h3>
       <ul>
-        <li><svg width="34" height="10"><line x1="1" y1="5" x2="33" y2="5" class="k-norm"/></svg>a transfer, at the moment it happened</li>
-        <li><svg width="34" height="10"><circle cx="17" cy="5" r="2" class="k-acct"/></svg>an account, on the map plane</li>
-        <li><svg width="34" height="10"><line x1="1" y1="5" x2="33" y2="5" class="k-ok"/></svg>flagged by the model, IBM agrees</li>
-        <li><svg width="34" height="10"><line x1="1" y1="5" x2="33" y2="5" class="k-bad"/></svg>flagged, IBM labels it ordinary</li>
-        <li><svg width="34" height="10"><line x1="1" y1="5" x2="33" y2="5" class="k-miss"/></svg>IBM labels it laundering, model missed it</li>
-        <li><svg width="34" height="10"><line x1="1" y1="5" x2="33" y2="5" class="k-life"/></svg>one account across time, inside a lit group</li>
-        <li><svg width="34" height="10"><rect x="2" y="1" width="30" height="8" class="k-cut"/></svg>the day the scrub has reached</li>
+        <li><svg width="36" height="12"><line x1="2" y1="6" x2="27" y2="6" class="k-ok"/><path d="M34 6 L26 2 L26 10Z" fill="#2F7A45"/></svg>caught: the model flagged it, IBM agrees</li>
+        <li><svg width="36" height="12"><line x1="2" y1="6" x2="27" y2="6" class="k-miss"/><path d="M34 6 L26 2 L26 10Z" fill="#9A5B13"/></svg>missed: IBM labels it laundering</li>
+        <li><svg width="36" height="12"><line x1="2" y1="6" x2="34" y2="6" class="k-norm"/></svg>ordinary traffic nearby (toggle)</li>
       </ul>
-      <p class="hint">Hover a colored line for the group. Drag to pan, scroll to zoom, double-click to reset.</p>
+    </div>
+    <div class="honest" aria-label="Read with care">
+      <h3>Read with care</h3>
+      <ul>
+        <li>The data is synthetic, and the labels are IBM's own.</li>
+        <li>This slice is enriched (4 percent laundering, against 0.1 percent in IBM's file), and each neighborhood was cut around one of IBM's groups.</li>
+        <li>Every laundering transfer in the slice is ACH, which is a tell.</li>
+      </ul>
     </div>
   </aside>
 </div>
-
-<section class="roster" aria-label="Caught rings">
-  <div class="rhead"><h2>Caught</h2><span class="fig" id="rosterCount"></span><span class="rnote" id="rosterNote"></span></div>
-  <div class="cards" id="cards"></div>
-</section>
 
 <div class="hover" id="hover" hidden></div>
 <script src="app3d.js"></script>

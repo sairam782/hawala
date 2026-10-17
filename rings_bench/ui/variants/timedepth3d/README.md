@@ -1,62 +1,74 @@
-# Rings in time (variant: timedepth3d, "paper ledger")
+# Rings in time (variant: timedepth3d, "paper ledger"), loop 2
 
-Open `index.html` with a double-click. It reads `../../../data/slice.js`, `units.js` and `bench_results.js`; if any is missing it draws a small made-up network and says SAMPLE in an amber badge at the top.
+Open `index.html` with a double-click. It reads `../../../data/slice.js`, `units.js` and `bench_results.js`. If any of them is missing, it draws a small made-up network and shows SAMPLE in an amber badge. three.js r160 loads from this folder only, so the page makes no outside request it has to wait for. Fonts come from Google without blocking the page, and fall back to Georgia, Segoe UI and Consolas.
 
 ## What it argues, in three sentences
 
-Laundering is a shape in time, not just a shape on a map: a chain marches forward through the days, a cycle comes back to the account it started from, a fan-out sprays from one account in a short burst. So the accounts sit on a flat map and the third axis is the ten days from Sep 1 to Sep 10, and one tilt turns the same picture from "who paid whom" (map) into "in what order" (timeline). Each IBM ring the selected model catches draws itself in the order its money moved and then drops into a "Caught" list, so the screen leads with what was found, and the false alarms and misses stay visible but quiet.
+A flat graph cannot show order in time, but time order is the one thing that gives a laundering ring away: in a cycle, the money comes back to the account it started from, days later. So the page puts one IBM group at a time on a large stage: its accounts on the map plane, its transfers drawn at the moment they happened, and a tilt that turns "who paid whom" into "in what order". A quiet row of twenty shape icons gives the score at a glance (caught in green, missed in amber). Play walks through the caught rings one by one, and each one draws itself in time order and drops into the Caught list.
+
+The first frame is built for a judge who has never seen the page. The icon row and the headline give the number caught and name the shapes. On load, the stage draws Claude Sonnet 5.5 v4's caught cycle (IBM's group from Sep 7 to Sep 11), and the money arrives "back at the start" about four seconds in.
 
 ## What is on the page
 
-- **The network, in three dimensions.** Accounts are dots on the map plane (a small force layout written in the page, no libraries; components are packed on a wide spiral, biggest in the middle). Each transfer is a short segment drawn at the depth of the moment it happened. All 2,484 ordinary transfers are faint hairlines in one merged geometry.
-- **Lit groups for the selected model.** Green solid: flagged and IBM agrees. Red dashed: flagged, IBM labels it ordinary. Amber dotted: IBM labels it laundering, the model missed it. Thin lines in the group's color join the same account across time inside an IBM ring, which is what turns a chain into a staircase and a cycle into a loop that returns.
-- **Camera.** Map (top-down, time hidden) and Timeline (side-on at 76 degrees, days run left to right with day labels), plus a tilt slider for anything between. Drag to pan, scroll to zoom, double-click to reset. The camera is orthographic, so the map view lines up exactly.
-- **Day scrub.** A slider and a Play button that extrude the graph forward through time; a teal frame marks the day reached.
-- **Model picker.** Model (grouped by family) and version buttons, with the version's one-line meaning from `bench_results.js`.
-- **Result copy**, leading with the catch: "<model> caught k of IBM's 20 laundering rings and traced m of 113 laundering transfers; it raised f alarms on ordinary neighborhoods, g of them on accounts that sit inside a ring." One amber line states the limit, and the block ends on the stronger of the two true percentages (rings caught or transfers traced).
-- **Hover card** on any lit line: IBM's group number and shape name, how many of its labeled transfers the model flagged, the model's why (first sentence, cut at 240 characters), and the transfer ids colored green (flagged) or amber (missed). For a false alarm: the neighborhood, that IBM labels the transfers ordinary, the shape the model named, its why and the wrongly flagged ids.
-- **The catch moment and the Caught roster.** When the scrub reaches the transfer that completes a catch (the flag that brings the ring to half of its labeled transfers), the ring traces itself in time order and a copy of its shape travels from the network down into a card. Each card: IBM's shape name and group number, a drawing of the shape as it sits on the map, accounts, transfers traced of the ring's total, money moved (largest currency, plus how many other currencies), which other model families also caught it (any version), and the model's one-line why. Cards stay in catch order. Scrubbing backward removes cards quietly.
-- **Legend** written as the key, one line per mark, in the same strokes the network uses.
+- **Icon row**: IBM's 20 groups, each drawn from IBM's own shape name (`ibm_shape` on the ring's neighborhood run) and sentence-cased: cycle, fan-out, fan-in, scatter-gather, gather-scatter, stack, bipartite, no named shape. Caught icons are solid green with arrows; missed icons are amber dotted. Click an icon to put that group on the stage.
+- **Stage**, one group only, laid out from scratch:
+  - The accounts sit on the map plane, and a cycle is placed on a circle in the order the money went round. Each transfer is a thick segment (3.8 px whatever the zoom) with an arrowhead, at the depth of its day and time.
+  - Thin lines follow one account from one transfer to its next. The first sender's line is teal, labeled "starts here", and "back at the start" appears when the money returns.
+  - Day ticks run under the group, and the caption gives IBM's shape name, the counts and dates, and the model's one-sentence why.
+  - Nothing else is drawn unless "Neighborhood traffic" is on: then the ordinary transfers in the group's neighborhood appear at 10 percent opacity.
+- **Camera**: Map (top-down, time hidden) and Timeline (68 degrees round, 14 degrees up; days run left to right), with one eased transition and a tilt slider between them. Drag to pan, scroll to zoom, double-click to reset.
+- **Day scrub**: a slider that extrudes the group through its days. Each transfer grows from sender to receiver as its time passes.
+- **Right panel**:
+  - The model picker, with version chips behind it.
+  - The headline, leading with the catch: "Claude Sonnet 5.5 v4 caught 9 of IBM's 20 laundering rings and traced 100 of 113 laundering transfers; it raised 2 alarms on 40 ordinary neighborhoods, 2 of them on accounts that sit inside a ring."
+  - The closing figure, from the bench's own `account_level`: "100 of the 134 accounts it flagged sit inside an IBM ring."
+  - A three-item key.
+  - "Read with care", in three lines: the data is synthetic and the labels are IBM's; the slice is enriched (4 percent laundering against 0.1 percent) and each neighborhood was cut around an IBM group; every laundering transfer in the slice is ACH, which is a tell.
+- **Caught roster**: a strip inside the first screen (checked at 1280x900 and 1440x900). One card per caught ring: icon, IBM's shape name, money moved. A card puts its group back on the stage.
+- **Hover** on a drawn transfer: its id, time, format, sender and receiver, amount, and whether the model flagged it.
 
-Scoring matches the flat page (`ui/app.js`): a model's flags are the union of `flagged_transfer_ids` over its runs, and an IBM group counts as caught when at least half of its labeled transfers are flagged. Alarms on ordinary neighborhoods are runs with `expected: ordinary` and `verdict: ring`; "on accounts inside a ring" means that run's `ring_accounts_flagged` is not empty. These numbers match `models[]` in the bench file (for example kimi-k3 v1: 19 rings, 32 alarms).
+**Scoring** comes from the engine, not a recount:
+- Caught is each ring's neighborhood run's `ring_found`: half the ring flagged and no sweep.
+- The count is `models[].rings_found`, and the closing figure is `models[].account_level`.
+- "Traced" is the union of flagged transfer ids that IBM labels laundering.
+- Alarms are runs with `expected: ordinary` and `verdict: ring`, over the number of ordinary neighborhoods.
 
 ## Left out on purpose
 
-- Particles, glow, pulses, auto-swoops to each group: they draw the eye without saying anything.
-- Lifelines for false alarms: they ran as long red bars across the whole timeline and drowned the rings; the red dashes alone stay.
-- Self-transfers (340 rows, an account paying itself): no segment to draw.
-- The flat page's leaderboard, shape grid, account desk and held-out slices: this variant is about the graph; those live on the main page.
-- A dark theme: the page keeps its paper ground in dark mode on purpose and sets `color-scheme: light`, so text stays dark on paper.
+- **The full 2,824-transfer network**: it read as a wall of ticks. Time as depth only works for one group at a time.
+- **False alarms on the stage**: they belong to ordinary neighborhoods, not to an IBM group, so they appear in the headline count only.
+- **Misses at full strength**: they are drawn at a third of a catch's opacity, so a mistake is never louder than a catch.
+- **Card details**: no account counts, families or why on the cards. The brief cut them to icon, name and money moved, and the why sits in the stage caption.
+- **Particles, glow, pulses and camera swoops.** Also left out: a dark theme. The page keeps its paper ground in dark mode on purpose.
 
 ## Animation timings and what each carries
 
 | Motion | Length | Easing | What it says |
 |---|---|---|---|
-| Map to Timeline (and back) | 400 ms | ease-out | the same transfers, re-read as order in time |
-| Model switch | 120 ms fade out, 200 ms fade in | ease-out | a different model's flags on the same network |
-| Day scrub, Play | 0.6 s per day, about 6.6 s for all | linear (time is linear) | the network building up day by day |
-| Catch: ring traces itself | 450 ms | ease-out, each transfer in time order | the money path closing into IBM's shape |
-| Catch: copy travels to its card | 700 ms, starting halfway through the trace | ease-out | this ring joins the caught list |
-| Catches on a model switch | one every 300 ms, in time order | | the roster filling in the order the rings completed |
+| A group draws itself | 700 ms + 330 ms per transfer, at most 3.6 s (a cycle of 8: 3.3 s) | linear in time; each transfer grows over about 4 percent of the window, ease-out | the money moving, in order; for a cycle, the last hop closes the loop |
+| Resolve to the model's verdict | 420 ms | ease-out | ink turns green (caught) or faint amber (missed): the loop closes, the fan snaps |
+| Copy of the shape travels to its card | 700 ms | ease-out | this ring joins the caught list |
+| Map to Timeline | 400 ms | ease-out | the same group, re-read as order in time |
+| Play | one caught group after another, about 4 to 5 s each | | the whole catch, one ring at a time |
 
-With `prefers-reduced-motion` (or `?still=1` in the address) every motion is instant: the tilt jumps, Play jumps to the end, the roster fills at once.
+With `prefers-reduced-motion` (or `?still=1`), every motion is instant, and Play fills the roster at once.
 
 ## Known limits
 
-- The slice runs to Sep 16; the 55 transfers after Sep 10 are squeezed into one short slab labeled "Sep 11 to 16" in amber. Four rings put most of their labeled rows there.
-- WebGL draws lines one pixel wide, so lit lines are thin cylinders instead; they scale with zoom.
-- In the timeline view the 1,797 account dots stack into a column at the left (the map plane seen edge-on); they fade as you tilt, but they are still there.
-- The hover finds the nearest lit line within 9 pixels; where lines cross, it picks one.
-- The bundled `three.min.js` (r160) logs a deprecation warning in the console on load; there are no errors.
-- Layout runs in the page on every load (about 0.3 s on a laptop).
-- Frame rate: measured in headless Edge with software WebGL (SwiftShader), 144 frames per second idle and 85 while playing; a laptop GPU should hold 60 easily. The page only redraws when something changes.
+- The time axis is per group, from the midnight before its first transfer to the midnight after its last, so the depth of one day differs from group to group. The day ticks show the scale for each one.
+- In the timeline view, a group with many accounts crowds vertically. The map view is the better read for the fans.
+- The engine may count a ring as not caught even when most of its transfers are flagged (the sweep rule). The stage still draws those flagged transfers in green, and the icon and caption say "Missed".
+- Money moved is shown in the one currency, or as "moved in N currencies"; values are not converted.
+- The bundled three.js prints one deprecation warning in the console. There are no errors.
+- Frame rate: 142 frames per second while playing, in headless Edge with software WebGL. Not checked on a real GPU. The page only redraws when something changes.
 
-## Screenshots (headless Edge, `msedge --headless --screenshot`, and Edge driven by Playwright)
+## Screenshots (Edge, headless, driven by Playwright, 1280x900)
 
-- `shot_1280_map.jpg` map view, kimi-k3 v1 (the default: most rings caught), roster filled
-- `shot_1280_timeline.jpg` the same at the timeline tilt
-- `shot_1440_timeline.jpg` timeline at 1440 wide
-- `shot_1280_hover.jpg` hover card on IBM group 8 (mesh)
-- `shot_1280_playing_timeline.jpg` mid-Play on claude-sonnet-5-5 v1, the teal frame at Sep 8, seven rings caught so far
+- `shot_1280_t1500_drawing.jpg`: 1.5 s in, the cycle drawing itself in ink
+- `shot_1280_first_frame_after_5s.jpg`: 5 s in, the cycle resolved green, "back at the start" labeled, first card in the roster
+- `shot_1280_hover.jpg`: hover on the first transfer of the cycle
+- `shot_1280_map.jpg`: the same cycle in the map view, a closed loop
+- `shot_1280_after_play.jpg`: Play in progress, scatter-gather on the stage, eight cards in the roster
+- `shot_1280_neighborhood.jpg`: the same with neighborhood traffic on
 
-Address parameters for a fixed view: `?model=openai/gpt-6-sol&v=v2&view=timeline&cut=6&still=1` (`tilt=0..90` also works).
+Address parameters: `?model=openai/gpt-6-sol&v=v4&group=0&view=map&still=1` (`tilt=0..68` also works).
