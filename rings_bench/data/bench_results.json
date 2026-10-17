@@ -28,7 +28,7 @@
   "v1": "model reads the raw transfers of a neighborhood",
   "v2": "code computes the neighborhood's facts (degrees, loops, bursts, pass-through chains, formats) and the model names the outcome"
  },
- "written": "2026-10-17 12:48",
+ "written": "2026-10-17 12:54",
  "models": [
   {
    "id": "anthropic/claude-haiku-5-5",
