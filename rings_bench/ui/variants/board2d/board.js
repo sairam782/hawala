@@ -230,7 +230,7 @@
   const MODELS = (BE.models || []).slice();
   const ST = {}; MODELS.forEach(m => ST[mkey(m)] = stats(m));
   let CUR = null;
-  const TILES = [];
+  const TILES = []; let GROUP = null;
   let SEQ = 0; const timers = []; let caughtN = 0;
   function clearTimers() { while (timers.length) clearTimeout(timers.pop()); document.querySelectorAll('.fly').forEach(e => e.remove()); }
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
@@ -286,9 +286,13 @@
     const R = RUNS[mkey(m)] || {};
     TILES.length = 0;
     const rg = $('#ringGrid'), og = $('#ordGrid'); rg.innerHTML = ''; og.innerHTML = '';
-    ringUnits.forEach(u => {
-      const run = R[u.id]; const shape = ringShape(u.ring_id);
-      const d = drawUnit(u, run, { W: 240, H: 118, pad: 14, ringOnly: true, nodeR: 4 });
+    /* shaped rings, caught first so the green shapes lead the frame; single transfers collapse into one tile at the end */
+    const shaped = ringUnits.filter(u => RINGS[u.ring_id].length > 1);
+    const singles = ringUnits.filter(u => RINGS[u.ring_id].length === 1).map((u, i) => ({ u, i, f: ringFound(R[u.id], u) })).sort((a, b) => (b.f - a.f) || (a.i - b.i)).map(x => x.u);
+    const caughtFirst = shaped.map((u, i) => ({ u, i, f: ringFound(R[u.id], u) })).sort((a, b) => (b.f - a.f) || (a.i - b.i)).map(x => x.u);
+    caughtFirst.forEach(u => {
+      const run = R[u.id];
+      const d = drawUnit(u, run, { W: 240, H: 120, pad: 14, ringOnly: true, nodeR: 4 });
       const t = H('div', 'tile rt'); t.tabIndex = 0;
       const found = ringFound(run, u);
       t.appendChild(H('div', 'th', '<span class="sh">' + esc(ibmName(u).replace(/\s*\(.*\)$/, '')) + '</span><span class="st"></span>'));
@@ -297,6 +301,32 @@
       const T = { el: t, u, run, ring: true, found, d, alarm: false };
       wireTile(T); rg.appendChild(t); TILES.push(T);
     });
+    GROUP = null;
+    if (singles.length) {
+      const g = H('div', 'tile rt gt'); g.tabIndex = 0;
+      g.appendChild(H('div', 'th', '<span class="sh">Single transfers (no named shape)</span><span class="st"><b class="gk">0</b> of ' + singles.length + ' caught</span>'));
+      const marks = H('div', 'marks'); g.appendChild(marks);
+      GROUP = { el: g, n: singles.length, k: 0, items: [] };
+      singles.forEach(u => {
+        const run = R[u.id];
+        const d = drawUnit(u, run, { W: 120, H: 40, pad: 10, ringOnly: true, nodeR: 3.5 });
+        const mk = H('div', 'mark'); mk.tabIndex = 0; mk.appendChild(d.svg);
+        if (!run || !run.verdict) mk.classList.add('noans');
+        const T = { el: mk, u, run, ring: true, found: ringFound(run, u), d, alarm: false, mark: true };
+        wireTile(T); marks.appendChild(mk); TILES.push(T); GROUP.items.push(T);
+      });
+      const raw = singles.map(u => String(ibmRaw(u) || '').toLowerCase());
+      const nNo = raw.filter(w => /^no named|^lone/.test(w)).length, nBi = raw.filter(w => /^bipartite/.test(w)).length;
+      const gtip = '<h4>Single transfers (no named shape)</h4><p>' + singles.length + ' of IBM\'s laundering groups are one transfer each, with no visible structure around it. IBM\'s pattern file names ' + nNo + ' of them "no named shape"' + (nBi ? ' and ' + nBi + ' "bipartite" (only one of its rows is in this slice)' : '') + '. From the rows alone a single transfer looks like ordinary traffic, so this is the part detectors find least.</p><p>Each mark is one of them: green caught, amber dotted missed. Hover a mark for its counts and reason; click it to open it.</p>';
+      GROUP.tip = gtip;
+      g.addEventListener('mouseenter', () => { tip.innerHTML = gtip; tip.hidden = false; });
+      g.addEventListener('mousemove', moveTip);
+      g.addEventListener('mouseleave', () => { tip.hidden = true; });
+      const openFirst = () => { const T = GROUP.items.find(x => x.found) || GROUP.items[0]; openDlg(T); };
+      g.addEventListener('click', openFirst);
+      g.addEventListener('keydown', ev => { if (ev.target === g && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); openFirst(); } });
+      rg.appendChild(g);
+    }
     ordUnits.forEach(u => {
       const run = R[u.id];
       const d = drawUnit(u, run, { W: 96, H: 64, pad: 6, small: true });
@@ -310,7 +340,11 @@
 
   function setStatus(T) {
     const st = T.el.querySelector('.st');
-    if (T.ring) {
+    if (T.mark) {
+      T.el.classList.toggle('caught', T.found); T.el.classList.toggle('missed', !T.found);
+      if (T.found && GROUP) { GROUP.k++; const gk = GROUP.el.querySelector('.gk'); if (gk) gk.textContent = GROUP.k; }
+      if (GROUP && GROUP.items.every(x => x === T || x.el.classList.contains('lit'))) GROUP.el.classList.add('lit', GROUP.k ? 'some' : 'none');
+    } else if (T.ring) {
       T.el.classList.toggle('caught', T.found); T.el.classList.toggle('missed', !T.found);
       if (st) st.textContent = !T.run || !T.run.verdict ? 'no answer' : T.found ? 'caught' : 'missed';
     } else T.el.classList.toggle('alarm', T.alarm);
@@ -329,12 +363,14 @@
       rings.forEach(T => { setStatus(T); if (T.found) { caughtN++; addCaught(T, null); } });
       $('#nCaught').textContent = caughtN; return;
     }
-    rings.forEach((T, i) => {
+    /* misses light together in one quiet beat; then the catches, 60 ms apart, so the sequence ends on the last catch */
+    later(() => { if (my === SEQ) rings.filter(T => !T.found).forEach(setStatus); }, 120);
+    rings.filter(T => T.found).forEach((T, i) => {
       later(() => {
         if (my !== SEQ) return;
         setStatus(T);
-        if (T.found) { caughtN++; $('#nCaught').textContent = caughtN; catchMoment(T, my); }
-      }, 120 + i * 60);
+        caughtN++; $('#nCaught').textContent = caughtN; catchMoment(T, my);
+      }, 300 + i * 60);
     });
   }
 
@@ -358,8 +394,9 @@
     const from = T.d.svg.getBoundingClientRect(); const to = slot.getBoundingClientRect();
     const ghost = H('div', 'fly'); ghost.style.left = from.left + 'px'; ghost.style.top = from.top + 'px'; ghost.style.width = from.width + 'px'; ghost.style.height = from.height + 'px';
     ghost.appendChild(miniShape(T)); document.body.appendChild(ghost);
-    const sx = to.width / from.width, sy = to.height / from.height;
-    const a = ghost.animate([{ transform: 'translate(0px,0px) scale(1,1)', opacity: 1 }, { transform: 'translate(' + (to.left - from.left) + 'px,' + (to.top - from.top) + 'px) scale(' + sx.toFixed(3) + ',' + sy.toFixed(3) + ')', opacity: 0.9 }], { duration: 520, easing: 'cubic-bezier(.45,0,.2,1)', fill: 'forwards' });
+    const sc = Math.min(to.width / from.width, to.height / from.height);
+    const dx = to.left + (to.width - from.width * sc) / 2 - from.left, dy = to.top + (to.height - from.height * sc) / 2 - from.top;
+    const a = ghost.animate([{ transform: 'translate(0px,0px) scale(1)', opacity: 1 }, { transform: 'translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px) scale(' + sc.toFixed(3) + ')', opacity: 0.9 }], { duration: 520, easing: 'cubic-bezier(.45,0,.2,1)', fill: 'forwards' });
     slot.dataset.reserved = '1';
     const land = () => { ghost.remove(); if (my === SEQ) addCaught(T, slot); };
     a.onfinish = land;
@@ -434,11 +471,12 @@
     if (!byCat.ok.length && !byCat.bad.length && !byCat.miss.length) h += '<div class="ids">No transfers flagged.</div>';
     return h;
   }
+  function moveTip(ev) { const w = tip.offsetWidth, h = tip.offsetHeight; let x = ev.clientX + 14, y = ev.clientY + 14; if (x + w > innerWidth - 8) x = ev.clientX - w - 14; if (y + h > innerHeight - 40) y = Math.max(8, ev.clientY - h - 14); tip.style.left = x + 'px'; tip.style.top = y + 'px'; }
   function wireTile(T) {
     T.el.addEventListener('mouseenter', () => { tip.innerHTML = tipHtml(T); tip.hidden = false; });
-    T.el.addEventListener('mousemove', ev => { const w = tip.offsetWidth, h = tip.offsetHeight; let x = ev.clientX + 14, y = ev.clientY + 14; if (x + w > innerWidth - 8) x = ev.clientX - w - 14; if (y + h > innerHeight - 70) y = Math.max(8, ev.clientY - h - 14); tip.style.left = x + 'px'; tip.style.top = y + 'px'; });
-    T.el.addEventListener('mouseleave', () => { tip.hidden = true; });
-    T.el.addEventListener('click', () => openDlg(T));
+    T.el.addEventListener('mousemove', moveTip);
+    T.el.addEventListener('mouseleave', () => { if (T.mark && GROUP) tip.innerHTML = GROUP.tip; else tip.hidden = true; });
+    T.el.addEventListener('click', ev => { ev.stopPropagation(); openDlg(T); });
     T.el.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openDlg(T); } });
   }
 
@@ -452,8 +490,10 @@
     const box = $('#dSvg'); box.innerHTML = ''; box.appendChild(big.svg);
     $('#dCard').innerHTML = T.ring ? '<div class="cm">' + plural(ringAccts[u.ring_id].size, 'account') + ' · ' + plural(RINGS[u.ring_id].length, 'laundering transfer') + ' · ' + esc(moneyLine(RINGS[u.ring_id])) + ' moved</div>' + (T.run && T.run.verdict ? '<div class="cm">' + esc(flagLine(T)) + '</div>' : '') + '<div class="cm">' + alsoLine(T) + '</div>' : '';
     const ids = unitRowIds(u).sort((a, b) => TX[a].ms - TX[b].ms);
-    const t0d = new Date(TX[ids[0]].ms); const start = Date.UTC(t0d.getUTCFullYear(), t0d.getUTCMonth(), t0d.getUTCDate());
-    const last = TX[ids[ids.length - 1]].ms; const days = Math.max(10, Math.ceil((last - start) / 864e5));
+    /* the scrub belongs to the group: it starts on the first day of IBM's group (or of the neighborhood, for ordinary ones) */
+    const gids = T.ring ? RINGS[u.ring_id].slice().sort((a, b) => TX[a].ms - TX[b].ms) : ids;
+    const t0d = new Date(TX[gids[0]].ms); const start = Date.UTC(t0d.getUTCFullYear(), t0d.getUTCMonth(), t0d.getUTCDate());
+    const last = TX[gids[gids.length - 1]].ms; const days = Math.max(10, Math.ceil((last - start + 1) / 864e5));
     const hours = days * 24; const rng = $('#dRange'); rng.max = hours; rng.value = hours;
     $('#dTicks').innerHTML = [0, Math.round(days / 2), days].map(d => '<span>' + fmtDay(start + d * 864e5) + '</span>').join('');
     const shape = T.ring ? ibmName(u) : 'ordinary neighborhood';
