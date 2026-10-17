@@ -6,7 +6,7 @@
    If the data is missing a small made-up SAMPLE stands in and the page says so. Canvas 2D, no libraries. */
 (function () {
 'use strict';
-const C = { ground: '#14181F', surface: '#1C222B', ink: '#E6E9EE', muted: '#A3ABB8', accent: '#7FB7B0', rule: '#2C3440', warn: '#E0A458', ok: '#8FCB8A', bad: '#E5736A' };
+const C = { look: '#B3A68C', ground: '#14181F', surface: '#1C222B', ink: '#E6E9EE', muted: '#A3ABB8', accent: '#7FB7B0', rule: '#2C3440', warn: '#E0A458', ok: '#8FCB8A', bad: '#E5736A' };
 const RMQ = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
 const reduced = () => RMQ.matches;
 const $ = s => document.querySelector(s);
@@ -22,7 +22,7 @@ function seeded(seed) { let s = seed >>> 0; return () => (s = (s * 1664525 + 101
 
 /* timings, ms: each one is what the README lists */
 const HOLD = 700, FADE = 400, STEP = 60, DWELL = 150, CATCH_MS = 450, GAP = 250, REVEAL_MS = 600, ALARM_MS = 200;
-const DIM = 0.08; /* a cleared account ends at 8 percent opacity */
+const DIM = 0.08; const SWEEP_MS = 120, LOOK_MS = 300, LOOK_GAP = 50; /* a cleared account ends at 8 percent opacity */
 
 /* ---------- data, or a labeled SAMPLE ---------- */
 let SAMPLE = false;
@@ -77,9 +77,10 @@ RING_IDS.forEach(r => { RINGS[r].nodes = [...RINGS[r].ns]; RINGS[r].meta = (SL.r
 /* the 60 neighborhoods, in the order the pass reads them */
 const UNITS = (UN.units || []).slice().sort((a, b) => String(a.id).localeCompare(String(b.id), 'en', { numeric: true })).map(u => {
   const rowIds = (u.rows || []).map(r => Array.isArray(r) ? r[0] : r).filter(id => BYID[id]);
-  return { id: u.id, expected: u.expected, ring: u.ring_id != null ? +u.ring_id : null, accounts: (u.accounts || []).filter(a => a in nodeIdx).map(a => nodeIdx[a]), rowIds };
+  return { id: u.id, seed: u.seed_account || '', expected: u.expected, ring: u.ring_id != null ? +u.ring_id : null, accounts: (u.accounts || []).filter(a => a in nodeIdx).map(a => nodeIdx[a]), rowIds };
 });
 const NORD = UNITS.filter(u => u.expected !== 'ring').length;
+UNITS.forEach(u => { if (!u.seed && u.accounts.length) u.seed = nodes[u.accounts.slice().sort((a, b) => nodes[b].deg - nodes[a].deg)[0]].a; });
 const UNITS_OF_TR = TR.map(() => []); UNITS.forEach((u, k) => u.rowIds.forEach(id => UNITS_OF_TR[BYID[id].i].push(k)));
 const UNIT_OF_RING = {}; UNITS.forEach((u, k) => { if (u.ring != null) UNIT_OF_RING[u.ring] = k; });
 const OUTSIDE = TR.filter(t => !UNITS_OF_TR[t.i].length).length;
@@ -88,7 +89,7 @@ const OUTSIDE = TR.filter(t => !UNITS_OF_TR[t.i].length).length;
 const truthy = v => v === true || v === 'True' || v === 'true' || v === 1;
 const listOf = v => Array.isArray(v) ? v : typeof v === 'string' ? (v.match(/[A-Za-z0-9]+/g) || []).filter(x => x !== 'None') : [];
 const RUNS = {}; (BE.runs || []).forEach(r => { const k = r.model + '|' + (r.version || 'v1'); (RUNS[k] = RUNS[k] || []).push(r); });
-const NAMES = { 'claude-haiku-5-5': 'Claude Haiku 5.5', 'claude-sonnet-5-5': 'Claude Sonnet 5.5', 'deepseek-v4-pro': 'DeepSeek V4 Pro', 'mistral-large-4': 'Mistral Large 4', 'kimi-k3': 'Kimi K3', 'gpt-6-luna': 'GPT-6 Luna', 'gpt-6-sol': 'GPT-6 Sol', 'grok-4.7': 'Grok 4.7', 'glm-5.3': 'GLM 5.3' };
+const NAMES = { 'claude-haiku-5-5': 'Claude Haiku 5.5', 'claude-sonnet-5-5': 'Claude Sonnet 5.5', 'deepseek-v4-pro': 'DeepSeek V4 Pro', 'mistral-large-4': 'Mistral Large 4', 'kimi-k3': 'Kimi K3', 'gpt-6-luna': 'GPT-6 Luna', 'gpt-6-sol': 'GPT-6 Sol', 'grok-4.7': 'Grok 4.7', 'glm-5.3': 'GLM 5.3', 'claude-opus-5-5': 'Claude Opus 5.5' };
 const prettyName = id => { const s = String(id).split('/').pop(); return NAMES[s] || sentence(s.replace(/-/g, ' ')); };
 function stats(mid, ver) {
   const runs = RUNS[mid + '|' + ver] || []; const byUnit = {}; const F = new Set();
@@ -105,36 +106,52 @@ const panelVer = v => PA.versions[v] ? v : PA.versions.v2 ? 'v2' : Object.keys(P
 function agreement(ver, unitId) { const pv = panelVer(ver); if (!pv) return null; const a = (PA.versions[pv].agreement || []).find(x => x.unit === unitId); return a ? Object.assign({ pv }, a) : null; }
 
 /* ---------- the sequence for one model: a timetable, then every frame is read off it ---------- */
-const ST = { sel: null, t: 0, END: 1, playing: false, showAll: false, hover: null, lastT: 0 };
+const ST = { stage: 0, missedAt: null, dial: 1, dialOn: false, sel: null, t: 0, END: 1, playing: false, showAll: false, hover: null, lastT: 0 };
 let TL = null;
+/* the "Needs a look" tray: recorded for one first pass (Claude Sonnet 5.5 v4); the investigation verdicts are replayed from investigate.js */
+const TRAY_STUB = [{"unit":"u01","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"medium","ring_votes":4,"families":8,"reasons":["families split: 4 of 8 called it a ring"]},{"unit":"u03","expected":"ordinary","shape":null,"first_pass_verdict":"ring","first_pass_confidence":"low","ring_votes":6,"families":9,"reasons":["first pass called it a ring at low confidence","families split: 6 of 9 called it a ring"]},{"unit":"u04","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"medium","ring_votes":5,"families":9,"reasons":["families split: 5 of 9 called it a ring"]},{"unit":"u05","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"low","ring_votes":5,"families":9,"reasons":["families split: 5 of 9 called it a ring"]},{"unit":"u08","expected":"ring","shape":"chain","first_pass_verdict":"ordinary","first_pass_confidence":"medium","ring_votes":5,"families":8,"reasons":["families split: 5 of 8 called it a ring"]},{"unit":"u12","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"medium","ring_votes":3,"families":9,"reasons":["families split: 3 of 9 called it a ring"]},{"unit":"u13","expected":"ordinary","shape":null,"first_pass_verdict":"ring","first_pass_confidence":"low","ring_votes":8,"families":9,"reasons":["first pass called it a ring at low confidence"]},{"unit":"u14","expected":"ring","shape":"other","first_pass_verdict":"ordinary","first_pass_confidence":"medium","ring_votes":3,"families":8,"reasons":["families split: 3 of 8 called it a ring"]},{"unit":"u16","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"medium","ring_votes":3,"families":9,"reasons":["families split: 3 of 9 called it a ring"]},{"unit":"u17","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"low","ring_votes":5,"families":9,"reasons":["families split: 5 of 9 called it a ring"]},{"unit":"u18","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"low","ring_votes":3,"families":9,"reasons":["families split: 3 of 9 called it a ring"]},{"unit":"u19","expected":"ring","shape":"lone","first_pass_verdict":"ring","first_pass_confidence":"low","ring_votes":3,"families":9,"reasons":["first pass called it a ring at low confidence","families split: 3 of 9 called it a ring"]},{"unit":"u20","expected":"ring","shape":"lone","first_pass_verdict":"ordinary","first_pass_confidence":"low","ring_votes":6,"families":9,"reasons":["families split: 6 of 9 called it a ring"]},{"unit":"u21","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"medium","ring_votes":4,"families":9,"reasons":["families split: 4 of 9 called it a ring"]},{"unit":"u23","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"medium","ring_votes":3,"families":9,"reasons":["families split: 3 of 9 called it a ring"]},{"unit":"u24","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"medium","ring_votes":3,"families":9,"reasons":["families split: 3 of 9 called it a ring"]},{"unit":"u25","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"low","ring_votes":4,"families":9,"reasons":["families split: 4 of 9 called it a ring"]},{"unit":"u28","expected":"ring","shape":"lone","first_pass_verdict":"ordinary","first_pass_confidence":"low","ring_votes":6,"families":9,"reasons":["families split: 6 of 9 called it a ring"]},{"unit":"u33","expected":"ring","shape":"chain","first_pass_verdict":"ordinary","first_pass_confidence":"low","ring_votes":5,"families":9,"reasons":["families split: 5 of 9 called it a ring"]},{"unit":"u36","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"low","ring_votes":5,"families":8,"reasons":["families split: 5 of 8 called it a ring"]},{"unit":"u37","expected":"ring","shape":"lone","first_pass_verdict":"ordinary","first_pass_confidence":"low","ring_votes":6,"families":9,"reasons":["families split: 6 of 9 called it a ring"]},{"unit":"u38","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"medium","ring_votes":3,"families":8,"reasons":["families split: 3 of 8 called it a ring"]},{"unit":"u40","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"medium","ring_votes":5,"families":9,"reasons":["families split: 5 of 9 called it a ring"]},{"unit":"u41","expected":"ordinary","shape":null,"first_pass_verdict":"ring","first_pass_confidence":"low","ring_votes":5,"families":9,"reasons":["first pass called it a ring at low confidence","families split: 5 of 9 called it a ring"]},{"unit":"u45","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"medium","ring_votes":3,"families":9,"reasons":["families split: 3 of 9 called it a ring"]},{"unit":"u52","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"medium","ring_votes":5,"families":9,"reasons":["families split: 5 of 9 called it a ring"]},{"unit":"u54","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"medium","ring_votes":5,"families":9,"reasons":["families split: 5 of 9 called it a ring"]},{"unit":"u55","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"low","ring_votes":4,"families":9,"reasons":["families split: 4 of 9 called it a ring"]},{"unit":"u58","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"low","ring_votes":6,"families":9,"reasons":["families split: 6 of 9 called it a ring"]},{"unit":"u59","expected":"ordinary","shape":null,"first_pass_verdict":"ordinary","first_pass_confidence":"medium","ring_votes":3,"families":9,"reasons":["families split: 3 of 9 called it a ring"]}];
+const INVD = window.INVESTIGATE || null;
+const TRAY = (INVD && INVD.tray && INVD.tray.length ? INVD.tray : TRAY_STUB).filter(x => UNITS.some(u => u.id === x.unit));
+const TRAY_OF = {}; TRAY.forEach(x => { TRAY_OF[x.unit] = x; });
+const INV_MODEL = INVD && INVD.model ? prettyName(INVD.model) : 'Claude Opus 5.5';
+const trayApplies = S => !!S && /claude-sonnet-5-5$/.test(S.id) && S.ver === 'v4';
+const INV = {}; /* unit -> { start, land } in wall-clock ms; the verdict is INVD.results[unit] */
+const INVESTIGATE_MS = 1200;
+const invRes = id => INVD && INVD.results ? INVD.results[id] || null : null;
+const landed = (id, now) => INV[id] && now >= INV[id].land;
 function buildTimeline(S) {
-  const read = [], status = []; let t = HOLD + FADE;
+  const read = [], status = []; let t = HOLD + FADE; const useTray = trayApplies(S);
   UNITS.forEach((u, k) => {
     const r = S.byUnit[u.id]; let st;
     if (!r || r.verdict == null || r.verdict === '') st = 'none';
     else if (u.expected === 'ring') st = truthy(r.ring_found) ? 'caught' : r.verdict === 'ring' ? 'called' : 'clear';
     else st = r.verdict === 'ring' ? 'alarm' : 'clear';
+    if (useTray && TRAY_OF[u.id] && st !== 'caught' && st !== 'alarm') st = 'look';
     read[k] = t; status[k] = st; t += STEP + (st === 'caught' ? DWELL : 0);
   });
   const passEnd = Math.max(t, (read[read.length - 1] || t) + Math.max(FADE, CATCH_MS));
-  const REVEAL = passEnd + GAP, END = REVEAL + REVEAL_MS;
+  const REVEAL = Infinity, END = passEnd; void GAP;
   /* each transfer: when it starts to fade (Infinity = stays lit), and what it turns into, from when */
   const dimAt = new Float64Array(TR.length), style = new Array(TR.length).fill(null), styleT = new Float64Array(TR.length);
-  const release = (k, x) => { const s = status[k]; if (s === 'clear') return read[k]; if (s === 'caught') return read[k] + CATCH_MS; if (s === 'called') return REVEAL; return Infinity; };
+  const dimNoLook = new Float64Array(TR.length), lookOf = TR.map(() => null);
+  const release = (k, x) => { const s = status[k]; if (s === 'clear') return read[k]; if (s === 'caught') return read[k] + CATCH_MS; if (s === 'called') return passEnd - FADE; return Infinity; };
   TR.forEach(x => {
     const us = UNITS_OF_TR[x.i]; let d = us.length ? 0 : HOLD;
     us.forEach(k => { d = Math.max(d, release(k, x)); }); dimAt[x.i] = d;
-    if (x.label) {
+    const lk = us.filter(k => status[k] === 'look');
+    if (lk.length) { lookOf[x.i] = lk; let d2 = us.length > lk.length ? 0 : HOLD; us.forEach(k => { if (status[k] !== 'look') d2 = Math.max(d2, release(k, x)); }); dimNoLook[x.i] = d2; }
+    if (x.label && UNIT_OF_RING[x.ring] != null && status[UNIT_OF_RING[x.ring]] === 'look') { /* its fate waits for the investigation */ }
+    else if (x.label) {
       const ku = UNIT_OF_RING[x.ring]; const caught = S.caught.has(x.ring) && ku != null;
-      if (S.F.has(x.id)) { style[x.i] = 'ok'; styleT[x.i] = caught ? read[ku] : REVEAL; }
-      else { style[x.i] = 'miss'; styleT[x.i] = REVEAL; }
+      if (S.F.has(x.id)) { style[x.i] = 'ok'; styleT[x.i] = caught ? read[ku] : Infinity; }
+      else { style[x.i] = 'miss'; styleT[x.i] = Infinity; }
     } else if (S.F.has(x.id)) {
       let first = Infinity; us.forEach(k => { if (status[k] === 'alarm') first = Math.min(first, read[k]); });
       if (isFinite(first)) { style[x.i] = 'bad'; styleT[x.i] = first; }
     }
   });
   const ringCatch = {}; RING_IDS.forEach(r => { const ku = UNIT_OF_RING[r]; ringCatch[r] = S.caught.has(r) && ku != null ? read[ku] : null; });
-  return { read, status, dimAt, style, styleT, REVEAL, END, passEnd, ringCatch };
+  return { read, status, dimAt, dimNoLook, lookOf, style, styleT, REVEAL, END, passEnd, ringCatch };
 }
 
 /* ---------- canvas geometry ---------- */
@@ -170,9 +187,11 @@ function pathPoly(P) { ctx.beginPath(); P.forEach((p, i) => i ? ctx.lineTo(p[0],
 const wOf = v => 1 + 0.42 * (v || 0); /* outline width carries the number of families that called it a ring */
 
 /* ---------- draw one frame at clock t ---------- */
-const nodeA = new Float32Array(nodes.length);
+const nodeA = new Float32Array(nodes.length); const LIT = new Float32Array(TR.length);
 function draw() {
-  const t = ST.t, T = TL, all = ST.showAll;
+  const t = ST.t, T = TL, all = ST.showAll; const now = performance.now();
+  /* a tray neighborhood lets its traffic fade only once the investigation clears it; a ring verdict holds it lit */
+  const invRel = id => { if (!landed(id, now)) return Infinity; const r = invRes(id); if (!r) return Infinity; if (r.verdict === 'ring') return truthy(r.ring_found) ? INV[id].land + CATCH_MS : Infinity; return INV[id].land; };
   ctx.setTransform(G.dpr, 0, 0, G.dpr, 0, 0); ctx.fillStyle = C.ground; ctx.fillRect(0, 0, G.W, G.H);
   if (!T) return;
   nodeA.fill(0);
@@ -180,11 +199,24 @@ function draw() {
   const put = (kind, a, x) => { if (a < 0.01) return; const q = Math.round(a * 20) / 20; const m = buckets[kind]; let L = m.get(q); if (!L) m.set(q, L = []); L.push(x); };
   for (let i = 0; i < TR.length; i++) {
     const x = TR[i]; const d = T.dimAt[i];
-    let lit = t < d ? 1 : 1 - ease((t - d) / FADE); if (all) lit = 1;
-    let sa = 0; const s = T.style[i];
-    if (s && t >= T.styleT[i]) sa = s === 'miss' ? ease((t - T.styleT[i]) / REVEAL_MS) : s === 'bad' ? ease((t - T.styleT[i]) / ALARM_MS) : 1;
-    if (s === 'ok' && sa && T.ringCatch[x.ring] != null && t < T.ringCatch[x.ring] + CATCH_MS) sa = 0; /* drawn by the catch below */
-    if (all && s && t >= T.styleT[i]) sa = 1;
+    let lit = t < d ? 1 : 1 - ease((t - d) / FADE);
+    let s = T.style[i], sT = T.styleT[i], wall = false;
+    if (T.lookOf[i]) {
+      const d0 = T.dimNoLook[i]; const litT = t < d0 ? 1 : 1 - ease((t - d0) / FADE);
+      let rel = -Infinity; T.lookOf[i].forEach(k => { rel = Math.max(rel, invRel(UNITS[k].id)); });
+      const litL = isFinite(rel) ? 1 - ease((now - rel) / FADE) : 1; lit = Math.max(litT, litL);
+      T.lookOf[i].forEach(k => { const id = UNITS[k].id; const r = invRes(id); if (!r || !landed(id, now)) return; const fl = listOf(r.flagged_in_unit);
+        if (x.label && UNITS[k].ring === x.ring) { s = truthy(r.ring_found) && fl.includes(x.id) ? 'ok' : 'miss'; sT = INV[id].land; wall = true; }
+        else if (!x.label && r.verdict === 'ring' && UNITS[k].expected !== 'ring' && fl.includes(x.id)) { s = 'bad'; sT = INV[id].land; wall = true; } });
+    }
+    if (all) lit = 1; LIT[i] = lit;
+    let sa = 0; const tt = wall ? now : t;
+    if (wall) { if (s === 'ok') sa = tt >= sT + CATCH_MS ? 1 : 0; else sa = s === 'miss' ? (ST.missedAt != null ? ease((now - Math.max(sT, ST.missedAt)) / REVEAL_MS) : 0) : ease((tt - sT) / ALARM_MS); }
+    else
+    if (s && sT === Infinity) sa = ST.missedAt != null ? ease((now - ST.missedAt) / REVEAL_MS) : 0;
+    else if (s && t >= sT) sa = s === 'miss' ? ease((t - sT) / REVEAL_MS) : s === 'bad' ? ease((t - sT) / ALARM_MS) : 1;
+    if (!wall && s === 'ok' && sa && T.ringCatch[x.ring] != null && t < T.ringCatch[x.ring] + CATCH_MS) sa = 0; /* drawn by the catch below */
+    if (all && s && (wall || t >= sT || sT === Infinity)) sa = 1;
     if (x.u !== x.v) { put('n', 0.06 + 0.32 * lit * (1 - sa), x); if (sa) put(s, sa, x); }
     const nv = Math.max(DIM + (1 - DIM) * lit, sa);
     if (nv > nodeA[x.u]) nodeA[x.u] = nv; if (nv > nodeA[x.v]) nodeA[x.v] = nv;
@@ -196,11 +228,24 @@ function draw() {
   ctx.lineJoin = 'round';
   GROUPS.forEach(g => {
     const st = T.status[g.k]; const rd = T.read[g.k]; const votes = (agreement(ST.sel.ver, g.u.id) || {}).ring_votes || 0;
-    if (g.ring != null && st === 'caught') {
+    if (ST.dialOn && votes < ST.dial && st !== 'look') return;
+    if (st === 'look') {
+      const id = g.u.id; const r = invRes(id);
+      if (r && landed(id, now)) {
+        const p = clamp01((now - INV[id].land) / CATCH_MS);
+        if (r.verdict === 'ring' && truthy(r.ring_found)) { const e = all ? 1 : easeOut(p); pathPoly(g.hull); ctx.setLineDash([]); ctx.strokeStyle = C.ok; ctx.globalAlpha = 0.25 + 0.65 * e; ctx.lineWidth = wOf(votes) + 3 * (1 - e); ctx.stroke(); }
+        else if (r.verdict === 'ring' && g.ring == null) { pathPoly(g.hull); ctx.setLineDash([5, 4]); ctx.strokeStyle = C.bad; ctx.globalAlpha = 0.8 * ease(p); ctx.lineWidth = 1.3; ctx.stroke(); }
+        else if (g.ring != null) { const m = all ? 1 : ST.missedAt != null ? ease((now - Math.max(INV[id].land, ST.missedAt)) / REVEAL_MS) : 0; if (m > 0) { pathPoly(g.hull); ctx.setLineDash([1.5, 3.5]); ctx.lineCap = 'round'; ctx.strokeStyle = C.warn; ctx.globalAlpha = 0.9 * m; ctx.lineWidth = 1.5; ctx.stroke(); ctx.lineCap = 'butt'; } }
+        else { pathPoly(g.hull); ctx.setLineDash([]); ctx.strokeStyle = C.look; ctx.globalAlpha = 0.85 * (1 - ease(p)); ctx.lineWidth = 1.4; ctx.stroke(); }
+        return;
+      }
+      const p = all ? 1 : ease((t - rd) / ALARM_MS); if (p <= 0) return;
+      pathPoly(g.hull); ctx.setLineDash([]); const pulse = ST.stage === 2 && !reduced() ? 0.55 + 0.45 * Math.sin(now / 520) : 0; ctx.strokeStyle = pulse ? C.warn : C.look; ctx.globalAlpha = (INV[id] ? 1 : 0.6 + 0.35 * pulse) * p; ctx.lineWidth = INV[id] ? 2 : 1.1 + 0.9 * pulse; ctx.stroke();
+    } else if (g.ring != null && st === 'caught') {
       const p = all ? 1 : clamp01((t - rd) / CATCH_MS); if (p <= 0) return;
       const e = easeOut(p); pathPoly(g.hull); ctx.setLineDash([]); ctx.strokeStyle = C.ok; ctx.globalAlpha = 0.25 + 0.65 * e; ctx.lineWidth = wOf(votes) + 3 * (1 - e); ctx.stroke();
     } else if (g.ring != null) {
-      const p = all ? 1 : ease((t - T.REVEAL) / REVEAL_MS); if (p <= 0) return;
+      const p = all ? 1 : ST.missedAt != null ? ease((now - ST.missedAt) / REVEAL_MS) : 0; if (p <= 0) return;
       pathPoly(g.hull); ctx.setLineDash([1.5, 3.5]); ctx.lineCap = 'round'; ctx.strokeStyle = C.warn; ctx.globalAlpha = 0.9 * p; ctx.lineWidth = 1.5; ctx.stroke(); ctx.lineCap = 'butt';
     } else if (st === 'alarm') {
       const p = all ? 1 : ease((t - rd) / ALARM_MS); if (p <= 0) return;
@@ -208,6 +253,8 @@ function draw() {
     }
   });
   ctx.setLineDash([]); ctx.globalAlpha = 1;
+  if (ST.stage === 1 && !all) GROUPS.forEach(g => { const d = t - T.read[g.k]; if (d < 0 || d > SWEEP_MS) return; pathPoly(g.hull); ctx.strokeStyle = C.ink; ctx.globalAlpha = 1 - d / SWEEP_MS; ctx.lineWidth = 1.6; ctx.stroke(); });
+  ctx.globalAlpha = 1;
 
   ctx.lineCap = 'round';
   strokeB(buckets.bad, C.bad, 1.4, [5, 3]);
@@ -221,6 +268,11 @@ function draw() {
     ctx.stroke();
     RINGS[r].nodes.forEach(v => { nodeA[v] = 1; });
   });
+  /* an investigation that lands on a ring traces it the same way, on the wall clock */
+  Object.keys(INV).forEach(id => { const r = invRes(id); const k = UNITS.findIndex(u => u.id === id); if (!r || k < 0 || !truthy(r.ring_found) || all) return;
+    const p = (now - INV[id].land) / CATCH_MS; if (p < 0 || p >= 1) return; const q = easeOut(p); const fl = listOf(r.flagged_in_unit); const ring = UNITS[k].ring; if (ring == null) return;
+    ctx.beginPath(); RINGS[ring].ids.forEach(tid => { const x = BYID[tid]; if (x.u === x.v || !fl.includes(tid)) return; const a = nodes[x.u], b = nodes[x.v]; ctx.moveTo(a.sx, a.sy); ctx.lineTo(a.sx + (b.sx - a.sx) * q, a.sy + (b.sy - a.sy) * q); }); ctx.stroke();
+    RINGS[ring].nodes.forEach(v => { nodeA[v] = 1; }); });
   ctx.lineCap = 'butt'; ctx.globalAlpha = 1;
 
   /* accounts, bucketed by strength */
@@ -231,73 +283,216 @@ function draw() {
   if (ST.hover) { pathPoly(ST.hover.hull); ctx.strokeStyle = C.ink; ctx.globalAlpha = 0.9; ctx.lineWidth = 1; ctx.setLineDash([]); ctx.stroke(); ctx.globalAlpha = 1; }
 }
 
-/* ---------- the clock: play, scrub, reduced motion ---------- */
-let raf = 0;
+/* ---------- the four stages: Search, Ambiguous, Look closer, Settled; the button always names the next one ---------- */
+let raf = 0, pulseRaf = 0;
 const timeEl = $('#time'), playBtn = $('#play');
+const STAGES = ['Search', 'Ambiguous', 'Look closer', 'Settled'];
 function setT(t, fromPlay) {
-  ST.t = Math.max(0, Math.min(ST.END, t)); if (!fromPlay) timeEl.value = Math.round(ST.t / ST.END * 1000); else timeEl.value = Math.round(ST.t / ST.END * 1000);
-  renderClock(); syncRoster(fromPlay); draw();
+  ST.t = Math.max(0, Math.min(ST.END, t)); timeEl.value = Math.round(ST.t / ST.END * 1000);
+  renderClock(); syncTray(fromPlay); draw();
 }
-function stopPlay() { ST.playing = false; if (raf) cancelAnimationFrame(raf); raf = 0; playBtn.textContent = ST.t >= ST.END ? 'Play again' : 'Play the pass'; }
+function pulseLoop() { pulseRaf = 0; if (ST.stage !== 2 || reduced()) return; draw(); pulseRaf = requestAnimationFrame(pulseLoop); }
+function setStage(n) {
+  ST.stage = n; timeEl.style.visibility = n >= 2 ? 'hidden' : '';
+  document.querySelectorAll('#stages li').forEach((li, i) => { li.classList.toggle('on', i + 1 === n); li.classList.toggle('done', i + 1 < n); });
+  if (n === 2 && !pulseRaf) pulseRaf = requestAnimationFrame(pulseLoop);
+  renderButton(); renderClock(); draw();
+}
+function renderButton() {
+  const n = ST.stage; playBtn.disabled = false;
+  if (n === 0) playBtn.textContent = 'Start the search';
+  else if (n === 1) playBtn.textContent = ST.playing ? 'Skip to the end of the search' : 'Continue the search';
+  else if (n === 2) { playBtn.textContent = 'Look closer'; playBtn.disabled = !trayApplies(ST.sel) || !CARDS.size; }
+  else if (n === 3) { playBtn.textContent = trayDone() ? 'Settle' : 'Investigating...'; playBtn.disabled = !trayDone(); }
+  else playBtn.textContent = ST.missedAt == null ? 'Show what was missed' : 'Start over';
+}
+function stopPlay() { ST.playing = false; if (raf) cancelAnimationFrame(raf); raf = 0; renderButton(); }
 let last = 0;
-function tick(now) { if (!ST.playing) return; const dt = Math.min(64, now - last); last = now; setT(ST.t + dt, true); if (ST.t >= ST.END) stopPlay(); else raf = requestAnimationFrame(tick); }
-function play() {
-  if (ST.playing) { stopPlay(); return; }
-  if (reduced()) { setT(ST.END); stopPlay(); return; }
-  if (ST.t >= ST.END) { setT(0); }
-  ST.playing = true; playBtn.textContent = 'Pause'; last = performance.now(); raf = requestAnimationFrame(tick);
+function tick(now) { if (!ST.playing) return; const dt = Math.min(64, now - last); last = now; setT(ST.t + dt, true); if (ST.t >= ST.END) { stopPlay(); setStage(2); } else raf = requestAnimationFrame(tick); }
+function startSearch() {
+  resetLater(); if (ST.t >= ST.END) setT(0);
+  setStage(1);
+  if (reduced()) { setT(ST.END); stopPlay(); setStage(2); return; }
+  ST.playing = true; last = performance.now(); renderButton(); raf = requestAnimationFrame(tick);
 }
-playBtn.addEventListener('click', play);
-timeEl.addEventListener('input', () => { stopPlay(); setT(+timeEl.value / 1000 * ST.END); playBtn.textContent = ST.t >= ST.END ? 'Play again' : 'Play the pass'; });
+function resetLater() { lookRun++; Object.keys(INV).forEach(k => delete INV[k]); ST.missedAt = null; CARDS.forEach((el, k) => cardState(el, k)); }
+function showMissed() { ST.missedAt = performance.now(); CARDS.forEach((el, k) => cardState(el, k)); animate(REVEAL_MS + 100); renderButton(); renderClock(); }
+playBtn.addEventListener('click', () => {
+  const n = ST.stage;
+  if (n === 0) startSearch();
+  else if (n === 1) { if (ST.playing) { stopPlay(); setT(ST.END); setStage(2); } else { ST.playing = true; last = performance.now(); renderButton(); raf = requestAnimationFrame(tick); } }
+  else if (n === 2) lookCloser();
+  else if (n === 3) checkSettled();
+  else if (ST.missedAt == null) showMissed();
+  else { stopPlay(); resetLater(); setT(0); setStage(0); }
+});
+/* each stage label jumps to the end of that stage (as ?stage=1..4 does) */
+function jumpTo(n) {
+  stopPlay(); lookRun++;
+  if (n <= 0) { resetLater(); setT(0); setStage(0); return; }
+  if (n <= 2) { resetLater(); setT(ST.END); setStage(n === 1 ? 1 : 2); if (n === 1) { ST.stage = 1; renderButton(); } return; }
+  setT(ST.END); const past = performance.now() - 10000;
+  CARDS.forEach((el, k) => { INV[UNITS[k].id] = { start: past, land: past }; });
+  ST.missedAt = n >= 4 ? past : null; CARDS.forEach((el, k) => cardState(el, k)); renderTrayHead();
+  setStage(n >= 4 ? 4 : 3); if (n === 3) { ST.stage = 3; renderButton(); }
+}
+document.querySelectorAll('#stages li').forEach((li, i) => { li.addEventListener('click', () => jumpTo(i + 1)); li.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jumpTo(i + 1); } }); });
+timeEl.addEventListener('input', () => { stopPlay(); if (ST.stage !== 1) { resetLater(); setStage(1); } setT(+timeEl.value / 1000 * ST.END); if (ST.t >= ST.END) setStage(2); });
 $('#all').addEventListener('change', e => { ST.showAll = e.target.checked; draw(); });
 function renderClock() {
   const T = TL; if (!T) { $('#clock').textContent = ''; return; }
-  let readN = 0, cleared = 0; T.read.forEach((r, k) => { if (ST.t >= r) { readN++; if (T.status[k] === 'clear' && UNITS[k].expected !== 'ring') cleared++; } });
-  const phase = ST.t < HOLD ? 'The whole slice, lit' : ST.t < HOLD + FADE ? 'Transfers outside the neighborhoods step back' : ST.t < T.passEnd ? 'Reading ' + (UNITS[Math.max(0, readN - 1)] || {}).id : ST.t < T.REVEAL ? 'Pass over' : 'Missed rings shown';
-  $('#clock').innerHTML = esc(phase) + ' · Neighborhoods cleared <b>' + cleared + ' of ' + NORD + '</b>';
+  const now = performance.now(); let readN = 0; T.read.forEach(r => { if (ST.t >= r) readN++; });
+  const lookN = T.status.filter(x => x === 'look').length; const inv = Object.keys(INV).filter(id => landed(id, now)).length;
+  let html;
+  if (ST.stage === 0) html = 'The whole slice, lit · <b>' + UNITS.length + '</b> neighborhoods to read';
+  else if (ST.stage === 1) html = (ST.t < HOLD + FADE ? 'Transfers outside the neighborhoods step back' : 'Reading ' + esc((UNITS[Math.max(0, readN - 1)] || {}).id)) + ' · read <b>' + readN + ' of ' + UNITS.length + '</b>';
+  else if (ST.stage === 2) html = trayApplies(ST.sel) ? '<b>' + lookN + '</b> neighborhoods the first pass could not settle' : 'The tray is recorded for Claude Sonnet 5.5 v4 only';
+  else if (ST.stage === 3) html = 'Investigated <b>' + inv + ' of ' + lookN + '</b>';
+  else html = closingLine();
+  $('#clock').innerHTML = html;
+}
+function closingLine() {
+  const s = ST.sel; let out = 'First pass <b>' + s.k + ' of ' + NR + '</b> rings, <b>' + s.f + '</b> ' + (s.f === 1 ? 'alarm' : 'alarms');
+  if (trayApplies(s) && INVD && INVD.results) {
+    const R = TRAY.map(x => Object.assign({ expected: x.expected }, INVD.results[x.unit] || {}));
+    const cl = R.filter(r => r.verdict === 'ordinary' && r.expected !== 'ring').length, found = R.filter(r => truthy(r.ring_found)).length, fa = R.filter(r => r.verdict === 'ring' && r.expected !== 'ring').length;
+    out += ' · investigator <b>' + cl + '</b> cleared, <b>' + found + '</b> ' + (found === 1 ? 'ring' : 'rings') + ' found, <b>' + fa + '</b> false ' + (fa === 1 ? 'alarm' : 'alarms');
+  }
+  return out;
 }
 
-/* ---------- the caught roster: a copy of each catch drops in, text only; the ring stays in the graph ---------- */
+/* ---------- the families dial: how many model families must agree (panel.js vote table) ---------- */
+function voteRow(k) { const pv = panelVer(ST.sel.ver); const V = pv && PA.versions[pv]; return V && (V.vote_table || []).find(r => r.votes_needed === k) ? Object.assign({ pv }, (V.vote_table || []).find(r => r.votes_needed === k)) : null; }
+function renderDial() {
+  const pv = panelVer(ST.sel && ST.sel.ver); const V = pv && PA.versions[pv]; const n = V && V.summary && V.summary.families ? V.summary.families.length : 9;
+  const dial = $('#dial'); dial.max = n; dial.value = ST.dial;
+  $('#dialVal').textContent = ST.dial + ' of ' + n;
+  const row = voteRow(ST.dial);
+  $('#dialNote').innerHTML = !row ? 'No vote table in panel.js.' : ST.dialOn ? 'Outlines show only where at least ' + ST.dial + ' families called it a ring (the ' + esc(row.pv) + ' panel). The tray stays as it is.' : 'Move it to require more families to agree.';
+}
+$('#dial').addEventListener('input', e => { ST.dial = +e.target.value; ST.dialOn = true; renderDial(); renderHeadline(); draw(); });
+
+/* ---------- the "Needs a look" tray: where the first pass was unsure; click to replay the stronger model's recorded verdict ---------- */
 const strip = $('#strip'); const CARDS = new Map();
 function moneyLine(r) { const p = RINGS[r].paid; const cur = Object.keys(p).sort((a, b) => p[b] - p[a]); if (!cur.length) return ''; return compact(p[cur[0]]) + ' ' + cur[0] + (cur.length > 1 ? ' +' + (cur.length - 1) : ''); }
 function firstSentence(s) { s = noDash(s).trim(); const m = /^(.{20,}?[.;])\s/.exec(s); s = m ? m[1] : s; return s.length > 180 ? s.slice(0, 177) + '...' : s; }
 function shapeName(r, run) { const s = run && run.ibm_shape && run.ibm_shape !== 'None' ? run.ibm_shape : RINGS[r].meta; return sentence(s); }
-function buildCard(r, pending) {
-  const R = RINGS[r]; const u = UNITS[UNIT_OF_RING[r]]; const run = ST.sel.byUnit[u.id]; const ag = agreement(ST.sel.ver, u.id);
-  const el = document.createElement('article'); el.className = 'card' + (pending ? ' pending' : ''); el.dataset.ring = r;
-  const flagged = R.ids.filter(id => ST.sel.F.has(id)).length;
-  el.innerHTML = '<h3>' + esc(shapeName(r, run)) + '</h3><div class="facts"><span class="mono">' + esc(u.id) + '</span> · <span class="mono">' + R.nodes.length + '</span> accounts · <span class="mono">' + flagged + ' of ' + R.ids.length + '</span> traced</div>' +
-    '<p class="why" title="' + esc(noDash(run && run.why)) + '">' + esc(firstSentence(run && run.why)) + '</p>';
-  el.setAttribute('aria-label', 'Caught: ' + shapeName(r, run) + ' in neighborhood ' + u.id); if (ag) el.title = ag.ring_votes + ' of ' + ag.families + ' model families called it a ring (the ' + ag.pv + ' panel)';
-  el.addEventListener('mouseenter', () => { const g = GROUPS.find(x => x.ring === r); if (g) { ST.hover = g; draw(); } });
+/* the neighborhood's own sub-graph, as the graph draws it, scaled into a small square */
+function drawUnitThumb(canvas, k, w, h) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2); canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+  const c = canvas.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const u = UNITS[k]; const ns = new Set(u.accounts); u.rowIds.forEach(id => { ns.add(BYID[id].u); ns.add(BYID[id].v); });
+  let minx = 1e9, miny = 1e9, maxx = -1e9, maxy = -1e9; ns.forEach(v => { const n = nodes[v]; minx = Math.min(minx, n.sx); maxx = Math.max(maxx, n.sx); miny = Math.min(miny, n.sy); maxy = Math.max(maxy, n.sy); });
+  const pad = 6; const s = Math.min((w - 2 * pad) / Math.max(1, maxx - minx), (h - 2 * pad) / Math.max(1, maxy - miny), 4);
+  const ox = (w - (maxx - minx) * s) / 2, oy = (h - (maxy - miny) * s) / 2; const P = v => [ox + (nodes[v].sx - minx) * s, oy + (nodes[v].sy - miny) * s];
+  c.strokeStyle = C.look; c.globalAlpha = 0.8; c.lineWidth = 1; c.beginPath();
+  u.rowIds.forEach(id => { const x = BYID[id]; if (x.u === x.v) return; const a = P(x.u), b = P(x.v); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); }); c.stroke();
+  c.globalAlpha = 1; c.fillStyle = C.ink; c.beginPath(); ns.forEach(v => { const a = P(v); c.moveTo(a[0] + 1.6, a[1]); c.arc(a[0], a[1], 1.6, 0, Math.PI * 2); }); c.fill();
+  return { minx, miny, maxx, maxy };
+}
+/* reaching a tray neighborhood: a copy of its sub-graph lifts off the graph at its real size and settles into the card */
+function fly(k, card) {
+  const target = card.querySelector('canvas'); const tr = target.getBoundingClientRect(); const st = cv.getBoundingClientRect();
+  const fl = document.createElement('canvas'); fl.className = 'flyer'; const b = drawUnitThumb(fl, k, 54, 54); document.body.append(fl);
+  const bw = Math.max(30, b.maxx - b.minx + 12), bh = Math.max(30, b.maxy - b.miny + 12); const k0 = Math.max(bw, bh) / 54;
+  const cx = st.left + (b.minx + b.maxx) / 2, cy = st.top + (b.miny + b.maxy) / 2;
+  const from = 'translate(' + (cx - 27 * k0) + 'px,' + (cy - 27 * k0) + 'px) scale(' + k0 + ')', to = 'translate(' + tr.left + 'px,' + tr.top + 'px) scale(1)';
+  target.style.visibility = 'hidden';
+  let done = false; const land = () => { if (done) return; done = true; fl.remove(); target.style.visibility = ''; };
+  setTimeout(land, 640);
+  if (fl.animate) { const an = fl.animate([{ transform: from, opacity: 0.9 }, { transform: to, opacity: 1 }], { duration: 560, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'forwards' }); an.onfinish = land; an.oncancel = land; } else land();
+}
+function reasonLine(x) { return (x.reasons || []).map(r => sentence(noDash(r))).join('; '); }
+function cardState(el, k) {
+  const u = UNITS[k]; const x = TRAY_OF[u.id]; const now = performance.now(); const r = invRes(u.id); const inv = INV[u.id];
+  const head = el.querySelector('h3'), body = el.querySelector('.why');
+  el.classList.remove('busy', 'ring', 'cleared', 'alarm', 'missed');
+  if (!inv) { head.innerHTML = '<span class="mono">' + esc(u.seed || u.id) + '</span>'; body.textContent = reasonLine(x); body.title = body.textContent; return; }
+  if (now < inv.land) { el.classList.add('busy'); head.textContent = 'Investigating with ' + INV_MODEL; body.textContent = reasonLine(x); return; }
+  if (!r) { head.textContent = 'No recorded verdict yet'; body.textContent = 'investigate.js has not been loaded, so there is nothing to replay.'; return; }
+  const why = firstSentence(r.why); body.title = noDash(r.why);
+  const ibm = r.ibm_shape && r.ibm_shape !== 'None' ? sentence(r.ibm_shape) : u.ring != null ? shapeName(u.ring, ST.sel.byUnit[u.id]) : '';
+  if (r.verdict === 'ring' && truthy(r.ring_found)) { el.classList.add('ring'); head.textContent = 'Ring: ' + ibm; body.textContent = why; }
+  else if (r.verdict === 'ring' && u.ring == null) { el.classList.add('alarm'); head.textContent = 'Called a ring; IBM labels it ordinary'; body.textContent = why; }
+  else if (r.verdict === 'ring') { el.classList.add('alarm'); head.textContent = 'Ring, but under half its laundering transfers flagged'; body.textContent = why; }
+  else { el.classList.add('cleared'); const missed = u.ring != null && ST.missedAt != null; if (missed) el.classList.add('missed'); head.innerHTML = 'Cleared' + (missed ? ' <span class="tag">missed: IBM labels it ' + esc(ibm ? ibm.toLowerCase() : 'a ring') + '</span>' : ''); body.textContent = why; }
+}
+let animUntil = 0, animRaf = 0;
+function animate(ms) { animUntil = Math.max(animUntil, performance.now() + ms); if (!animRaf) animRaf = requestAnimationFrame(animStep); }
+function animStep() { animRaf = 0; draw(); renderClock(); if (performance.now() < animUntil) animRaf = requestAnimationFrame(animStep); }
+function investigate(k, ms) {
+  const id = UNITS[k].id; if (INV[id]) return Promise.resolve();
+  const busy = reduced() ? 1 : ms || INVESTIGATE_MS; const start = performance.now();
+  if (ST.stage < 3) setStage(3);
+  INV[id] = { start, land: start + busy }; const el = CARDS.get(k); if (el) { el.style.setProperty('--sweep', busy + 'ms'); cardState(el, k); el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+  animate(busy + Math.max(CATCH_MS, FADE, REVEAL_MS) + 100);
+  return new Promise(res => setTimeout(() => { const e = CARDS.get(k); if (e) cardState(e, k); renderTrayHead(); draw(); renderClock(); checkSettled(); setTimeout(() => { draw(); renderClock(); }, Math.max(CATCH_MS, FADE, REVEAL_MS) + 40); res(); }, busy + 10));
+}
+let lookRun = 0;
+async function lookCloser() {
+  const run = ++lookRun; setStage(3);
+  const ks = [...CARDS.keys()].sort((x, y) => x - y).filter(k => !INV[UNITS[k].id]);
+  for (let i = 0; i < ks.length; i++) { if (run !== lookRun) return; if (i) await new Promise(r => setTimeout(r, LOOK_GAP)); if (CARDS.has(ks[i])) await investigate(ks[i], LOOK_MS); }
+  checkSettled();
+}
+function trayDone() { const ks = [...CARDS.keys()]; return ks.length > 0 && ks.every(k => landed(UNITS[k].id, performance.now())); }
+function checkSettled() { if (ST.stage === 3 && trayDone()) setStage(4); }
+function buildCard(k, pending) {
+  const u = UNITS[k]; const x = TRAY_OF[u.id];
+  const el = document.createElement('article'); el.className = 'card' + (pending ? ' pending' : ''); el.dataset.k = k; el.tabIndex = 0; el.setAttribute('role', 'button');
+  el.innerHTML = '<canvas class="thumb" aria-hidden="true"></canvas><div class="txt"><h3></h3><div class="facts"><span class="mono">' + u.accounts.length + '</span> accounts · ' + esc(u.id) + '</div><p class="why"></p></div><div class="sweep" aria-hidden="true"></div>';
+  drawUnitThumb(el.querySelector('canvas'), k, 54, 54); cardState(el, k);
+  el.setAttribute('aria-label', 'Needs a look: neighborhood ' + u.id + ', ' + reasonLine(x) + '. Click to investigate.');
+  el.addEventListener('click', () => { const id = UNITS[k].id; if (INV[id] && landed(id, performance.now()) && typeof window.openClusterZoom === 'function') window.openClusterZoom(id); else investigate(k, INVESTIGATE_MS); });
+  el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); investigate(k); } });
+  el.addEventListener('mouseenter', () => { const g = GROUPS.find(gg => gg.k === k); if (g) { ST.hover = g; draw(); } });
   el.addEventListener('mouseleave', () => { ST.hover = null; draw(); });
   return el;
 }
-function syncRoster(live) {
+function renderTrayHead() {
+  const n = CARDS.size, done = [...CARDS.keys()].filter(k => landed(UNITS[k].id, performance.now())).length;
+  $('#rcount').textContent = trayApplies(ST.sel) ? n + (n === 1 ? ' neighborhood' : ' neighborhoods') + (done ? ' · ' + done + ' investigated' : '') : '';
+
+  let note = '';
+  if (!trayApplies(ST.sel)) note = 'The tray is recorded for the Claude Sonnet 5.5 v4 first pass; pick it to see it.';
+  else if (INVD && INVD.results && n && done === n && n === TRAY.length) {
+    const R = TRAY.map(x => Object.assign({ unit: x.unit, expected: x.expected }, INVD.results[x.unit] || {}));
+    const cl = R.filter(r => r.verdict === 'ordinary' && r.expected !== 'ring').length, found = R.filter(r => truthy(r.ring_found)).length, fa = R.filter(r => r.verdict === 'ring' && r.expected !== 'ring').length;
+    note = 'Investigator: ' + R.length + ' looked at, ' + cl + ' cleared, ' + found + (found === 1 ? ' ring' : ' rings') + ' found, ' + fa + (fa === 1 ? ' false alarm' : ' false alarms');
+  } else note = 'Investigated by ' + INV_MODEL + ' (runs recorded earlier, replayed here). Click a card.';
+  $('#rnote').textContent = note;
+}
+function syncTray(live) {
   const T = TL; if (!T) return;
-  const want = RING_IDS.filter(r => T.ringCatch[r] != null && (ST.showAll || ST.t >= T.ringCatch[r] + CATCH_MS * 0.6)).sort((a, b) => T.ringCatch[a] - T.ringCatch[b]);
+  const want = trayApplies(ST.sel) ? UNITS.map((u, k) => k).filter(k => T.status[k] === 'look' && (ST.showAll || ST.t >= T.read[k])) : [];
   const W = new Set(want);
-  CARDS.forEach((el, r) => { if (!W.has(r)) { el.remove(); CARDS.delete(r); } });
-  want.forEach((r, i) => {
-    if (CARDS.has(r)) return;
-    const drop = live && !reduced(); const el = buildCard(r, drop);
-    const after = [...strip.children].find(c => T.ringCatch[+c.dataset.ring] > T.ringCatch[r]); strip.insertBefore(el, after || null); CARDS.set(r, el);
-    if (drop) { void el.offsetWidth; requestAnimationFrame(() => el.classList.remove('pending')); setTimeout(() => el.classList.remove('pending'), 260); el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+  CARDS.forEach((el, k) => { if (!W.has(k)) { el.remove(); CARDS.delete(k); } });
+  want.forEach(k => {
+    if (CARDS.has(k)) return;
+    const drop = live && !reduced(); const el = buildCard(k, drop);
+    const after = [...strip.children].find(c => +c.dataset.k > k); strip.insertBefore(el, after || null); CARDS.set(k, el);
+    if (drop) { void el.offsetWidth; requestAnimationFrame(() => el.classList.remove('pending')); setTimeout(() => el.classList.remove('pending'), 260); el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); fly(k, el); }
   });
-  $('#rcount').textContent = CARDS.size + ' of ' + NR + ' IBM rings';
-  $('#rnote').textContent = 'Caught is the bench\'s own call: the model flagged at least half of a ring\'s labeled transfers.';
+  CARDS.forEach((el, k) => { if (INV[UNITS[k].id] && performance.now() >= INV[UNITS[k].id].land) { const has = el.classList.contains('missed'); const want = UNITS[k].ring != null && ST.missedAt != null && el.classList.contains('cleared'); if (has !== want) cardState(el, k); } });
+  renderTrayHead();
 }
 
 /* ---------- headline: catch first; one limit line; end on the strongest true number ---------- */
 function renderHeadline() {
   const s = ST.sel; if (!s) return;
   const alarms = s.f === 1 ? '1 alarm' : num(s.f) + ' alarms';
+  const row = ST.dialOn ? voteRow(ST.dial) : null;
+  if (row) {
+    $('#headline').innerHTML = 'When at least <em>' + row.votes_needed + ' of ' + row.of + '</em> model families must agree, the panel catches <b>' + row.rings_found + ' of ' + (row.rings_total || NR) + '</b> laundering rings and raises <i>' + row.false_rings + ' false ' + (row.false_rings === 1 ? 'ring' : 'rings') + '</i> on ordinary neighborhoods.';
+    $('#closer').innerHTML = row.rings_found + ' of ' + (row.rings_total || NR) + ' <span>rings at this dial (the ' + esc(row.pv) + ' panel)</span>';
+    return;
+  }
   $('#headline').innerHTML = '<em>' + esc(s.name) + '</em> caught <b>' + s.k + ' of IBM\'s ' + NR + '</b> laundering rings and traced <b>' + num(s.m) + ' of ' + num(NT) + '</b> laundering transfers; it raised <i>' + alarms + '</i> on ordinary neighborhoods, ' + num(s.g) + ' of them on accounts that sit inside a ring.';
   const sl = SL.slice || {};
   $('#limit').textContent = SAMPLE ? 'Limit: this is a SAMPLE network made up by the page; no number here is a measurement.' :
     'Limit: one run per neighborhood on synthetic data enriched to ' + (sl.rate ? (sl.rate * 100).toFixed(1) : (NT / TR.length * 100).toFixed(1)) + ' percent laundering, so a live feed would raise more alarms per catch.';
   const rc = s.k / Math.max(1, NR), cl = s.cleared / Math.max(1, NORD);
-  $('#closer').innerHTML = cl > rc ? s.cleared + ' of ' + NORD + ' <span>ordinary neighborhoods cleared</span>' : s.k + ' of ' + NR + ' <span>rings caught</span>';
+  void rc; void cl; $('#closer').innerHTML = s.k + ' of ' + NR + ' <span>rings caught on the first pass</span>';
   $('#verNote').textContent = BE.versions && BE.versions[s.ver] ? s.ver + ': ' + noDash(BE.versions[s.ver]) + '.' : '';
   if (sl.rate && sl.full_rows) $('#hEnrich').textContent = 'The slice is enriched (' + (sl.rate * 100).toFixed(1) + ' percent laundering against ' + (sl.full_laundering / sl.full_rows * 100).toFixed(2) + ' in the full file), and its neighborhoods were cut around IBM\'s groups.';
 }
@@ -312,9 +507,18 @@ cv.addEventListener('mousemove', ev => {
   if (best !== ST.hover) { ST.hover = best; draw(); }
   if (!best) { hov.hidden = true; return; }
   const h = hoverHtml(best); hov.innerHTML = h.html; hov.className = 'hovercard ' + h.cls; hov.hidden = false;
-  const w = hov.offsetWidth, hh = hov.offsetHeight; let lx = x + 16, ly = y + 12; if (lx + w > G.W - 6) lx = x - w - 16; if (ly + hh > G.H - 6) ly = Math.max(6, G.H - hh - 6);
-  hov.style.left = Math.max(6, lx) + 'px'; hov.style.top = ly + 'px';
+  placeHover(x, y);
 });
+let hovAt = [0, 0];
+/* the card always sits inside the graph area: flipped left of the pointer near the right edge, pushed up near the bottom */
+function placeHover(x, y) {
+  hovAt = [x, y]; const w = hov.offsetWidth, hh = hov.offsetHeight;
+  let lx = x + 16, ly = y + 12; if (lx + w > G.W - 6) lx = x - w - 16;
+  lx = Math.max(6, Math.min(lx, G.W - w - 6)); ly = Math.max(6, Math.min(ly, G.H - hh - 6));
+  hov.style.left = lx + 'px'; hov.style.top = ly + 'px';
+}
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (!hov.hidden) placeHover(hovAt[0], hovAt[1]); });
+cv.addEventListener('click', ev => { const rect = cv.getBoundingClientRect(); const x = ev.clientX - rect.left, y = ev.clientY - rect.top; const g = ST.hover && inPoly(x, y, ST.hover.hull) ? ST.hover : null; if (g && typeof window.openClusterZoom === 'function') window.openClusterZoom(g.u.id); });
 cv.addEventListener('mouseleave', () => { hov.hidden = true; if (ST.hover) { ST.hover = null; draw(); } });
 function idList(ids, max) { return ids.length ? ids.slice(0, max).join(', ') + (ids.length > max ? ' and ' + (ids.length - max) + ' more' : '') : 'none'; }
 function hoverHtml(g) {
@@ -338,9 +542,9 @@ function hoverHtml(g) {
 
 /* ---------- picker, badges, start ---------- */
 function select(id, ver) {
-  ST.sel = stats(id, ver); TL = buildTimeline(ST.sel); ST.END = TL.END;
+  ST.sel = stats(id, ver); TL = buildTimeline(ST.sel); ST.END = TL.END; ST.dialOn = false;
   CARDS.forEach(el => el.remove()); CARDS.clear();
-  renderHeadline(); stopPlay(); setT(reduced() ? ST.END : Math.min(ST.t, ST.END)); playBtn.textContent = ST.t >= ST.END ? 'Play again' : 'Play the pass';
+  renderHeadline(); renderDial(); const keep = ST.stage; stopPlay(); jumpTo(reduced() ? 4 : keep);
 }
 function renderPicker() {
   const ms = $('#model');
@@ -354,6 +558,7 @@ function renderBadges() {
   if (SAMPLE) out.push('<span class="badge warn" title="../../../data/ files were not found">SAMPLE network, made up by the page</span>');
   else out.push('<span class="badge">' + num(TR.length) + ' transfers · ' + num(nodes.length) + ' accounts · ' + UNITS.length + ' neighborhoods</span>');
   if (!SAMPLE && OUTSIDE) out.push('<span class="badge" title="These transfers sit in no neighborhood, so no model read them; they step back before the pass">' + num(OUTSIDE) + ' outside every neighborhood</span>');
+  if (!INVD) out.push('<span class="badge warn" title="../../../data/investigate.js was not found">investigate.js not loaded: no recorded verdicts yet</span>');
   if (BE.written) out.push('<span class="badge">runs written ' + esc(BE.written) + '</span>');
   $('#badges').innerHTML = out.join('');
 }
@@ -364,13 +569,16 @@ function init() {
   if (q.get('model')) { const [id, ver] = q.get('model').split('|'); pick = MODELS.find(m => m.id === id && m.version === (ver || m.version)) || pick; }
   if (!pick) { $('#headline').textContent = 'No model runs were found, so there is no pass to play.'; draw(); return; }
   $('#model').value = pick.id + '|' + pick.version;
-  ST.t = 0; select(pick.id, pick.version);
-  if (q.get('t') != null) setT(clamp01(+q.get('t')) * ST.END);
-  if (q.get('all') === '1') { $('#all').checked = true; ST.showAll = true; syncRoster(false); draw(); }
-  if (q.get('play') === '1') play();
+  ST.t = 0; ST.stage = 0; select(pick.id, pick.version);
+  if (q.get('stage') != null) jumpTo(Math.max(0, Math.min(4, +q.get('stage') || 0)));
+  else if (q.get('t') != null) { setStage(1); setT(clamp01(+q.get('t')) * ST.END); if (ST.t >= ST.END) setStage(2); }
+  if (q.get('dial') != null) { ST.dial = +q.get('dial'); ST.dialOn = true; renderDial(); renderHeadline(); draw(); }
+  if (q.get('all') === '1') { $('#all').checked = true; ST.showAll = true; syncTray(false); draw(); }
+  if (q.get('play') === '1') startSearch();
   if (q.get('hover') != null) { const g = GROUPS.find(x => x.u.id === q.get('hover')); if (g) { const rc = cv.getBoundingClientRect(); let cx = 0, cy = 0; g.ns.forEach(v => { cx += nodes[v].sx; cy += nodes[v].sy; }); cv.dispatchEvent(new MouseEvent('mousemove', { clientX: rc.left + cx / g.ns.length, clientY: rc.top + cy / g.ns.length })); } }
-  RMQ.addEventListener && RMQ.addEventListener('change', () => { if (reduced()) { stopPlay(); setT(ST.END); } });
+  RMQ.addEventListener && RMQ.addEventListener('change', () => { if (reduced()) jumpTo(4); });
   let rt = 0; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { fit(); draw(); }, 120); });
 }
 init();
+window.__clearing = { get TL() { return TL; }, INV, UNITS, TR, ST, LIT, UNITS_OF_TR };
 })();
