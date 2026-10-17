@@ -6,6 +6,10 @@ To open it, double-click `index.html`. It reads `../../../data/` (slice, units, 
 
 The whole slice starts lit, the real graph, and the first pass reads the 60 neighborhoods one by one: each one it rules ordinary fades, and each ring it catches traces green in place. The neighborhoods it could not settle stay lit and drop into a "Needs a look" tray, and a stronger model looks closer at them one card at a time, so each one either fades as cleared or closes green as a ring. What remains is what is worth a look: the rings caught, the two alarms, and, on request, the rings both passes missed in amber dotted.
 
+## The side rail
+
+From top to bottom: What this is (two fixed lines); What it is doing now (large text that changes with the step and counts up live during the passes); What this means for you (plain, second person); Next (mirrors the button); one honest line, computed from the recorded latencies ("these 90 calls take about 12 minutes one at a time, about 35 seconds on 20 workers"); then Details, collapsed by default, which holds the model picker, the families dial, the key, the investigator note and the scored headline with its limit line. The rail fits 1280 by 900 without scrolling at every step with Details closed.
+
 ## The action flow
 
 A plain load opens at the beginning: step 1, before the search, with the graph fully lit and the tray empty. Above the graph is a four-box funnel (Search, Ambiguous, Look closer, Settled), joined by arrows. Each box carries a live count computed from the data and is blank until that step is reached. The current box is lit, finished boxes are dim green and future boxes are grey; clicking a box jumps to the end of that step. Under the funnel, one caption says what is happening now and what the button does next. The one primary button (44 px, accent fill, one pulse on load) always names the next action: Start the search, Look closer at all 30, Show what was missed, Start over. The model picker and the families dial stay in the side rail as secondary controls.

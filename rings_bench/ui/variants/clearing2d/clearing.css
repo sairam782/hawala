@@ -162,3 +162,19 @@ select { width: 100%; font: 13px var(--sans); color: var(--ink); background: var
 @keyframes cta-once { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) and (min-width: 99999px) { .btn.cta { animation: none; } }
 .ba .seg button.on { background: rgba(127,183,176,.16); color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent); }
+
+/* the side rail: what this is, what it is doing now, what it means for you, next */
+.r-block p { margin: 0; }
+.r-what p:last-child { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+.r-now { border-top: 1px solid var(--rule); padding-top: 10px; }
+.r-now .now { font: 500 17px/1.38 var(--serif); color: var(--ink); }
+.r-now .tally { margin-top: 6px; font-size: 13px; color: var(--ok); }
+.r-now .speed { margin-top: 4px; font-size: 12px; color: var(--accent); }
+.r-you { border-top: 1px solid var(--rule); padding-top: 10px; }
+.r-you p:last-child { font-size: 13.5px; line-height: 1.45; color: var(--ink); }
+.r-next { margin: 0; font: 600 13px var(--sans); color: var(--accent); border-top: 1px solid var(--rule); padding-top: 10px; }
+.r-honest { margin: 0; line-height: 1.4; }
+.r-details { border-top: 1px solid var(--rule); padding-top: 8px; }
+.r-details summary { cursor: pointer; font-size: 12.5px; color: var(--muted); }
+.r-details[open] summary { margin-bottom: 10px; }
+.r-details > div { margin-top: 10px; }

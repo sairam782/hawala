@@ -43,6 +43,25 @@
   </section>
 
   <aside class="rail">
+    <section class="r-block r-what">
+      <p class="eyebrow">What this is</p>
+      <p>An AI first pass reads every neighborhood of transfers, clears the ordinary ones, catches the laundering rings it is sure of, and hands what it cannot settle to a stronger model. Every call it makes is scored against IBM's labels, so you can see where to trust it.</p>
+    </section>
+    <section class="r-block r-now" aria-live="polite">
+      <p class="eyebrow">What it is doing now</p>
+      <p class="now" id="nowText"></p>
+      <p class="tally mono" id="nowTally"></p>
+      <p class="speed" id="nowSpeed"></p>
+    </section>
+    <section class="r-block r-you">
+      <p class="eyebrow">What this means for you</p>
+      <p id="youText"></p>
+    </section>
+    <p class="r-next" id="nextText"></p>
+    <p class="r-honest small muted" id="honestText"></p>
+    <details class="r-details">
+      <summary>Details: model, families dial, key</summary>
+
     <div class="result">
       <p class="eyebrow">Scored against IBM's labels</p>
       <h2 id="headline"></h2>
@@ -70,6 +89,7 @@
       <div class="lg"><svg width="38" height="16" aria-hidden="true"><path d="M3 8 Q19 -2 35 8 Q19 18 3 8Z" fill="none" stroke="#B3A68C" stroke-width="1.4"/></svg><span>Needs a look: the first pass was unsure</span></div>
       <p class="small muted keynote">Investigated by Claude Opus 5.5 (runs recorded earlier, replayed here).</p>
     </div>
+    </details>
   </aside>
 </div>
 
