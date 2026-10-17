@@ -895,7 +895,7 @@
      "verdict_right": 20,
      "precision": 0.0964,
      "recall": 1.0,
-     "rings_found": 20,
+     "rings_found": 5,
      "rings_total": 20,
      "false_rings": 40
     },
@@ -905,7 +905,7 @@
      "verdict_right": 21,
      "precision": 0.1369,
      "recall": 0.9912,
-     "rings_found": 20,
+     "rings_found": 10,
      "rings_total": 20,
      "false_rings": 39
     },
@@ -915,7 +915,7 @@
      "verdict_right": 27,
      "precision": 0.1764,
      "recall": 0.9646,
-     "rings_found": 19,
+     "rings_found": 11,
      "rings_total": 20,
      "false_rings": 33
     },
@@ -925,7 +925,7 @@
      "verdict_right": 30,
      "precision": 0.2253,
      "recall": 0.9292,
-     "rings_found": 18,
+     "rings_found": 11,
      "rings_total": 20,
      "false_rings": 28
     },
@@ -935,7 +935,7 @@
      "verdict_right": 42,
      "precision": 0.3436,
      "recall": 0.7876,
-     "rings_found": 16,
+     "rings_found": 12,
      "rings_total": 20,
      "false_rings": 16
     },
@@ -945,7 +945,7 @@
      "verdict_right": 48,
      "precision": 0.4487,
      "recall": 0.6195,
-     "rings_found": 10,
+     "rings_found": 7,
      "rings_total": 20,
      "false_rings": 8
     },
@@ -955,7 +955,7 @@
      "verdict_right": 46,
      "precision": 0.5575,
      "recall": 0.5575,
-     "rings_found": 8,
+     "rings_found": 5,
      "rings_total": 20,
      "false_rings": 6
     },
@@ -965,7 +965,7 @@
      "verdict_right": 46,
      "precision": 0.5657,
      "recall": 0.4956,
-     "rings_found": 8,
+     "rings_found": 5,
      "rings_total": 20,
      "false_rings": 2
     },
@@ -975,7 +975,7 @@
      "verdict_right": 45,
      "precision": 0.3261,
      "recall": 0.1327,
-     "rings_found": 4,
+     "rings_found": 1,
      "rings_total": 20,
      "false_rings": 1
     }
@@ -1860,7 +1860,7 @@
      "verdict_right": 20,
      "precision": 0.1038,
      "recall": 0.9912,
-     "rings_found": 20,
+     "rings_found": 6,
      "rings_total": 20,
      "false_rings": 40
     },
@@ -1870,7 +1870,7 @@
      "verdict_right": 24,
      "precision": 0.1325,
      "recall": 0.9735,
-     "rings_found": 20,
+     "rings_found": 8,
      "rings_total": 20,
      "false_rings": 36
     },
@@ -1880,7 +1880,7 @@
      "verdict_right": 30,
      "precision": 0.1726,
      "recall": 0.9381,
-     "rings_found": 17,
+     "rings_found": 9,
      "rings_total": 20,
      "false_rings": 29
     },
@@ -1890,7 +1890,7 @@
      "verdict_right": 36,
      "precision": 0.2251,
      "recall": 0.9204,
-     "rings_found": 16,
+     "rings_found": 9,
      "rings_total": 20,
      "false_rings": 21
     },
@@ -1900,7 +1900,7 @@
      "verdict_right": 40,
      "precision": 0.2627,
      "recall": 0.823,
-     "rings_found": 14,
+     "rings_found": 8,
      "rings_total": 20,
      "false_rings": 17
     },
@@ -1910,7 +1910,7 @@
      "verdict_right": 46,
      "precision": 0.4171,
      "recall": 0.7345,
-     "rings_found": 12,
+     "rings_found": 8,
      "rings_total": 20,
      "false_rings": 9
     },
@@ -1920,7 +1920,7 @@
      "verdict_right": 44,
      "precision": 0.521,
      "recall": 0.5487,
-     "rings_found": 9,
+     "rings_found": 6,
      "rings_total": 20,
      "false_rings": 6
     },
@@ -1930,7 +1930,7 @@
      "verdict_right": 45,
      "precision": 0.4565,
      "recall": 0.3717,
-     "rings_found": 7,
+     "rings_found": 4,
      "rings_total": 20,
      "false_rings": 3
     },
@@ -1940,7 +1940,7 @@
      "verdict_right": 44,
      "precision": 0.5641,
      "recall": 0.1947,
-     "rings_found": 4,
+     "rings_found": 2,
      "rings_total": 20,
      "false_rings": 0
     }

@@ -40,10 +40,11 @@ def main():
                 verdict = "ring" if votes >= k else "ordinary"
                 cnt = collections.Counter(t for x in rs.values() if x["verdict"] == "ring" for t in x["flagged_transfer_ids"])
                 flagged = {t for t, c in cnt.items() if c >= k} if verdict == "ring" else set()
-                t = len(flagged & truth); tp += t; fp += len(flagged - truth); fn += len(truth - flagged)
+                t = len(flagged & truth); f_ = len(flagged - truth); tp += t; fp += f_; fn += len(truth - flagged)
                 right += verdict == u["expected"]
                 if u["expected"] == "ring":
-                    rings += verdict == "ring" and t >= math.ceil(len(truth) / 2)
+                    # same rule as bench.py: half the ring flagged and no sweep (wrong flags in the unit <= max(2, ring size))
+                    rings += verdict == "ring" and t >= math.ceil(len(truth) / 2) and f_ <= max(2, len(truth))
                 elif verdict == "ring":
                     false += 1
             table.append({"votes_needed": k, "of": len(fams), "verdict_right": right, "precision": round(tp / (tp + fp), 4) if tp + fp else 0.0,
