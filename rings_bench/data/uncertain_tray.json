@@ -20,7 +20,7 @@
   "ring_votes": 6,
   "families": 9,
   "reasons": [
-   "first pass called it a ring at low confidence",
+   "first pass leaned ring at low confidence, so the rule set it aside",
    "families split: 6 of 9 called it a ring"
   ]
  },
@@ -81,7 +81,7 @@
   "ring_votes": 8,
   "families": 9,
   "reasons": [
-   "first pass called it a ring at low confidence"
+   "first pass leaned ring at low confidence, so the rule set it aside"
   ]
  },
  {
@@ -141,7 +141,7 @@
   "ring_votes": 3,
   "families": 9,
   "reasons": [
-   "first pass called it a ring at low confidence",
+   "first pass leaned ring at low confidence, so the rule set it aside",
    "families split: 3 of 9 called it a ring"
   ]
  },
@@ -286,7 +286,7 @@
   "ring_votes": 5,
   "families": 9,
   "reasons": [
-   "first pass called it a ring at low confidence",
+   "first pass leaned ring at low confidence, so the rule set it aside",
    "families split: 5 of 9 called it a ring"
   ]
  },

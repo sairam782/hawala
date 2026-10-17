@@ -22,7 +22,7 @@ function seeded(seed) { let s = seed >>> 0; return () => (s = (s * 1664525 + 101
 
 /* timings, ms: each one is what the README lists */
 const HOLD = 700, FADE = 400, STEP = 60, DWELL = 150, CATCH_MS = 450, GAP = 250, REVEAL_MS = 600, ALARM_MS = 200;
-const DIM = 0.08; const SWEEP_MS = 120, LOOK_MS = 300, LOOK_GAP = 50; /* a cleared account ends at 8 percent opacity */
+const DIM = 0.08; const SWEEP_MS = 260, LOOK_MS = 300, LOOK_GAP = 50; /* a cleared account ends at 8 percent opacity */
 
 /* ---------- data, or a labeled SAMPLE ---------- */
 let SAMPLE = false;
@@ -253,7 +253,7 @@ function draw() {
     }
   });
   ctx.setLineDash([]); ctx.globalAlpha = 1;
-  if (ST.stage === 1 && !all) GROUPS.forEach(g => { const d = t - T.read[g.k]; if (d < 0 || d > SWEEP_MS) return; pathPoly(g.hull); ctx.strokeStyle = C.ink; ctx.globalAlpha = 1 - d / SWEEP_MS; ctx.lineWidth = 1.6; ctx.stroke(); });
+  if (ST.stage === 1 && !all) GROUPS.forEach(g => { const d = t - T.read[g.k]; if (d < 0 || d > SWEEP_MS) return; pathPoly(g.hull); ctx.fillStyle = C.ink; ctx.globalAlpha = 0.10 * (1 - d / SWEEP_MS); ctx.fill(); ctx.strokeStyle = C.ink; ctx.globalAlpha = 1 - 0.7 * d / SWEEP_MS; ctx.lineWidth = 2.2; ctx.stroke(); });
   ctx.globalAlpha = 1;
 
   ctx.lineCap = 'round';
@@ -443,7 +443,7 @@ function buildCard(k, pending) {
   el.innerHTML = '<canvas class="thumb" aria-hidden="true"></canvas><div class="txt"><h3></h3><div class="facts"><span class="mono">' + u.accounts.length + '</span> accounts · ' + esc(u.id) + '</div><p class="why"></p></div><div class="sweep" aria-hidden="true"></div>';
   drawUnitThumb(el.querySelector('canvas'), k, 54, 54); cardState(el, k);
   el.setAttribute('aria-label', 'Needs a look: neighborhood ' + u.id + ', ' + reasonLine(x) + '. Click to investigate.');
-  el.addEventListener('click', () => { const id = UNITS[k].id; if (INV[id] && landed(id, performance.now()) && typeof window.openClusterZoom === 'function') window.openClusterZoom(id); else investigate(k, INVESTIGATE_MS); });
+  el.addEventListener('click', () => { const id = UNITS[k].id; if (INV[id] && landed(id, performance.now()) && typeof window.openClusterZoom === 'function') { const g = GROUPS.find(gg => gg.k === k); const rc = cv.getBoundingClientRect(); let cx = 0, cy = 0; if (g) g.ns.forEach(v => { cx += nodes[v].sx; cy += nodes[v].sy; }); window.openClusterZoom(id, g ? { x: rc.left + cx / g.ns.length, y: rc.top + cy / g.ns.length } : undefined); } else investigate(k, INVESTIGATE_MS); });
   el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); investigate(k); } });
   el.addEventListener('mouseenter', () => { const g = GROUPS.find(gg => gg.k === k); if (g) { ST.hover = g; draw(); } });
   el.addEventListener('mouseleave', () => { ST.hover = null; draw(); });
@@ -518,7 +518,7 @@ function placeHover(x, y) {
   hov.style.left = lx + 'px'; hov.style.top = ly + 'px';
 }
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (!hov.hidden) placeHover(hovAt[0], hovAt[1]); });
-cv.addEventListener('click', ev => { const rect = cv.getBoundingClientRect(); const x = ev.clientX - rect.left, y = ev.clientY - rect.top; const g = ST.hover && inPoly(x, y, ST.hover.hull) ? ST.hover : null; if (g && typeof window.openClusterZoom === 'function') window.openClusterZoom(g.u.id); });
+cv.addEventListener('click', ev => { const rect = cv.getBoundingClientRect(); const x = ev.clientX - rect.left, y = ev.clientY - rect.top; const g = ST.hover && inPoly(x, y, ST.hover.hull) ? ST.hover : null; if (g && typeof window.openClusterZoom === 'function') window.openClusterZoom(g.u.id, { x: ev.clientX, y: ev.clientY }); });
 cv.addEventListener('mouseleave', () => { hov.hidden = true; if (ST.hover) { ST.hover = null; draw(); } });
 function idList(ids, max) { return ids.length ? ids.slice(0, max).join(', ') + (ids.length > max ? ' and ' + (ids.length - max) + ' more' : '') : 'none'; }
 function hoverHtml(g) {
@@ -580,5 +580,5 @@ function init() {
   let rt = 0; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { fit(); draw(); }, 120); });
 }
 init();
-window.__clearing = { get TL() { return TL; }, INV, UNITS, TR, ST, LIT, UNITS_OF_TR };
+window.__clearing = { get TL() { return TL; }, get hovAt() { return hovAt; }, INV, UNITS, TR, ST, LIT, UNITS_OF_TR };
 })();
