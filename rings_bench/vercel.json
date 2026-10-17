@@ -1,1 +1,9 @@
-{ "redirects": [{ "source": "/", "destination": "/ui/", "permanent": false }] }
+{
+  "redirects": [
+    { "source": "/", "destination": "/ui/", "permanent": false },
+    { "source": "/clearing", "destination": "/live/ui/variants/clearing2d/index.html", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/live/:path*", "destination": "https://dashboard.alexmong.com/mt2-f0bown7jys9uclrx/rings/:path*" }
+  ]
+}
