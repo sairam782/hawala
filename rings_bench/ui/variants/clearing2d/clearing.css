@@ -1,6 +1,12 @@
 :root {
-  --ground: #14181F; --surface: #1C222B; --ink: #E6E9EE; --muted: #A3ABB8; --accent: #7FB7B0; --rule: #2C3440; --warn: #E0A458;
-  --ok: #8FCB8A; --bad: #E5736A;
+  /* chrome, sampled from the team landing page; semantic colors below them do not move */
+  --ground: #141a33; --stage: #10152b; --surface: #1a2140; --card: #1f2749; --rule: #2f3a63; --rule-hover: #4b5e83;
+  --ink: #e8ebf5; --muted: #9ea8c0; --faint: #6b7595;
+  --primary: #5b4dff; --primary-hover: #6558f5; --primary-ink: #c9c6ff; --accent: #a9a3ff;
+  --glass: rgba(26, 33, 64, 0.72); --gold: #c9a04a; --done: #7fd7a3; --landing: #1b2a55;
+  --display: "Space Grotesk", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  /* semantic: caught green, false-alarm red, missed amber */
+  --warn: #E0A458; --ok: #8FCB8A; --bad: #E5736A;
   --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
   --sans: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
   --mono: "IBM Plex Mono", Consolas, "Cascadia Mono", "Courier New", monospace;
@@ -207,3 +213,65 @@ select { width: 100%; font: 13px var(--sans); color: var(--ink); background: var
 .r-what p:last-child { font-size: 13px; color: var(--muted); }
 .r-honest { margin: 0; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: help; }
 .credit { margin: 0 0 8px; }
+
+/* 15:10 palette pass: chrome follows the landing page; semantic colors (caught, alarm, missed, investigator, unsettled) are unchanged */
+html, body { background: var(--ground); }
+body { animation: from-landing 500ms ease-out both; }
+.top, .rail { animation: fade-in 500ms ease-out both; }
+@keyframes from-landing { from { background-color: var(--landing); } to { background-color: var(--ground); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+html.motion-reduced body, html.motion-reduced .top, html.motion-reduced .rail { animation: none; }
+.stage, #cv { background: var(--stage); }
+.top { background: var(--ground); }
+.top h1 { font-family: var(--display); font-weight: 600; letter-spacing: -.01em; }
+.top h1 .thin { color: var(--accent); font-weight: 500; }
+.badge { border: 1px solid var(--rule-hover); color: var(--muted); border-radius: 999px; padding: 3px 12px; }
+.flow, .scrub, .roster { background: var(--surface); }
+.rail { background: var(--surface); }
+@supports ((backdrop-filter: blur(14px)) or (-webkit-backdrop-filter: blur(14px))) {
+  .rail { background: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+  html body .zm-root { background: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+}
+/* buttons: one primary (the landing's OPEN THE BENCH look), the rest secondary */
+.btn { background: transparent; border: 1px solid var(--primary-hover); color: var(--primary-ink); border-radius: 10px; font-family: var(--display); }
+.btn:hover { border-color: var(--primary-hover); background: rgba(111, 99, 255, .12); }
+.btn.cta { background: var(--primary); border-color: var(--primary); color: #fff; border-radius: 10px; font: 600 14px var(--display); text-transform: uppercase; letter-spacing: .05em; }
+.btn.cta:hover { background: var(--primary-hover); border-color: var(--primary-hover); filter: none; }
+.btn:focus-visible, select:focus-visible, input:focus-visible, .fbox:focus-visible, summary:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 2px; }
+.ba .seg { border: 1px solid var(--primary-hover); border-radius: 10px; }
+.ba .seg button { color: var(--primary-ink); font-family: var(--display); }
+.ba .seg button + button { border-left: 1px solid var(--primary-hover); }
+.ba .seg button.on { background: rgba(111, 99, 255, .22); color: #fff; box-shadow: none; }
+.r-details summary { display: inline-block; color: var(--primary-ink); border: 1px solid var(--primary-hover); border-radius: 10px; padding: 3px 12px; font-family: var(--display); }
+input[type=range], input[type=checkbox] { accent-color: var(--primary-hover); }
+select { background: var(--card); border-color: var(--rule); color: var(--ink); }
+/* funnel */
+.fbox { background: var(--stage); border: 1px solid var(--rule); color: var(--muted); opacity: .75; }
+.fbox:not(:last-child)::after { border-color: var(--rule-hover); }
+.fbox .ft { font-family: var(--display); }
+.fbox.on { background: rgba(91, 77, 255, .18); border: 2px solid var(--primary-hover); color: var(--ink); opacity: 1; }
+.fbox.on .ft b { color: var(--primary-ink); }
+.fbox.done { background: rgba(127, 215, 163, .12); border-color: rgba(127, 215, 163, .45); color: var(--ink); opacity: 1; }
+.fbox.done .ft::after { color: var(--done); }
+.fbox.done:not(:last-child)::after { border-color: rgba(127, 215, 163, .6); }
+/* rail */
+.r-now .big { font-family: var(--display); color: var(--gold); letter-spacing: -.01em; }
+.r-next { color: var(--primary-ink); }
+.r-now .speed { color: var(--accent); }
+.r-now, .r-you, .r-what, .r-next, .r-details { border-color: var(--rule); }
+/* tray and cards */
+.card { background: var(--card); border-color: var(--rule); }
+.card:hover, .card:focus-visible { border-color: var(--rule-hover); }
+.card .thumb, .card canvas { background: var(--stage); }
+.hovercard { background: rgba(31, 39, 73, .97); border-color: var(--rule); border-left-color: var(--accent); }
+/* the zoom overlay: chrome follows; the IBM laundering stroke takes the landing's gold thread */
+body .zm-root { background: rgba(16, 21, 43, .9); }
+body .zm-panel { background: var(--stage) !important; border-color: var(--rule) !important; }
+body .zm-head, body .zm-scrub { background: var(--surface) !important; }
+body .zm-card { background: rgba(31, 39, 73, .97) !important; }
+body .zm-tag.ibm { color: var(--gold); border-color: rgba(201, 160, 74, .55); }
+body .zm-ibm { color: var(--gold); }
+body .zm-card.ibm { border-left-color: var(--gold); }
+.zm-root [stroke="#D2C46A"] { stroke: var(--gold); }
+.zm-root [fill="#D2C46A"] { fill: var(--gold); }
+body .zm-close { border-color: var(--primary-hover) !important; color: var(--primary-ink) !important; border-radius: 10px; }

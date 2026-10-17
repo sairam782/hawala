@@ -6,7 +6,7 @@
    If the data is missing a small made-up SAMPLE stands in and the page says so. Canvas 2D, no libraries. */
 (function () {
 'use strict';
-const C = { look: '#B3A68C', ground: '#14181F', surface: '#1C222B', ink: '#E6E9EE', muted: '#A3ABB8', accent: '#7FB7B0', rule: '#2C3440', warn: '#E0A458', ok: '#8FCB8A', bad: '#E5736A' };
+const C = { look: '#B3A68C', ground: '#10152b', surface: '#1a2140', ink: '#E6E9EE', muted: '#A3ABB8', accent: '#7FB7B0', rule: '#2C3440', warn: '#E0A458', ok: '#8FCB8A', bad: '#E5736A' };
 // A demo page: the system's reduced-motion setting is honored only when the URL asks for it (?motion=reduced),
 // so a laptop with animations switched off still plays the search instead of opening on the finished state.
 const RMQ = { matches: /[?&]motion=reduced/.test(location.search) };

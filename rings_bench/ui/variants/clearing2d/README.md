@@ -6,7 +6,11 @@ To open it, double-click `index.html`. It reads `../../../data/` (slice, units, 
 
 The whole slice starts lit, the real graph, and the first pass reads the 60 neighborhoods one by one: each one it rules ordinary fades, and each ring it catches traces green in place. The neighborhoods it could not settle stay lit and drop into a "Needs a look" tray, and a stronger model looks closer at them one card at a time, so each one either fades as cleared or closes green as a ring. What remains is what is worth a look: the rings caught, the two alarms, and, on request, the rings both passes missed in amber dotted.
 
-## 15:00 redline (current)
+## 15:10 palette pass (current, build 20261017-1525)
+
+The chrome follows the team landing page, and its tokens sit at the top of `clearing.css`: page #141a33, graph #10152b, surfaces #1a2140, cards #1f2749, borders #2f3a63 / #4b5e83, text #e8ebf5 / #9ea8c0, primary #5b4dff, gold thread #c9a04a. Space Grotesk is used for the title, funnel titles, the rail's number line and buttons. The rail and zoom overlay are frosted glass, falling back to the solid surface. On load the page eases from the landing's navy #1b2a55 over 500 ms. Semantic colors (caught green, alarm red, missed amber, investigator teal, unsettled amber) are unchanged. Contrast: text 12.2 to 15.1:1, muted 5.8 to 7.6:1, gold 5.7 to 7.4:1 on every surface; white on the primary button is 5.3:1, but only 4.3:1 on its hover color.
+
+## 15:00 redline
 
 Every local script and stylesheet tag carries `?v=<build>` (now `20261017-1505`); bump it on every hand-back. The small explanatory text is gone from the screen (captions, version note, dial note, footer, tray note, empty-tray sentence). The data credit is one line inside Details, and the longer caveats live in the honest line's hover title. The rail runs the full window height; the tray sits under the graph only. The rail reads top to bottom: What it is doing now (a 28 px number-led line, one sentence, and the playback speed during a pass), What this means for you, Next, then What this is and the one-line honest note at the foot, then Details. The funnel boxes are 72 px or taller with 16 px titles, a check mark on finished steps, and larger arrows; the button sits at the right end of the funnel row. The status line shows only "read N of 60" (or "checked N of 30") and the playback speed.
 
