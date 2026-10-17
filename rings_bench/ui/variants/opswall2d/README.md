@@ -10,7 +10,7 @@ IBM's 20 labeled rings are the only thing on the wall: twelve shapes get a tile 
 
 - **Twelve ring tiles** (4 by 3), ordered by how many families agreed. Each tile holds only that ring's accounts (clear dots with a dark rim) and its labeled transfers (lines in the catch color), drawn 70 to 120 px across at 1280, inside an outline ring (the halo). One line under it: IBM's pattern name and "n of 9". A CAUGHT tag marks the rings the current choice caught.
 - **One shared tile for the eight single transfers**: "Single transfers (7 with no named shape, bipartite): k of 8 caught at this dial", with eight small marks, each with its own halo and "n of 9". Hover shows how many of the eight each family caught.
-- **The dial on the tiles themselves**: a ring below the dial dims to a third (shape, label and all) and its halo turns to amber dashes of the same weight. The halo weight never changes with the dial: 1.15 px per family (3 of 9 is thin and dim, 9 of 9 is thick and bright).
+- **The dial on the tiles themselves (combined-vote view only)**: with one model on top, the dial dims no tile; each tile shows that model's catch or miss at full strength, the halo still carries the families count, and the dial moves only the squares. In the combined-vote view, a ring below the dial dims to a third (shape, label and all) and its halo turns to amber dashes of the same weight. The halo weight never changes with the dial: 1.15 px per family (3 of 9 is thin and dim, 9 of 9 is thick and bright).
 - **Key strip** above the grid, in the first frame.
 - **40 squares** for the ordinary neighborhoods, red as families wrongly call them rings (same weight rule), dimmed below the dial, with a one-line caption. With one model on top, its own false alarms are underlined.
 - **Rail**: the headline (what was caught first), three honest lines (synthetic data and IBM's labels; the slice is enriched, 4.0 percent vs 0.10, and cut around IBM's groups; every laundering transfer is ACH, a tell), the closing number, the dial, and "Whose catches": the families' combined vote (default) or any model and version in bench_results.js, Claude Sonnet 5.5 v4 first. For one model the closing block adds its `account_level` figure ("100 of 134 accounts it flagged sit inside an IBM ring" for Sonnet v4). The v1/v2 choice for the halos is folded under the picker. "Show all traffic" fades in each ring account's other transfers at 10 percent.
@@ -59,5 +59,5 @@ I watched frames, not the motion by eye in a headed window. Ease and feel at pro
 ## Screenshots (1280 x 900)
 
 - `shot_1280.jpg`: the opener, the combined vote at 5 of 9 (12 of 20 caught).
-- `shot_1280_sonnet_v4.jpg`: Claude Sonnet 5.5 v4 on top, at 5 of 9.
+- `shot_1280_sonnet_v4.jpg`: Claude Sonnet 5.5 v4 on top with the dial at 8 of 9; no tile dims.
 - `shot_1280_catch_flight.jpg`: real-time frame 450 ms after switching to Sonnet v4 at 8 of 9, with copies in flight.

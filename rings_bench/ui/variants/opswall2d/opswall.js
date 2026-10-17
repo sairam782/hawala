@@ -461,12 +461,12 @@ function renderHeadline() {
 
 /* ---------- controls ---------- */
 function setVotes(animate) {
-  CELLS.forEach(c => { const u = c.unit ? AG[ST.ver][c.unit] : null; c.votes = u ? u.ring_votes : 0; c.of = u ? u.families : 0; c.said = u ? (u.said_ring || []) : []; c.from = c.litT; c.to = c.votes >= ST.k && c.votes > 0 ? 1 : 0; });
+  CELLS.forEach(c => { const u = c.unit ? AG[ST.ver][c.unit] : null; c.votes = u ? u.ring_votes : 0; c.of = u ? u.families : 0; c.said = u ? (u.said_ring || []) : []; c.from = c.litT; c.pass = c.votes >= ST.k && c.votes > 0; /* the dial acts on the tiles only in the combined-vote view; with one model on top every tile shows at full strength */ c.to = ST.pick !== 'panel' || c.pass ? 1 : 0; });
   ORD.forEach(o => { const u = AG[ST.ver][o.unit]; o.votes = u ? u.ring_votes : 0; o.of = u ? u.families : 0; o.said = u ? (u.said_ring || []) : []; });
   if (animate && !reduced()) { DIAL.t0 = performance.now(); DIAL.on = true; settleAfter(DIAL.dur + 40); } else CELLS.forEach(c => { c.litT = c.to; });
-  const lr = CELLS.filter(c => c.to).length;
+  const lr = CELLS.filter(c => c.pass).length;
   $('#dialVal').textContent = ST.k + ' of ' + ST.n;
-  $('#dialNote').innerHTML = 'At this dial <span class="mono" style="color:var(--ok)">' + lr + ' of ' + NR + '</span> IBM groups lit; the rest dim to amber dashes, same weight.';
+  $('#dialNote').innerHTML = ST.pick === 'panel' ? 'At this dial <span class="mono" style="color:var(--ok)">' + lr + ' of ' + NR + '</span> IBM groups lit; the rest dim to amber dashes, same weight.' : 'With one model on top the dial moves only the squares; every tile shows the model catch or miss, and the halo still counts the families (' + lr + ' of ' + NR + ' groups reach ' + ST.k + ').';
   requestDraw();
 }
 function select(reset) {
@@ -488,7 +488,7 @@ function renderPicker() {
   if (![...ms.options].some(o => o.value === ST.pick)) ST.pick = 'panel'; ms.value = ST.pick;
 }
 $('#dial').addEventListener('input', e => { ST.k = +e.target.value; setVotes(true); if (ST.pick === 'panel') select(false); else paintOrd(); });
-$('#model').addEventListener('change', e => { ST.pick = e.target.value; select(true); });
+$('#model').addEventListener('change', e => { ST.pick = e.target.value; setVotes(true); select(true); });
 $('#traffic').addEventListener('change', e => { TRAF.from = ST.traffic; ST.trafficTo = e.target.checked ? 1 : 0; TRAF.t0 = performance.now(); TRAF.on = true; settleAfter(290); requestDraw(); });
 
 /* ten-day scrub: transfers appear in the order they happened */
