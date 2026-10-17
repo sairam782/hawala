@@ -1,0 +1,39 @@
+%% User interaction chart, Rings bench. Three people as subgraphs (swimlanes), time left to right.
+flowchart LR
+  subgraph JUDGE["The judge: 3 minutes, then questions"]
+    direction LR
+    J1["0:00 the network\nslice replays, no answer key"]:::ui --> J2["0:30 one model's rings light up\ngreen agree, red false, amber missed"]:::ui
+    J2 --> J3["1:00 the leaderboard\nv1 | v2 per family, rule row, cost, latency"]:::ui
+    J3 --> J4["1:30 failures by shape\nclick a cell for the runs"]:::ui
+    J4 --> J5["2:00 the PRISM proofs\none v2 run's 7 steps, the fired alert, cluster then v2 green"]:::prism
+    J5 --> J6["2:30 one honest limit\nACH tell, enriched rate, wrong N in ten"]:::limit
+    Q1["Q: show me the PRISM trace"]:::person -.-> J5
+    Q2["Q: how do you know it is the right row?\nid in slice = id in answer = id in the run's steps"]:::person -.-> J2
+    Q3["Q: does it hold on new data?\nno claim; one slice, one run per cell"]:::person -.-> J6
+    Q4["Q: run it on something we choose"]:::person
+  end
+  subgraph ANALYST["The analyst: a bank's financial-crime desk"]
+    direction LR
+    A0["search an account or bank\n(account ids and bank codes; no names in the data)"]:::ui --> A2["a ranked, checkable list\nring | ordinary, pattern, confidence, why"]:::ui
+    A2 --> A3["follow the money\nin and out on a timeline, hop to the next account, breadcrumb"]:::ui
+    A3 --> A3b["who else flagged it\nevery model's verdict and reason, cited ids highlighted"]:::ui
+    A3b --> A4["decide: escalate or dismiss, with a note\na person decides; case pack exports"]:::person
+    A4 --> A5["the record in PRISM (decision beside it: assumed)"]:::prism
+  end
+  subgraph TEAMMATE["The teammate: operating the bench"]
+    direction LR
+    T1["add a model\nmodels.toml (assumed)"]:::code --> T2["rerun\nrun_bench.py, 60/min, 2 workers"]:::code
+    T2 --> T3["score\nscore_bench.py -> bench_results.json"]:::code
+    T3 --> T4["refresh the UI\nnew row, new rings"]:::ui
+    T4 --> T5["send to PRISM\ntraces, v2 trajectories, alert rules, analyze, Analyze now"]:::prism
+    T5 --> T6["read the clusters\nRoot Cause, filter agent_name, one sentence why"]:::person
+  end
+  Q4 -.->|chosen groups| T2
+  T4 -.->|new row| J3
+  J2 -.->|same list, one model| A2
+  classDef ui fill:#e7edf3,stroke:#4a6a8a
+  classDef prism fill:#fbead9,stroke:#c2621a
+  classDef limit fill:#fde8e1,stroke:#b7411e
+  classDef person fill:#e4f3e8,stroke:#2f8f4e
+  classDef data fill:#e2f2f4,stroke:#2a7f8f
+  classDef code fill:#e6ebfa,stroke:#3b5bdb

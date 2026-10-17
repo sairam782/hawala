@@ -1,0 +1,6 @@
+Data in this folder: a slice of IBM Transactions for Anti Money Laundering (AML), HI-Small, by Erik Altman et al. (IBM),
+licensed CDLA-Sharing-1.0 (https://cdla.dev/sharing-1-0/). Altman et al., "Realistic Synthetic Financial Transactions for
+Anti-Money Laundering Models," NeurIPS 2023, arXiv:2306.16424. https://www.kaggle.com/datasets/ealtman2019/ibm-transactions-for-anti-money-laundering-aml
+Changed from the original: a 2,824-row slice (slice.js) cut around 20 labeled groups, and 60 neighborhoods cut from it
+(units.json); transfer ids T0001.. and shape names are ours. Labels are IBM's generator's. Synthetic data; no real customers.
+Model runs and scores (bench_results.json, panel.json) are ours, 2026-10-17.

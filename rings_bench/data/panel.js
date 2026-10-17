@@ -1,0 +1,1950 @@
+window.PANEL = {
+ "written": "2026-10-17 12:18",
+ "versions": {
+  "v1": {
+   "summary": {
+    "families": [
+     "anthropic/claude-haiku-5-5",
+     "anthropic/claude-sonnet-5-5",
+     "deepseek/deepseek-v4-pro",
+     "mistral/mistral-large-4",
+     "moonshot/kimi-k3",
+     "openai/gpt-6-luna",
+     "openai/gpt-6-sol",
+     "xai/grok-4.7",
+     "z-ai/glm-5.3"
+    ],
+    "note": "technical failures are not votes; a unit's family count is the families that answered it",
+    "units_answered_by_all": 40,
+    "ring_units_all_agree_ring": 10,
+    "ring_units_none_say_ring": 0,
+    "ring_units_split": 10,
+    "ordinary_units_all_agree_ordinary": 0,
+    "ordinary_units_all_say_ring": 2,
+    "ordinary_units_split": 38,
+    "missed_by_most": [
+     [
+      "u14",
+      "other",
+      3
+     ],
+     [
+      "u33",
+      "chain",
+      3
+     ]
+    ]
+   },
+   "agreement": [
+    {
+     "unit": "u01",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u02",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 4,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u03",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 7,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u04",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u05",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 4,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol"
+     ]
+    },
+    {
+     "unit": "u06",
+     "expected": "ring",
+     "shape": "fan-out",
+     "ring_votes": 7,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u07",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 7,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u08",
+     "expected": "ring",
+     "shape": "chain",
+     "ring_votes": 7,
+     "families": 7,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u09",
+     "expected": "ring",
+     "shape": "fan-out",
+     "ring_votes": 7,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u10",
+     "expected": "ring",
+     "shape": "fan-in",
+     "ring_votes": 8,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u11",
+     "expected": "ring",
+     "shape": "lone",
+     "ring_votes": 9,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "xai/grok-4.7",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u12",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 4,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u13",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 7,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u14",
+     "expected": "ring",
+     "shape": "other",
+     "ring_votes": 3,
+     "families": 8,
+     "said_ring": [
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u15",
+     "expected": "ring",
+     "shape": "mesh",
+     "ring_votes": 9,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "xai/grok-4.7",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u16",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 4,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u17",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 3,
+     "families": 9,
+     "said_ring": [
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u18",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 4,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u19",
+     "expected": "ring",
+     "shape": "lone",
+     "ring_votes": 6,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u20",
+     "expected": "ring",
+     "shape": "lone",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u21",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u22",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 4,
+     "families": 7,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u23",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 2,
+     "families": 8,
+     "said_ring": [
+      "mistral/mistral-large-4",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u24",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 1,
+     "families": 8,
+     "said_ring": [
+      "mistral/mistral-large-4"
+     ]
+    },
+    {
+     "unit": "u25",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 3,
+     "families": 8,
+     "said_ring": [
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u26",
+     "expected": "ring",
+     "shape": "scatter-gather",
+     "ring_votes": 7,
+     "families": 7,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u27",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u28",
+     "expected": "ring",
+     "shape": "lone",
+     "ring_votes": 6,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol"
+     ]
+    },
+    {
+     "unit": "u29",
+     "expected": "ring",
+     "shape": "lone",
+     "ring_votes": 9,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "xai/grok-4.7",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u30",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 2,
+     "families": 9,
+     "said_ring": [
+      "deepseek/deepseek-v4-pro",
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u31",
+     "expected": "ring",
+     "shape": "lone",
+     "ring_votes": 9,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "xai/grok-4.7",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u32",
+     "expected": "ring",
+     "shape": "scatter-gather",
+     "ring_votes": 9,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "xai/grok-4.7",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u33",
+     "expected": "ring",
+     "shape": "chain",
+     "ring_votes": 3,
+     "families": 7,
+     "said_ring": [
+      "anthropic/claude-sonnet-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u34",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna"
+     ]
+    },
+    {
+     "unit": "u35",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 8,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "xai/grok-4.7"
+     ]
+    },
+    {
+     "unit": "u36",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 6,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol"
+     ]
+    },
+    {
+     "unit": "u37",
+     "expected": "ring",
+     "shape": "lone",
+     "ring_votes": 6,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u38",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 2,
+     "families": 8,
+     "said_ring": [
+      "mistral/mistral-large-4",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u39",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 2,
+     "families": 9,
+     "said_ring": [
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4"
+     ]
+    },
+    {
+     "unit": "u40",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 3,
+     "families": 9,
+     "said_ring": [
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol"
+     ]
+    },
+    {
+     "unit": "u41",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 6,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u42",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 4,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u43",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 4,
+     "families": 9,
+     "said_ring": [
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol"
+     ]
+    },
+    {
+     "unit": "u44",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol"
+     ]
+    },
+    {
+     "unit": "u45",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 2,
+     "families": 9,
+     "said_ring": [
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u46",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 4,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u47",
+     "expected": "ring",
+     "shape": "cycle",
+     "ring_votes": 6,
+     "families": 7,
+     "said_ring": [
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u48",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 9,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "xai/grok-4.7",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u49",
+     "expected": "ring",
+     "shape": "cycle",
+     "ring_votes": 9,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "xai/grok-4.7",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u50",
+     "expected": "ring",
+     "shape": "fan-in",
+     "ring_votes": 8,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u51",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 4,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u52",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol"
+     ]
+    },
+    {
+     "unit": "u53",
+     "expected": "ring",
+     "shape": "lone",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u54",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 4,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "mistral/mistral-large-4",
+      "openai/gpt-6-luna",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u55",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 7,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u56",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 3,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "mistral/mistral-large-4",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u57",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 3,
+     "families": 9,
+     "said_ring": [
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u58",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 4,
+     "families": 8,
+     "said_ring": [
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol"
+     ]
+    },
+    {
+     "unit": "u59",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u60",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 2,
+     "families": 9,
+     "said_ring": [
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4"
+     ]
+    }
+   ],
+   "vote_table": [
+    {
+     "votes_needed": 1,
+     "of": 9,
+     "verdict_right": 20,
+     "precision": 0.0964,
+     "recall": 1.0,
+     "rings_found": 20,
+     "rings_total": 20,
+     "false_rings": 40
+    },
+    {
+     "votes_needed": 2,
+     "of": 9,
+     "verdict_right": 21,
+     "precision": 0.1369,
+     "recall": 0.9912,
+     "rings_found": 20,
+     "rings_total": 20,
+     "false_rings": 39
+    },
+    {
+     "votes_needed": 3,
+     "of": 9,
+     "verdict_right": 27,
+     "precision": 0.1764,
+     "recall": 0.9646,
+     "rings_found": 19,
+     "rings_total": 20,
+     "false_rings": 33
+    },
+    {
+     "votes_needed": 4,
+     "of": 9,
+     "verdict_right": 30,
+     "precision": 0.2253,
+     "recall": 0.9292,
+     "rings_found": 18,
+     "rings_total": 20,
+     "false_rings": 28
+    },
+    {
+     "votes_needed": 5,
+     "of": 9,
+     "verdict_right": 42,
+     "precision": 0.3436,
+     "recall": 0.7876,
+     "rings_found": 16,
+     "rings_total": 20,
+     "false_rings": 16
+    },
+    {
+     "votes_needed": 6,
+     "of": 9,
+     "verdict_right": 48,
+     "precision": 0.4487,
+     "recall": 0.6195,
+     "rings_found": 10,
+     "rings_total": 20,
+     "false_rings": 8
+    },
+    {
+     "votes_needed": 7,
+     "of": 9,
+     "verdict_right": 46,
+     "precision": 0.5575,
+     "recall": 0.5575,
+     "rings_found": 8,
+     "rings_total": 20,
+     "false_rings": 6
+    },
+    {
+     "votes_needed": 8,
+     "of": 9,
+     "verdict_right": 46,
+     "precision": 0.5657,
+     "recall": 0.4956,
+     "rings_found": 8,
+     "rings_total": 20,
+     "false_rings": 2
+    },
+    {
+     "votes_needed": 9,
+     "of": 9,
+     "verdict_right": 45,
+     "precision": 0.3261,
+     "recall": 0.1327,
+     "rings_found": 4,
+     "rings_total": 20,
+     "false_rings": 1
+    }
+   ]
+  },
+  "v2": {
+   "summary": {
+    "families": [
+     "anthropic/claude-haiku-5-5",
+     "anthropic/claude-sonnet-5-5",
+     "deepseek/deepseek-v4-pro",
+     "mistral/mistral-large-4",
+     "moonshot/kimi-k3",
+     "openai/gpt-6-luna",
+     "openai/gpt-6-sol",
+     "xai/grok-4.7",
+     "z-ai/glm-5.3"
+    ],
+    "note": "technical failures are not votes; a unit's family count is the families that answered it",
+    "units_answered_by_all": 45,
+    "ring_units_all_agree_ring": 6,
+    "ring_units_none_say_ring": 0,
+    "ring_units_split": 14,
+    "ordinary_units_all_agree_ordinary": 0,
+    "ordinary_units_all_say_ring": 0,
+    "ordinary_units_split": 40,
+    "missed_by_most": [
+     [
+      "u14",
+      "other",
+      3
+     ],
+     [
+      "u19",
+      "lone",
+      3
+     ],
+     [
+      "u53",
+      "lone",
+      2
+     ]
+    ]
+   },
+   "agreement": [
+    {
+     "unit": "u01",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 4,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna"
+     ]
+    },
+    {
+     "unit": "u02",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 2,
+     "families": 8,
+     "said_ring": [
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u03",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 6,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u04",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u05",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u06",
+     "expected": "ring",
+     "shape": "fan-out",
+     "ring_votes": 6,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u07",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 7,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u08",
+     "expected": "ring",
+     "shape": "chain",
+     "ring_votes": 5,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u09",
+     "expected": "ring",
+     "shape": "fan-out",
+     "ring_votes": 7,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u10",
+     "expected": "ring",
+     "shape": "fan-in",
+     "ring_votes": 7,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u11",
+     "expected": "ring",
+     "shape": "lone",
+     "ring_votes": 9,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "xai/grok-4.7",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u12",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 3,
+     "families": 9,
+     "said_ring": [
+      "deepseek/deepseek-v4-pro",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u13",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 8,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u14",
+     "expected": "ring",
+     "shape": "other",
+     "ring_votes": 3,
+     "families": 8,
+     "said_ring": [
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u15",
+     "expected": "ring",
+     "shape": "mesh",
+     "ring_votes": 8,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "xai/grok-4.7",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u16",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 3,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u17",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u18",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 3,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u19",
+     "expected": "ring",
+     "shape": "lone",
+     "ring_votes": 3,
+     "families": 9,
+     "said_ring": [
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u20",
+     "expected": "ring",
+     "shape": "lone",
+     "ring_votes": 6,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u21",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 4,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u22",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 2,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u23",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 3,
+     "families": 9,
+     "said_ring": [
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u24",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 3,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u25",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 4,
+     "families": 9,
+     "said_ring": [
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u26",
+     "expected": "ring",
+     "shape": "scatter-gather",
+     "ring_votes": 6,
+     "families": 6,
+     "said_ring": [
+      "anthropic/claude-sonnet-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u27",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 2,
+     "families": 8,
+     "said_ring": [
+      "mistral/mistral-large-4",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u28",
+     "expected": "ring",
+     "shape": "lone",
+     "ring_votes": 6,
+     "families": 9,
+     "said_ring": [
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u29",
+     "expected": "ring",
+     "shape": "lone",
+     "ring_votes": 8,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "xai/grok-4.7"
+     ]
+    },
+    {
+     "unit": "u30",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 2,
+     "families": 9,
+     "said_ring": [
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u31",
+     "expected": "ring",
+     "shape": "lone",
+     "ring_votes": 9,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "xai/grok-4.7",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u32",
+     "expected": "ring",
+     "shape": "scatter-gather",
+     "ring_votes": 8,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "xai/grok-4.7",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u33",
+     "expected": "ring",
+     "shape": "chain",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u34",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 1,
+     "families": 9,
+     "said_ring": [
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u35",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 8,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u36",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 5,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u37",
+     "expected": "ring",
+     "shape": "lone",
+     "ring_votes": 6,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "xai/grok-4.7",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u38",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 3,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u39",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 1,
+     "families": 9,
+     "said_ring": [
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u40",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol"
+     ]
+    },
+    {
+     "unit": "u41",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u42",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 6,
+     "families": 8,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "openai/gpt-6-luna",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u43",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 2,
+     "families": 9,
+     "said_ring": [
+      "deepseek/deepseek-v4-pro",
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u44",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 7,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u45",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 3,
+     "families": 9,
+     "said_ring": [
+      "deepseek/deepseek-v4-pro",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u46",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 7,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol",
+      "xai/grok-4.7"
+     ]
+    },
+    {
+     "unit": "u47",
+     "expected": "ring",
+     "shape": "cycle",
+     "ring_votes": 8,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u48",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 8,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol",
+      "xai/grok-4.7",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u49",
+     "expected": "ring",
+     "shape": "cycle",
+     "ring_votes": 9,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "xai/grok-4.7",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u50",
+     "expected": "ring",
+     "shape": "fan-in",
+     "ring_votes": 9,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "anthropic/claude-sonnet-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "xai/grok-4.7",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u51",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 2,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro"
+     ]
+    },
+    {
+     "unit": "u52",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "deepseek/deepseek-v4-pro",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u53",
+     "expected": "ring",
+     "shape": "lone",
+     "ring_votes": 2,
+     "families": 9,
+     "said_ring": [
+      "deepseek/deepseek-v4-pro",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u54",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 5,
+     "families": 9,
+     "said_ring": [
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-luna",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u55",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 4,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3"
+     ]
+    },
+    {
+     "unit": "u56",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 1,
+     "families": 9,
+     "said_ring": [
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u57",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 1,
+     "families": 9,
+     "said_ring": [
+      "openai/gpt-6-luna"
+     ]
+    },
+    {
+     "unit": "u58",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 6,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "deepseek/deepseek-v4-pro",
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3",
+      "openai/gpt-6-sol",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u59",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 3,
+     "families": 9,
+     "said_ring": [
+      "anthropic/claude-haiku-5-5",
+      "moonshot/kimi-k3",
+      "z-ai/glm-5.3"
+     ]
+    },
+    {
+     "unit": "u60",
+     "expected": "ordinary",
+     "shape": "none",
+     "ring_votes": 2,
+     "families": 8,
+     "said_ring": [
+      "mistral/mistral-large-4",
+      "moonshot/kimi-k3"
+     ]
+    }
+   ],
+   "vote_table": [
+    {
+     "votes_needed": 1,
+     "of": 9,
+     "verdict_right": 20,
+     "precision": 0.1038,
+     "recall": 0.9912,
+     "rings_found": 20,
+     "rings_total": 20,
+     "false_rings": 40
+    },
+    {
+     "votes_needed": 2,
+     "of": 9,
+     "verdict_right": 24,
+     "precision": 0.1325,
+     "recall": 0.9735,
+     "rings_found": 20,
+     "rings_total": 20,
+     "false_rings": 36
+    },
+    {
+     "votes_needed": 3,
+     "of": 9,
+     "verdict_right": 30,
+     "precision": 0.1726,
+     "recall": 0.9381,
+     "rings_found": 17,
+     "rings_total": 20,
+     "false_rings": 29
+    },
+    {
+     "votes_needed": 4,
+     "of": 9,
+     "verdict_right": 36,
+     "precision": 0.2251,
+     "recall": 0.9204,
+     "rings_found": 16,
+     "rings_total": 20,
+     "false_rings": 21
+    },
+    {
+     "votes_needed": 5,
+     "of": 9,
+     "verdict_right": 40,
+     "precision": 0.2627,
+     "recall": 0.823,
+     "rings_found": 14,
+     "rings_total": 20,
+     "false_rings": 17
+    },
+    {
+     "votes_needed": 6,
+     "of": 9,
+     "verdict_right": 46,
+     "precision": 0.4171,
+     "recall": 0.7345,
+     "rings_found": 12,
+     "rings_total": 20,
+     "false_rings": 9
+    },
+    {
+     "votes_needed": 7,
+     "of": 9,
+     "verdict_right": 44,
+     "precision": 0.521,
+     "recall": 0.5487,
+     "rings_found": 9,
+     "rings_total": 20,
+     "false_rings": 6
+    },
+    {
+     "votes_needed": 8,
+     "of": 9,
+     "verdict_right": 45,
+     "precision": 0.4565,
+     "recall": 0.3717,
+     "rings_found": 7,
+     "rings_total": 20,
+     "false_rings": 3
+    },
+    {
+     "votes_needed": 9,
+     "of": 9,
+     "verdict_right": 44,
+     "precision": 0.5641,
+     "recall": 0.1947,
+     "rings_found": 4,
+     "rings_total": 20,
+     "false_rings": 0
+    }
+   ]
+  }
+ }
+};

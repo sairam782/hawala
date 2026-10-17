@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rings bench diagrams</title>
+<style>
+:root {
+  --bg:#fbfbfa; --fg:#1f2328; --muted:#5b6470; --line:#6b7280; --lane:#f1f2f4; --lane-line:#d6d9de;
+  --panel:#ffffff; --halo:#fbfbfa; --link:#2b55c7;
+  --data:#2a7f8f; --data-bg:#e2f2f4;
+  --code:#3b5bdb; --code-bg:#e6ebfa;
+  --model:#7c4dbd; --model-bg:#eee7f8;
+  --person:#2f8f4e; --person-bg:#e4f3e8;
+  --prism:#c2621a; --prism-bg:#fbead9;
+  --ui:#4a6a8a; --ui-bg:#e7edf3;
+  --limit:#b7411e; --limit-bg:#fde8e1;
+  --note:#8a7a2a; --note-bg:#f8f3d8;
+  --assumed:#6b7280; --pill-fg:#ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#141618; --fg:#e8eaed; --muted:#a0a8b3; --line:#9aa3ad; --lane:#1c1f23; --lane-line:#2e3238;
+    --panel:#1a1d21; --halo:#141618; --link:#8fb0ff;
+    --data:#5fc0cf; --data-bg:#14323a;
+    --code:#8ea2ff; --code-bg:#1c2550;
+    --model:#b794f4; --model-bg:#2b1f44;
+    --person:#6fcf8a; --person-bg:#143a22;
+    --prism:#f0a060; --prism-bg:#3d2410;
+    --ui:#9ab8d6; --ui-bg:#1f2c3a;
+    --limit:#ff8a65; --limit-bg:#43201a;
+    --note:#e0c860; --note-bg:#3a3212;
+    --assumed:#9aa3ad; --pill-fg:#111111;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#141618; --fg:#e8eaed; --muted:#a0a8b3; --line:#9aa3ad; --lane:#1c1f23; --lane-line:#2e3238;
+  --panel:#1a1d21; --halo:#141618; --link:#8fb0ff;
+  --data:#5fc0cf; --data-bg:#14323a;
+  --code:#8ea2ff; --code-bg:#1c2550;
+  --model:#b794f4; --model-bg:#2b1f44;
+  --person:#6fcf8a; --person-bg:#143a22;
+  --prism:#f0a060; --prism-bg:#3d2410;
+  --ui:#9ab8d6; --ui-bg:#1f2c3a;
+  --limit:#ff8a65; --limit-bg:#43201a;
+  --note:#e0c860; --note-bg:#3a3212;
+  --assumed:#9aa3ad; --pill-fg:#111111;
+}
+* { box-sizing: border-box; }
+html, body { margin:0; background:var(--bg); color:var(--fg);
+  font: 15px/1.45 system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+a { color: var(--link); }
+header { display:flex; flex-wrap:wrap; gap:8px 18px; align-items:center; padding:10px 16px;
+  border-bottom:1px solid var(--lane-line); font-size:14px; color:var(--muted); }
+header .crumb a { text-decoration:none; }
+header .spacer { flex:1; }
+header button { font:inherit; color:var(--fg); background:var(--lane); border:1px solid var(--lane-line);
+  border-radius:6px; padding:4px 10px; cursor:pointer; }
+main { max-width:1280px; margin:0 auto; padding:16px 16px 48px; }
+h1 { font-size:24px; margin:8px 0 4px; }
+h2 { font-size:17px; margin:26px 0 8px; }
+.lede { color:var(--muted); margin:0 0 14px; max-width:1000px; }
+figure { margin:0; background:var(--panel); border:1px solid var(--lane-line); border-radius:10px; padding:8px; }
+figure svg { display:block; width:100%; height:auto; }
+.notes p, .notes li { max-width:1000px; }
+details { margin-top:22px; }
+summary { cursor:pointer; color:var(--muted); }
+pre { background:var(--lane); border:1px solid var(--lane-line); border-radius:8px; padding:12px; overflow:auto;
+  font-size:12.5px; line-height:1.4; }
+footer { margin-top:30px; color:var(--muted); font-size:13px; }
+.cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:14px; }
+.card { display:block; text-decoration:none; color:inherit; background:var(--panel); border:1px solid var(--lane-line);
+  border-radius:10px; padding:14px 16px; }
+.card b { display:block; font-size:16px; margin-bottom:4px; }
+.card span { color:var(--muted); font-size:14px; }
+.legend { display:flex; flex-wrap:wrap; gap:8px 16px; margin:10px 0 0; font-size:13px; color:var(--muted); }
+.legend i { display:inline-block; width:14px; height:14px; border-radius:3px; vertical-align:-2px; margin-right:5px; border:1.5px solid; }
+/* SVG */
+svg text { fill:var(--fg); font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+svg .t-title { font-size:14px; font-weight:650; }
+svg .t-body { font-size:12.5px; }
+svg .t-small { font-size:11.5px; fill:var(--muted); }
+svg .t-band { font-size:12px; font-weight:700; letter-spacing:.08em; fill:var(--muted); }
+svg .t-lane { font-size:15px; font-weight:700; }
+svg .t-edge { font-size:11.5px; fill:var(--muted); paint-order:stroke; stroke:var(--panel); stroke-width:4px; stroke-linejoin:round; }
+svg .t-big { font-size:17px; font-weight:700; }
+svg .ptext { font-size:10.5px; font-weight:700; fill:var(--pill-fg); letter-spacing:.04em; }
+svg .box { stroke-width:1.5; }
+svg .box.assumed { stroke-dasharray:6 4; }
+svg .k-data { fill:var(--data-bg); stroke:var(--data); }
+svg .k-code { fill:var(--code-bg); stroke:var(--code); }
+svg .k-model { fill:var(--model-bg); stroke:var(--model); }
+svg .k-person { fill:var(--person-bg); stroke:var(--person); }
+svg .k-prism { fill:var(--prism-bg); stroke:var(--prism); }
+svg .k-ui { fill:var(--ui-bg); stroke:var(--ui); }
+svg .k-limit { fill:var(--limit-bg); stroke:var(--limit); }
+svg .k-note { fill:var(--note-bg); stroke:var(--note); }
+svg .k-plain { fill:var(--panel); stroke:var(--line); }
+svg .p-data { fill:var(--data); } svg .p-code { fill:var(--code); } svg .p-model { fill:var(--model); }
+svg .p-person { fill:var(--person); } svg .p-prism { fill:var(--prism); } svg .p-ui { fill:var(--ui); }
+svg .p-limit { fill:var(--limit); } svg .p-note { fill:var(--note); } svg .p-assumed { fill:var(--assumed); }
+svg .p-plain { fill:var(--line); }
+svg .band { fill:var(--lane); stroke:var(--lane-line); stroke-width:1; }
+svg .lane { fill:var(--lane); stroke:var(--lane-line); stroke-width:1; }
+svg .edge { fill:none; stroke:var(--line); stroke-width:1.6; }
+svg .edge.dashed { stroke-dasharray:5 4; }
+svg .edge.thin { stroke-width:1; stroke-dasharray:3 3; }
+svg .arrhead { fill:var(--line); }
+svg .tick { stroke:var(--lane-line); stroke-width:1; }
+</style>
+</head>
+<body>
+<header>
+  <span class="crumb">Rings bench diagrams</span>
+  <span>Money Talks 2 · 2026-10-17</span>
+  <span class="spacer"></span>
+  <span>pencil, unstamped</span>
+  <button id="theme" type="button">Dark mode</button>
+</header>
+<main>
+<h1>The Rings many-models bench, drawn</h1>
+<p class="lede">Real AI agents hunt money-laundering rings in IBM's synthetic transfers; every model family reachable through one API runs on the same slice, is scored by our code against IBM's labels, and the runs go to PRISM for the Money Operations proofs (Sessions, Alert, Root Cause then v2). Five charts, each on its own page, offline, light and dark. The Mermaid text of each chart is at the bottom of its page and in the .mmd file beside it.</p>
+<div class="cards"><a class="card" href="01_concept.html"><b>1. Concept flow</b><span>For a judge, first minute. One screen, plain words.</span><br><span>Pile, ids, every family swings, code checks, a person sees the forks, PRISM holds the record, the honest line.</span></a><a class="card" href="02_technical.html"><b>2. Technical data flow</b><span>For the teammate operating the bench.</span><br><span>Files, routes and credits from IBM's file to the UI page, with the PRISM band and its budget.</span></a><a class="card" href="03_prism_proofs.html"><b>3. PRISM proof map</b><span>For whoever runs the PRISM side.</span><br><span>Money Operations: Sessions, Alert, Root Cause then v2. Which run produces each, what code sends, what a person clicks, what to screenshot.</span></a><a class="card" href="04_interaction.html"><b>4. User interaction chart</b><span>For the presenter and the UX thread.</span><br><span>Judge, analyst and teammate as swimlanes; the four likely questions and where each answer lives.</span></a><a class="card" href="05_honest_limits.html"><b>5. Honest limits map</b><span>For the presenter before Q&amp;A.</span><br><span>Six places the data lies to us, what each does to the number, what we do, what we say.</span></a></div>
+<h2>How these were made</h2>
+<p>make_diagrams.py in this folder draws every page (inline SVG, no libraries). Edit a box there and rerun it, or edit the .mmd text and paste it into any Mermaid viewer. README.md lists each chart's audience, the "assumed" boxes, what is not drawn, and the questions for Alex.</p>
+<div class="legend"><span><i style="background:var(--data-bg);border-color:var(--data)"></i>data (files)</span><span><i style="background:var(--code-bg);border-color:var(--code)"></i>code (deterministic, ours)</span><span><i style="background:var(--model-bg);border-color:var(--model)"></i>a model (through Nicrron)</span><span><i style="background:var(--person-bg);border-color:var(--person)"></i>a person</span><span><i style="background:var(--prism-bg);border-color:var(--prism)"></i>PRISM (sponsor observability)</span><span><i style="background:var(--ui-bg);border-color:var(--ui)"></i>the UI page</span><span><i style="background:var(--limit-bg);border-color:var(--limit)"></i>an honest limit</span><span><i style="background:var(--note-bg);border-color:var(--note)"></i>a note</span><span><i style="border-style:dashed;border-color:var(--assumed)"></i>dashed border = assumed (not confirmed with the engine thread)</span></div>
+<footer>Claude's suggestion, unruled by Alex · no data, keys or model calls on these pages.</footer>
+</main>
+<script>
+(function () {
+  var root = document.documentElement;
+  var q = new URLSearchParams(location.search).get('theme');
+  var saved = null;
+  try { saved = localStorage.getItem('rings-theme'); } catch (e) {}
+  if (q === 'dark' || q === 'light') root.dataset.theme = q;
+  else if (saved === 'dark' || saved === 'light') root.dataset.theme = saved;
+  var btn = document.getElementById('theme');
+  function label() {
+    var cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    btn.textContent = cur === 'dark' ? 'Light mode' : 'Dark mode';
+  }
+  if (btn) {
+    label();
+    btn.addEventListener('click', function () {
+      var cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      var next = cur === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      try { localStorage.setItem('rings-theme', next); } catch (e) {}
+      label();
+    });
+  }
+})();
+</script>
+</body>
+</html>

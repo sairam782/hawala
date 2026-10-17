@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Technical data flow</title>
+<style>
+:root {
+  --bg:#fbfbfa; --fg:#1f2328; --muted:#5b6470; --line:#6b7280; --lane:#f1f2f4; --lane-line:#d6d9de;
+  --panel:#ffffff; --halo:#fbfbfa; --link:#2b55c7;
+  --data:#2a7f8f; --data-bg:#e2f2f4;
+  --code:#3b5bdb; --code-bg:#e6ebfa;
+  --model:#7c4dbd; --model-bg:#eee7f8;
+  --person:#2f8f4e; --person-bg:#e4f3e8;
+  --prism:#c2621a; --prism-bg:#fbead9;
+  --ui:#4a6a8a; --ui-bg:#e7edf3;
+  --limit:#b7411e; --limit-bg:#fde8e1;
+  --note:#8a7a2a; --note-bg:#f8f3d8;
+  --assumed:#6b7280; --pill-fg:#ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#141618; --fg:#e8eaed; --muted:#a0a8b3; --line:#9aa3ad; --lane:#1c1f23; --lane-line:#2e3238;
+    --panel:#1a1d21; --halo:#141618; --link:#8fb0ff;
+    --data:#5fc0cf; --data-bg:#14323a;
+    --code:#8ea2ff; --code-bg:#1c2550;
+    --model:#b794f4; --model-bg:#2b1f44;
+    --person:#6fcf8a; --person-bg:#143a22;
+    --prism:#f0a060; --prism-bg:#3d2410;
+    --ui:#9ab8d6; --ui-bg:#1f2c3a;
+    --limit:#ff8a65; --limit-bg:#43201a;
+    --note:#e0c860; --note-bg:#3a3212;
+    --assumed:#9aa3ad; --pill-fg:#111111;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#141618; --fg:#e8eaed; --muted:#a0a8b3; --line:#9aa3ad; --lane:#1c1f23; --lane-line:#2e3238;
+  --panel:#1a1d21; --halo:#141618; --link:#8fb0ff;
+  --data:#5fc0cf; --data-bg:#14323a;
+  --code:#8ea2ff; --code-bg:#1c2550;
+  --model:#b794f4; --model-bg:#2b1f44;
+  --person:#6fcf8a; --person-bg:#143a22;
+  --prism:#f0a060; --prism-bg:#3d2410;
+  --ui:#9ab8d6; --ui-bg:#1f2c3a;
+  --limit:#ff8a65; --limit-bg:#43201a;
+  --note:#e0c860; --note-bg:#3a3212;
+  --assumed:#9aa3ad; --pill-fg:#111111;
+}
+* { box-sizing: border-box; }
+html, body { margin:0; background:var(--bg); color:var(--fg);
+  font: 15px/1.45 system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+a { color: var(--link); }
+header { display:flex; flex-wrap:wrap; gap:8px 18px; align-items:center; padding:10px 16px;
+  border-bottom:1px solid var(--lane-line); font-size:14px; color:var(--muted); }
+header .crumb a { text-decoration:none; }
+header .spacer { flex:1; }
+header button { font:inherit; color:var(--fg); background:var(--lane); border:1px solid var(--lane-line);
+  border-radius:6px; padding:4px 10px; cursor:pointer; }
+main { max-width:1280px; margin:0 auto; padding:16px 16px 48px; }
+h1 { font-size:24px; margin:8px 0 4px; }
+h2 { font-size:17px; margin:26px 0 8px; }
+.lede { color:var(--muted); margin:0 0 14px; max-width:1000px; }
+figure { margin:0; background:var(--panel); border:1px solid var(--lane-line); border-radius:10px; padding:8px; }
+figure svg { display:block; width:100%; height:auto; }
+.notes p, .notes li { max-width:1000px; }
+details { margin-top:22px; }
+summary { cursor:pointer; color:var(--muted); }
+pre { background:var(--lane); border:1px solid var(--lane-line); border-radius:8px; padding:12px; overflow:auto;
+  font-size:12.5px; line-height:1.4; }
+footer { margin-top:30px; color:var(--muted); font-size:13px; }
+.cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:14px; }
+.card { display:block; text-decoration:none; color:inherit; background:var(--panel); border:1px solid var(--lane-line);
+  border-radius:10px; padding:14px 16px; }
+.card b { display:block; font-size:16px; margin-bottom:4px; }
+.card span { color:var(--muted); font-size:14px; }
+.legend { display:flex; flex-wrap:wrap; gap:8px 16px; margin:10px 0 0; font-size:13px; color:var(--muted); }
+.legend i { display:inline-block; width:14px; height:14px; border-radius:3px; vertical-align:-2px; margin-right:5px; border:1.5px solid; }
+/* SVG */
+svg text { fill:var(--fg); font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+svg .t-title { font-size:14px; font-weight:650; }
+svg .t-body { font-size:12.5px; }
+svg .t-small { font-size:11.5px; fill:var(--muted); }
+svg .t-band { font-size:12px; font-weight:700; letter-spacing:.08em; fill:var(--muted); }
+svg .t-lane { font-size:15px; font-weight:700; }
+svg .t-edge { font-size:11.5px; fill:var(--muted); paint-order:stroke; stroke:var(--panel); stroke-width:4px; stroke-linejoin:round; }
+svg .t-big { font-size:17px; font-weight:700; }
+svg .ptext { font-size:10.5px; font-weight:700; fill:var(--pill-fg); letter-spacing:.04em; }
+svg .box { stroke-width:1.5; }
+svg .box.assumed { stroke-dasharray:6 4; }
+svg .k-data { fill:var(--data-bg); stroke:var(--data); }
+svg .k-code { fill:var(--code-bg); stroke:var(--code); }
+svg .k-model { fill:var(--model-bg); stroke:var(--model); }
+svg .k-person { fill:var(--person-bg); stroke:var(--person); }
+svg .k-prism { fill:var(--prism-bg); stroke:var(--prism); }
+svg .k-ui { fill:var(--ui-bg); stroke:var(--ui); }
+svg .k-limit { fill:var(--limit-bg); stroke:var(--limit); }
+svg .k-note { fill:var(--note-bg); stroke:var(--note); }
+svg .k-plain { fill:var(--panel); stroke:var(--line); }
+svg .p-data { fill:var(--data); } svg .p-code { fill:var(--code); } svg .p-model { fill:var(--model); }
+svg .p-person { fill:var(--person); } svg .p-prism { fill:var(--prism); } svg .p-ui { fill:var(--ui); }
+svg .p-limit { fill:var(--limit); } svg .p-note { fill:var(--note); } svg .p-assumed { fill:var(--assumed); }
+svg .p-plain { fill:var(--line); }
+svg .band { fill:var(--lane); stroke:var(--lane-line); stroke-width:1; }
+svg .lane { fill:var(--lane); stroke:var(--lane-line); stroke-width:1; }
+svg .edge { fill:none; stroke:var(--line); stroke-width:1.6; }
+svg .edge.dashed { stroke-dasharray:5 4; }
+svg .edge.thin { stroke-width:1; stroke-dasharray:3 3; }
+svg .arrhead { fill:var(--line); }
+svg .tick { stroke:var(--lane-line); stroke-width:1; }
+</style>
+</head>
+<body>
+<header>
+  <span class="crumb"><a href="index.html">Rings bench diagrams</a> / Technical data flow</span>
+  <span>For: the teammate operating the bench; a judge asking for the trace</span>
+  <span class="spacer"></span>
+  <span>2026-10-17 · pencil, unstamped</span>
+  <button id="theme" type="button">Dark mode</button>
+</header>
+<main>
+<h1>Technical data flow</h1>
+<p class="lede">Files, routes and credits, top to bottom: the IBM file to our slice, one model call per model x version x group through Nicrron, the local scorer, what goes to PRISM and what it costs, the two output files and the page that reads them.</p>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 1485" width="100%" role="img" aria-label="Technical data flow of the Rings bench with files, routes and credits"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrhead"/></marker></defs><rect x="10" y="10" width="1220" height="268" rx="10" class="band"/><text x="22" y="28" class="t-band" text-anchor="start"><tspan x="22" dy="0">DATA</tspan></text><text x="69" y="28" class="t-small" text-anchor="start"><tspan x="69" dy="0">what every model gets, and what only the scorer gets</tspan></text><rect x="10" y="306" width="1220" height="235" rx="10" class="band"/><text x="22" y="324" class="t-band" text-anchor="start"><tspan x="22" dy="0">RUNS</tspan></text><text x="69" y="324" class="t-small" text-anchor="start"><tspan x="69" dy="0">one model call per model x version x group</tspan></text><rect x="10" y="569" width="1220" height="160" rx="10" class="band"/><text x="22" y="587" class="t-band" text-anchor="start"><tspan x="22" dy="0">SCORING</tspan></text><text x="93" y="587" class="t-small" text-anchor="start"><tspan x="93" dy="0">local code, the independent check; scores every run, free</tspan></text><rect x="10" y="757" width="1220" height="475" rx="10" class="band"/><text x="22" y="775" class="t-band" text-anchor="start"><tspan x="22" dy="0">PRISM</tspan></text><text x="77" y="775" class="t-small" text-anchor="start"><tspan x="77" dy="0">Money Operations proofs · host https://api.prism.blockconvey.com · header X-PRISMtrace-Key · agent_name rings-&lt;family&gt;-&lt;v1|v2&gt;</tspan></text><rect x="10" y="1260" width="1220" height="210" rx="10" class="band"/><text x="22" y="1278" class="t-band" text-anchor="start"><tspan x="22" dy="0">OUTPUT</tspan></text><text x="85" y="1278" class="t-small" text-anchor="start"><tspan x="85" dy="0">two data files and the page that reads them</tspan></text><rect x="30" y="40" width="275" height="223" rx="8" class="box k-data"/><rect x="245" y="47" width="52" height="16" rx="8" class="pill p-data"/><text x="271" y="59" class="ptext" text-anchor="middle"><tspan x="271" dy="0">source</tspan></text><text x="40" y="62" class="t-title" text-anchor="start"><tspan x="40" dy="0">IBM AMLworld HI-Small</tspan></text><text x="40" y="81" class="t-body" text-anchor="start"><tspan x="40" dy="0">Synthetic bank transfers. 5.08 M</tspan><tspan x="40" dy="15.5">transfers, 5,177 labeled laundering</tspan><tspan x="40" dy="15.5">(0.10%). License CDLA-Sharing-1.0. Our</tspan><tspan x="40" dy="15.5">copy is a Hugging Face mirror with the</tspan><tspan x="40" dy="15.5">Is Laundering column; IBM's pattern file</tspan><tspan x="40" dy="15.5">(downloaded 11:40) names the shapes.</tspan></text><rect x="340" y="40" width="290" height="223" rx="8" class="box k-code"/><rect x="584" y="47" width="38" height="16" rx="8" class="pill p-code"/><text x="603" y="59" class="ptext" text-anchor="middle"><tspan x="603" dy="0">code</tspan></text><text x="350" y="62" class="t-title" text-anchor="start"><tspan x="350" dy="0">Pick 20 of IBM's laundering</tspan><tspan x="350" dy="17">groups (select_rings.py,</tspan><tspan x="350" dy="17">classify.py)</tspan></text><text x="350" y="115" class="t-body" text-anchor="start"><tspan x="350" dy="0">Connected components of labeled edges; our</tspan><tspan x="350" dy="15.5">shape heuristic names each; 20 chosen:</tspan><tspan x="350" dy="15.5">cycle 2, fan-out 2, fan-in 2,</tspan><tspan x="350" dy="15.5">scatter-gather 2, chain 2, mesh 1, other</tspan><tspan x="350" dy="15.5">1, lone 8. build_slice.py adds ordinary</tspan><tspan x="350" dy="15.5">traffic touching those accounts (cap 18</tspan><tspan x="350" dy="15.5">per account), second-hop neighbors, 450</tspan><tspan x="350" dy="15.5">random rows. Folder:</tspan><tspan x="350" dy="15.5">_staging\...\r2-rings\provenance\</tspan></text><rect x="665" y="40" width="270" height="223" rx="8" class="box k-data"/><rect x="889" y="47" width="38" height="16" rx="8" class="pill p-data"/><text x="908" y="59" class="ptext" text-anchor="middle"><tspan x="908" dy="0">data</tspan></text><text x="675" y="62" class="t-title" text-anchor="start"><tspan x="675" dy="0">The slice (data/slice.js)</tspan></text><text x="675" y="81" class="t-body" text-anchor="start"><tspan x="675" dy="0">window.SLICE: 2,824 transfers, T0001 to</tspan><tspan x="675" dy="15.5">T2824 in time order, 113 laundering</tspan><tspan x="675" dy="15.5">(4.0%). transfers: what models see.</tspan><tspan x="675" dy="15.5">key: label, ring, shape per id (never</tspan><tspan x="675" dy="15.5">sent to a model). ring_meta: the 20</tspan><tspan x="675" dy="15.5">groups and their shapes.</tspan></text><rect x="965" y="40" width="250" height="223" rx="8" class="box k-code assumed"/><rect x="1149" y="47" width="58" height="16" rx="8" class="pill p-assumed"/><text x="1178" y="59" class="ptext" text-anchor="middle"><tspan x="1178" dy="0">assumed</tspan></text><rect x="1105" y="47" width="38" height="16" rx="8" class="pill p-code"/><text x="1125" y="59" class="ptext" text-anchor="middle"><tspan x="1125" dy="0">code</tspan></text><text x="975" y="62" class="t-title" text-anchor="start"><tspan x="975" dy="0">Candidate groups</tspan></text><text x="975" y="81" class="t-body" text-anchor="start"><tspan x="975" dy="0">File: data/groups.json. Connected</tspan><tspan x="975" dy="15.5">clusters of accounts over non-self</tspan><tspan x="975" dy="15.5">transfers. Each labeled expected:</tspan><tspan x="975" dy="15.5">ring (with the shape we named for</tspan><tspan x="975" dy="15.5">it) or ordinary. One group = one</tspan><tspan x="975" dy="15.5">unit of work = one model call.</tspan></text><polyline points="305,152 340,152" class="edge" marker-end="url(#arr)"/><polyline points="630,152 665,152" class="edge" marker-end="url(#arr)"/><polyline points="935,152 965,152" class="edge" marker-end="url(#arr)"/><rect x="30" y="336" width="275" height="190" rx="8" class="box k-code assumed"/><rect x="239" y="343" width="58" height="16" rx="8" class="pill p-assumed"/><text x="268" y="355" class="ptext" text-anchor="middle"><tspan x="268" dy="0">assumed</tspan></text><rect x="195" y="343" width="38" height="16" rx="8" class="pill p-code"/><text x="215" y="355" class="ptext" text-anchor="middle"><tspan x="215" dy="0">code</tspan></text><text x="40" y="358" class="t-title" text-anchor="start"><tspan x="40" dy="0">Two prompts</tspan></text><text x="40" y="377" class="t-body" text-anchor="start"><tspan x="40" dy="0">Files: prompts/v1.md, prompts/v2.md,</tspan><tspan x="40" dy="15.5">facts.py. v1: the group's raw transfer</tspan><tspan x="40" dy="15.5">rows. v2: the same rows plus facts</tspan><tspan x="40" dy="15.5">computed by code in named steps</tspan><tspan x="40" dy="15.5">(load_rows, degrees, loops, bursts,</tspan><tspan x="40" dy="15.5">pass_through_chains): in and out degree</tspan><tspan x="40" dy="15.5">per account, loops, time span and</tspan><tspan x="40" dy="15.5">bursts, pass-through chains, amounts,</tspan><tspan x="40" dy="15.5">currencies, formats, ACH share.</tspan></text><rect x="340" y="336" width="300" height="190" rx="8" class="box k-code assumed"/><rect x="574" y="343" width="58" height="16" rx="8" class="pill p-assumed"/><text x="603" y="355" class="ptext" text-anchor="middle"><tspan x="603" dy="0">assumed</tspan></text><rect x="530" y="343" width="38" height="16" rx="8" class="pill p-code"/><text x="550" y="355" class="ptext" text-anchor="middle"><tspan x="550" dy="0">code</tspan></text><text x="350" y="358" class="t-title" text-anchor="start"><tspan x="350" dy="0">Runner (run_bench.py)</tspan></text><text x="350" y="377" class="t-body" text-anchor="start"><tspan x="350" dy="0">For each model x version x group: one chat</tspan><tspan x="350" dy="15.5">call. 2 workers, 60 requests a minute.</tspan><tspan x="350" dy="15.5">Retries on 429 and on empty content. Records</tspan><tspan x="350" dy="15.5">tokens in and out, latency, and the exact</tspan><tspan x="350" dy="15.5">context sent (for the PRISM span).</tspan></text><rect x="675" y="336" width="260" height="190" rx="8" class="box k-model"/><rect x="875" y="343" width="52" height="16" rx="8" class="pill p-model"/><text x="901" y="355" class="ptext" text-anchor="middle"><tspan x="901" dy="0">models</tspan></text><text x="685" y="358" class="t-title" text-anchor="start"><tspan x="685" dy="0">Nicrron API</tspan></text><text x="685" y="377" class="t-body" text-anchor="start"><tspan x="685" dy="0">OpenAI-compatible, one key, 80+</tspan><tspan x="685" dy="15.5">models. Base</tspan><tspan x="685" dy="15.5">https://api.nicrron.ai/v1</tspan><tspan x="685" dy="15.5">(chat/completions). Families:</tspan><tspan x="685" dy="15.5">anthropic, openai, deepseek, mistral,</tspan><tspan x="685" dy="15.5">moonshot, xai, z-ai. Per-token prices</tspan><tspan x="685" dy="15.5">feed the cost column.</tspan></text><rect x="965" y="336" width="250" height="190" rx="8" class="box k-model assumed"/><rect x="1149" y="343" width="58" height="16" rx="8" class="pill p-assumed"/><text x="1178" y="355" class="ptext" text-anchor="middle"><tspan x="1178" dy="0">assumed</tspan></text><rect x="1092" y="343" width="52" height="16" rx="8" class="pill p-model"/><text x="1118" y="355" class="ptext" text-anchor="middle"><tspan x="1118" dy="0">models</tspan></text><text x="975" y="358" class="t-title" text-anchor="start"><tspan x="975" dy="0">Model answer</tspan><tspan x="975" dy="17">(JSON)</tspan></text><text x="975" y="394" class="t-body" text-anchor="start"><tspan x="975" dy="0">verdict: ring | ordinary · pattern:</tspan><tspan x="975" dy="15.5">name · flagged: [transfer ids] ·</tspan><tspan x="975" dy="15.5">confidence · why: one sentence.</tspan><tspan x="975" dy="15.5">Parsed by code; an unparseable reply</tspan><tspan x="975" dy="15.5">counts as a failed run.</tspan></text><polyline points="1090,263 1090,292 167,292 167,336" class="edge" marker-end="url(#arr)"/><text x="621" y="287" class="t-edge" text-anchor="middle"><tspan x="621" dy="0">one group at a time: its rows, its id list</tspan></text><polyline points="305,431 340,431" class="edge" marker-end="url(#arr)"/><text x="322" y="425" class="t-edge" text-anchor="middle"><tspan x="322" dy="0">prompt text</tspan></text><polyline points="640,431 675,431" class="edge" marker-end="url(#arr)"/><text x="658" y="414" class="t-edge" text-anchor="middle"><tspan x="658" dy="0">POST chat/</tspan><tspan x="658" dy="13">completions</tspan></text><polyline points="935,431 965,431" class="edge" marker-end="url(#arr)"/><text x="950" y="425" class="t-edge" text-anchor="middle"><tspan x="950" dy="0">reply</tspan></text><rect x="30" y="599" width="580" height="115" rx="8" class="box k-code assumed"/><rect x="544" y="606" width="58" height="16" rx="8" class="pill p-assumed"/><text x="573" y="618" class="ptext" text-anchor="middle"><tspan x="573" dy="0">assumed</tspan></text><rect x="500" y="606" width="38" height="16" rx="8" class="pill p-code"/><text x="520" y="618" class="ptext" text-anchor="middle"><tspan x="520" dy="0">code</tspan></text><text x="40" y="621" class="t-title" text-anchor="start"><tspan x="40" dy="0">Local scorer (score_bench.py), the independent check</tspan></text><text x="40" y="640" class="t-body" text-anchor="start"><tspan x="40" dy="0">Verdict vs expected; pattern vs the shape we named; transfer precision and recall vs</tspan><tspan x="40" dy="15.5">IBM's labels. Per model: precision, recall, rings found of 20, false rings, cost in</tspan><tspan x="40" dy="15.5">dollars, median latency. Failure = wrong verdict (missed ring or false ring), tagged by</tspan><tspan x="40" dy="15.5">shape.</tspan></text><rect x="640" y="599" width="280" height="115" rx="8" class="box k-code"/><rect x="874" y="606" width="38" height="16" rx="8" class="pill p-code"/><text x="893" y="618" class="ptext" text-anchor="middle"><tspan x="893" dy="0">code</tspan></text><text x="650" y="621" class="t-title" text-anchor="start"><tspan x="650" dy="0">Baseline rule</tspan></text><text x="650" y="640" class="t-body" text-anchor="start"><tspan x="650" dy="0">flag every ACH transfer: recall 100%,</tspan><tspan x="650" dy="15.5">precision 25.5% on this slice (the</tspan><tspan x="650" dy="15.5">tell). Printed on the leaderboard as a</tspan><tspan x="650" dy="15.5">row of its own.</tspan></text><rect x="950" y="599" width="265" height="115" rx="8" class="box k-note"/><rect x="1169" y="606" width="38" height="16" rx="8" class="pill p-note"/><text x="1188" y="618" class="ptext" text-anchor="middle"><tspan x="1188" dy="0">note</tspan></text><text x="960" y="621" class="t-title" text-anchor="start"><tspan x="960" dy="0">Scores everything</tspan></text><text x="960" y="640" class="t-body" text-anchor="start"><tspan x="960" dy="0">Every run of every model is scored</tspan><tspan x="960" dy="15.5">here, free and offline. PRISM scores a</tspan><tspan x="960" dy="15.5">subset, because credits.</tspan></text><polyline points="1090,526 1090,555 320,555 320,599" class="edge" marker-end="url(#arr)"/><text x="698" y="550" class="t-edge" text-anchor="middle"><tspan x="698" dy="0">answers + tokens + latency</tspan></text><rect x="30" y="787" width="280" height="208.0" rx="8" class="box k-prism"/><rect x="257" y="794" width="45" height="16" rx="8" class="pill p-prism"/><text x="280" y="806" class="ptext" text-anchor="middle"><tspan x="280" dy="0">PRISM</tspan></text><text x="40" y="809" class="t-title" text-anchor="start"><tspan x="40" dy="0">Every run: POST /api/traces</tspan></text><text x="40" y="828" class="t-body" text-anchor="start"><tspan x="40" dy="0">trace_id ours; model; input_messages;</tspan><tspan x="40" dy="15.5">output_message; latency_ms; metadata</tspan><tspan x="40" dy="15.5">{family, version, group, expected,</tspan><tspan x="40" dy="15.5">local_score, failure_tag}. Free. Keep</tspan><tspan x="40" dy="15.5">the returned row id: analyze needs that,</tspan><tspan x="40" dy="15.5">not our trace_id. An empty</tspan><tspan x="40" dy="15.5">output_message is what PRISM counts as</tspan><tspan x="40" dy="15.5">an error.</tspan></text><rect x="30" y="1009.0" width="280" height="208.0" rx="8" class="box k-prism"/><rect x="257" y="1016.0" width="45" height="16" rx="8" class="pill p-prism"/><text x="280" y="1028" class="ptext" text-anchor="middle"><tspan x="280" dy="0">PRISM</tspan></text><text x="40" y="1031" class="t-title" text-anchor="start"><tspan x="40" dy="0">Alert: POST</tspan><tspan x="40" dy="17">/api/alerts/rules</tspan></text><text x="40" y="1067" class="t-body" text-anchor="start"><tspan x="40" dy="0">{project_id, name, metric error_rate |</tspan><tspan x="40" dy="15.5">latency, condition above, threshold,</tspan><tspan x="40" dy="15.5">severity, agent_id rings-...}. Made by</tspan><tspan x="40" dy="15.5">API, one pair per agent. Fires within</tspan><tspan x="40" dy="15.5">seconds; read GET</tspan><tspan x="40" dy="15.5">/api/alerts/fired?project_id=</tspan><tspan x="40" dy="15.5">(actual_value, status, trace). One</tspan><tspan x="40" dy="15.5">latency alert has already fired on a</tspan><tspan x="40" dy="15.5">real gpt-6-sol run. Free.</tspan></text><rect x="340" y="787" width="300" height="430" rx="8" class="box k-prism"/><rect x="587" y="794" width="45" height="16" rx="8" class="pill p-prism"/><text x="610" y="806" class="ptext" text-anchor="middle"><tspan x="610" dy="0">PRISM</tspan></text><text x="350" y="809" class="t-title" text-anchor="start"><tspan x="350" dy="0">Sessions: every v2 run as a</tspan><tspan x="350" dy="17">trajectory</tspan></text><text x="350" y="845" class="t-body" text-anchor="start"><tspan x="350" dy="0">submit_trajectory(steps=[...]) = POST</tspan><tspan x="350" dy="15.5">/api/trajectories. Seven steps, each with</tspan><tspan x="350" dy="15.5">step_type, label, tool_name, input_summary,</tspan><tspan x="350" dy="15.5">output_summary, duration_ms, status:</tspan><tspan x="350" dy="15.5">load_rows, degrees, loops, bursts,</tspan><tspan x="350" dy="15.5">pass_through_chains (tool_call), model</tspan><tspan x="350" dy="15.5">(llm_call), parse_answer (tool_call).</tspan><tspan x="350" dy="15.5">agent_name rings-&lt;family&gt;-v2,</tspan><tspan x="350" dy="15.5">conversation_id = the group id. Read back</tspan><tspan x="350" dy="15.5">GET /api/trajectories/{id}: path_signature</tspan><tspan x="350" dy="15.5">and the Steps tab. Free. Gotcha: the</tspan><tspan x="350" dy="15.5">project's shared eval config lists</tspan><tspan x="350" dy="15.5">authorized tools; ours are not on it, so the</tspan><tspan x="350" dy="15.5">governance score reads SAFETY-001 failed</tspan><tspan x="350" dy="15.5">while the steps still display.</tspan></text><rect x="670" y="787" width="270" height="208.0" rx="8" class="box k-prism"/><rect x="887" y="794" width="45" height="16" rx="8" class="pill p-prism"/><text x="910" y="806" class="ptext" text-anchor="middle"><tspan x="910" dy="0">PRISM</tspan></text><text x="680" y="809" class="t-title" text-anchor="start"><tspan x="680" dy="0">Wrong runs: POST</tspan><tspan x="680" dy="17">/api/traces/{id}/analyze</tspan></text><text x="680" y="845" class="t-body" text-anchor="start"><tspan x="680" dy="0">1 credit each. 5 to 10 v1 failures of</tspan><tspan x="680" dy="15.5">one kind, tagged by the scorer as</tspan><tspan x="680" dy="15.5">missed_ring:&lt;shape&gt; or false_ring. Row</tspan><tspan x="680" dy="15.5">id from the traces response, not our</tspan><tspan x="680" dy="15.5">trace_id (that gives 404).</tspan></text><rect x="670" y="1009.0" width="270" height="208.0" rx="8" class="box k-prism"/><rect x="887" y="1016.0" width="45" height="16" rx="8" class="pill p-prism"/><text x="910" y="1028" class="ptext" text-anchor="middle"><tspan x="910" dy="0">PRISM</tspan></text><text x="680" y="1031" class="t-title" text-anchor="start"><tspan x="680" dy="0">Root Cause: POST</tspan><tspan x="680" dy="17">.../clusters/analyze</tspan></text><text x="680" y="1067" class="t-body" text-anchor="start"><tspan x="680" dy="0">POST</tspan><tspan x="680" dy="15.5">/api/intelligence/clusters/analyze: 5</tspan><tspan x="680" dy="15.5">credits per run, 4 to 9 minutes. Then</tspan><tspan x="680" dy="15.5">GET</tspan><tspan x="680" dy="15.5">/api/intelligence/clusters?agent_name=</tspan><tspan x="680" dy="15.5">(shared workspace, always filter).</tspan><tspan x="680" dy="15.5">Wanted: a cluster of 3+ with its</tspan><tspan x="680" dy="15.5">cause_class, then the v2 traces on the</tspan><tspan x="680" dy="15.5">same group ids.</tspan></text><rect x="970" y="787" width="245" height="430" rx="8" class="box k-note"/><rect x="1169" y="794" width="38" height="16" rx="8" class="pill p-note"/><text x="1188" y="806" class="ptext" text-anchor="middle"><tspan x="1188" dy="0">note</tspan></text><text x="980" y="809" class="t-title" text-anchor="start"><tspan x="980" dy="0">Credits (about 100 on</tspan><tspan x="980" dy="17">the plan)</tspan></text><text x="980" y="845" class="t-body" text-anchor="start"><tspan x="980" dy="0">Traces, trajectories, alert rules,</tspan><tspan x="980" dy="15.5">reads: 0.</tspan><tspan x="980" dy="15.5">Analyze: 1 per wrong run.</tspan><tspan x="980" dy="15.5">Root Cause: 5 per run.</tspan><tspan x="980" dy="15.5">Money Operations total: about 10 to</tspan><tspan x="980" dy="15.5">15.</tspan><tspan x="980" dy="15.5">Optional, not a proof now: our</tspan><tspan x="980" dy="15.5">scoring rule as a PRISM evaluator</tspan><tspan x="980" dy="15.5">on v1 and v2 (1 credit per scored</tspan><tspan x="980" dy="15.5">trace; needs a retrieval span per</tspan><tspan x="980" dy="15.5">trace for {context}).</tspan><tspan x="980" dy="15.5">Balance is not readable with a</tspan><tspan x="980" dy="15.5">project key (org_required); a</tspan><tspan x="980" dy="15.5">person reads Settings &gt; Billing</tspan><tspan x="980" dy="15.5">before and after. The local scorer</tspan><tspan x="980" dy="15.5">is the full score; PRISM is the</tspan><tspan x="980" dy="15.5">proof.</tspan></text><polyline points="170,714 170,787" class="edge" marker-end="url(#arr)"/><text x="178" y="738" class="t-edge" text-anchor="start"><tspan x="178" dy="0">every run, with</tspan><tspan x="178" dy="13">its local score</tspan></text><polyline points="450,714 450,743 805,743 805,787" class="edge" marker-end="url(#arr)"/><text x="635" y="738" class="t-edge" text-anchor="middle"><tspan x="635" dy="0">the wrong runs (ids from the scorer)</tspan></text><polyline points="170,995 170,1009" class="edge" marker-end="url(#arr)"/><text x="178" y="1006" class="t-edge" text-anchor="start"><tspan x="178" dy="0">errors and slow runs</tspan></text><polyline points="310,827 340,827" class="edge" marker-end="url(#arr)"/><text x="325" y="821" class="t-edge" text-anchor="middle"><tspan x="325" dy="0">v2 runs</tspan></text><polyline points="805,995 805,1009" class="edge" marker-end="url(#arr)"/><text x="813" y="1006" class="t-edge" text-anchor="start"><tspan x="813" dy="0">then</tspan></text><rect x="30" y="1290" width="330" height="165" rx="8" class="box k-data"/><rect x="314" y="1297" width="38" height="16" rx="8" class="pill p-data"/><text x="333" y="1309" class="ptext" text-anchor="middle"><tspan x="333" dy="0">data</tspan></text><text x="40" y="1312" class="t-title" text-anchor="start"><tspan x="40" dy="0">data/bench_results.json</tspan></text><text x="40" y="1331" class="t-body" text-anchor="start"><tspan x="40" dy="0">models: per-model totals (precision, recall,</tspan><tspan x="40" dy="15.5">rings of 20, false rings, cost, latency, n</tspan><tspan x="40" dy="15.5">runs). runs: every cell with verdict, flagged</tspan><tspan x="40" dy="15.5">ids, expected, score, PRISM trace id.</tspan><tspan x="40" dy="15.5">failures_by_shape: model x shape counts.</tspan></text><rect x="400" y="1290" width="480" height="165" rx="8" class="box k-ui"/><rect x="847" y="1297" width="25" height="16" rx="8" class="pill p-ui"/><text x="859" y="1309" class="ptext" text-anchor="middle"><tspan x="859" dy="0">UI</tspan></text><text x="410" y="1312" class="t-title" text-anchor="start"><tspan x="410" dy="0">UI page (rings_bench/ui/index.html)</tspan></text><text x="410" y="1331" class="t-body" text-anchor="start"><tspan x="410" dy="0">Reads data/slice.js and data/bench_results.json, no network. Network</tspan><tspan x="410" dy="15.5">replay per model (rings light up against the key); leaderboard v1 beside</tspan><tspan x="410" dy="15.5">v2 with the rule row; failures-by-shape grid; the honest panel; click a</tspan><tspan x="410" dy="15.5">flag for the account's transfers.</tspan></text><rect x="920" y="1290" width="295" height="165" rx="8" class="box k-prism"/><rect x="1162" y="1297" width="45" height="16" rx="8" class="pill p-prism"/><text x="1184" y="1309" class="ptext" text-anchor="middle"><tspan x="1184" dy="0">PRISM</tspan></text><text x="930" y="1312" class="t-title" text-anchor="start"><tspan x="930" dy="0">PRISM dashboard (what a judge</tspan><tspan x="930" dy="17">is shown)</tspan></text><text x="930" y="1348" class="t-body" text-anchor="start"><tspan x="930" dy="0">Steps tab of one v2 run (seven steps);</tspan><tspan x="930" dy="15.5">Alerts page with the fired alert; the Root</tspan><tspan x="930" dy="15.5">Cause cluster with its cause; Traces</tspan><tspan x="930" dy="15.5">filtered to v2, green. Screenshot each</tspan><tspan x="930" dy="15.5">proof as soon as it shows, in case the</tspan><tspan x="930" dy="15.5">room's network goes.</tspan></text><polyline points="30,656 18,656 18,1372 30,1372" class="edge" marker-end="url(#arr)"/><polyline points="360,1372 400,1372" class="edge" marker-end="url(#arr)"/><polyline points="805,1217 805,1246 1067,1246 1067,1290" class="edge" marker-end="url(#arr)"/><text x="944" y="1241" class="t-edge" text-anchor="middle"><tspan x="944" dy="0">clusters</tspan></text><polyline points="490,1217 490,1246 805,1246" class="edge" marker-end="url(#arr)"/><text x="564" y="1241" class="t-edge" text-anchor="middle"><tspan x="564" dy="0">sessions, fired alerts</tspan></text><polyline points="800,263 800,288 1228,288 1228,1372 1215,1372" class="edge dashed" marker-end="url(#arr)"/><text x="1222" y="614" class="t-edge" text-anchor="end"><tspan x="1222" dy="0">data/slice.js</tspan></text></svg></figure>
+<div class="legend"><span><i style="background:var(--data-bg);border-color:var(--data)"></i>data (files)</span><span><i style="background:var(--code-bg);border-color:var(--code)"></i>code (deterministic, ours)</span><span><i style="background:var(--model-bg);border-color:var(--model)"></i>a model (through Nicrron)</span><span><i style="background:var(--person-bg);border-color:var(--person)"></i>a person</span><span><i style="background:var(--prism-bg);border-color:var(--prism)"></i>PRISM (sponsor observability)</span><span><i style="background:var(--ui-bg);border-color:var(--ui)"></i>the UI page</span><span><i style="background:var(--limit-bg);border-color:var(--limit)"></i>an honest limit</span><span><i style="background:var(--note-bg);border-color:var(--note)"></i>a note</span><span><i style="border-style:dashed;border-color:var(--assumed)"></i>dashed border = assumed (not confirmed with the engine thread)</span></div>
+<section class="notes">
+
+<h2>Who looks at this, for what</h2>
+<p>The teammate operating the bench, and a judge who asks "show me the PRISM trace" or "how do you know it is the right row". Every box names the file or route a person can open.</p>
+<h2>How to read it</h2>
+<ul>
+<li>Top to bottom is time. Solid arrows carry data; the dashed arrow on the right is the slice file going straight to the UI (the UI never touches the runner or the scorer).</li>
+<li>The thin line down the left margin is the scorer's output going to the results file; it is drawn in the margin to avoid crossing the PRISM band.</li>
+<li>PRISM receives runs only after the local scorer has run, so each trace carries its local score and failure tag in metadata and the wrong-run list is known before any credit is spent.</li>
+<li>The PRISM band is the Money Operations track (the team moved there at 11:14): Sessions is the trajectory box, Alert the alerts box, Root Cause then v2 the right-hand pair. The evaluator is kept only as an option in the credits note.</li>
+<li>Credits: the right-hand note is the whole budget in one place. Nothing in the DATA, RUNS or SCORING bands costs a credit.</li>
+</ul>
+<h2>Assumed (dashed boxes)</h2>
+<ul>
+<li>File names under rings_bench: data/groups.json, prompts/v1.md, prompts/v2.md, facts.py, run_bench.py, score_bench.py. The brief named only data/bench_results.json and data/slice.js. The engine thread owns the real names.</li>
+<li>That an unparseable model reply counts as a failed run (and not as "ordinary").</li>
+<li>That the runner records each v2 step's input and output summary and duration, so the trajectory can carry them.</li>
+</ul>
+<h2>Receipts behind the PRISM boxes</h2>
+<p>Routes, the row-id gotcha, the empty-output error rule, the authorized-tools gotcha, the shared-workspace filter and the credit prices come from the practice-workspace runs copied to the board at 10:52 (PRISM_MECHANICS_RECEIPTS_from_board_1052.md). The seven step names and the fired latency alert are the engine thread's report at 11:40. Nothing on this page was called from this thread.</p>
+
+</section>
+<details>
+<summary>Editable source: 02_technical.mmd (Mermaid text, same chart; the SVG above is drawn by make_diagrams.py)</summary>
+<pre>%% Technical data flow, Rings many-models bench. Dashed boxes (-.-) are assumed file names.
+flowchart TB
+  subgraph DATA
+    IBM["IBM AMLworld HI-Small\n5.08M transfers, 5,177 laundering\nCDLA-Sharing-1.0, HF mirror + IBM's pattern file"]:::data
+    SEL["select_rings.py / classify.py / build_slice.py\n20 of IBM's laundering groups: cycle 2, fan-out 2, fan-in 2,\nscatter-gather 2, chain 2, mesh 1, other 1, lone 8"]:::code
+    SL["data/slice.js (window.SLICE)\n2,824 transfers T0001..T2824, 113 laundering\ntransfers (models see) · key (scorer only) · ring_meta"]:::data
+    GR["data/groups.json (assumed)\ncandidate groups = connected account clusters\nexpected: ring+shape | ordinary"]:::code
+    IBM --&gt; SEL --&gt; SL --&gt; GR
+  end
+  subgraph RUNS
+    PR["prompts v1 raw rows · v2 rows + facts.py\n(degrees, loops, bursts, amounts, formats, ACH share)"]:::code
+    RUN["run_bench.py (assumed)\nmodel x version x group · 2 workers · 60/min"]:::code
+    NIC["Nicrron API https://api.nicrron.ai/v1\nanthropic openai deepseek mistral moonshot xai z-ai"]:::model
+    ANS["answer JSON: verdict, pattern, flagged ids,\nconfidence, why (+ tokens, latency)"]:::model
+    GR --&gt;|one group at a time| PR --&gt; RUN --&gt;|chat/completions| NIC --&gt; ANS
+  end
+  subgraph SCORING
+    SC["score_bench.py (assumed), local, free\nverdict vs expected · pattern vs shape · P/R vs IBM labels\nper model: P, R, rings/20, false rings, $, latency\nfailure = wrong verdict, tagged by shape"]:::code
+    RULE["baseline: flag every ACH\nrecall 100%, precision 25.5%"]:::code
+    ANS --&gt; SC
+  end
+  subgraph PRISM["PRISM (Money Operations) api.prism.blockconvey.com · agent_name rings-family-v1|v2"]
+    TR["POST /api/traces (free)\nmetadata: family, version, group, expected, local_score, failure_tag\nempty output = error"]:::prism
+    SE["Sessions: POST /api/trajectories (free), every v2 run\n7 steps: load_rows, degrees, loops, bursts,\npass_through_chains, model, parse_answer"]:::prism
+    AL["Alert: POST /api/alerts/rules (free)\nerror_rate and latency per rings-* agent\nGET /api/alerts/fired"]:::prism
+    AN["POST /api/traces/{row id}/analyze\n1 credit per wrong run (missed_ring:shape | false_ring), 5 to 10"]:::prism
+    RC["POST /api/intelligence/clusters/analyze\n5 credits, 4 to 9 min; GET clusters?agent_name=\nthen v2 on the same group ids"]:::prism
+    SC --&gt;|every run| TR --&gt; AL
+    SC --&gt;|v2 runs| SE
+    SC --&gt;|wrong runs| AN --&gt; RC
+  end
+  subgraph OUTPUT
+    RES["data/bench_results.json\nmodels · runs · failures_by_shape"]:::data
+    UI["rings_bench/ui/index.html\nreplay · leaderboard v1|v2 · failures grid · honest panel"]:::ui
+    DASH["PRISM dashboard: Steps tab, fired alert, cluster, v2 green"]:::prism
+    SC --&gt; RES --&gt; UI
+    SL -.-&gt; UI
+    RC --&gt; DASH
+    SE --&gt; DASH
+    AL --&gt; DASH
+  end
+  classDef data fill:#e2f2f4,stroke:#2a7f8f
+  classDef code fill:#e6ebfa,stroke:#3b5bdb
+  classDef model fill:#eee7f8,stroke:#7c4dbd
+  classDef prism fill:#fbead9,stroke:#c2621a
+  classDef ui fill:#e7edf3,stroke:#4a6a8a
+</pre>
+</details>
+<footer>Rings many-models bench · Money Talks 2, 2026-10-17 · Claude's suggestion, unruled by Alex · no data, keys or model calls on this page.</footer>
+</main>
+<script>
+(function () {
+  var root = document.documentElement;
+  var q = new URLSearchParams(location.search).get('theme');
+  var saved = null;
+  try { saved = localStorage.getItem('rings-theme'); } catch (e) {}
+  if (q === 'dark' || q === 'light') root.dataset.theme = q;
+  else if (saved === 'dark' || saved === 'light') root.dataset.theme = saved;
+  var btn = document.getElementById('theme');
+  function label() {
+    var cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    btn.textContent = cur === 'dark' ? 'Light mode' : 'Dark mode';
+  }
+  if (btn) {
+    label();
+    btn.addEventListener('click', function () {
+      var cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      var next = cur === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      try { localStorage.setItem('rings-theme', next); } catch (e) {}
+      label();
+    });
+  }
+})();
+</script>
+</body>
+</html>

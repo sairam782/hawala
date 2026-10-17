@@ -1,0 +1,17 @@
+%% Honest limits map, Rings bench. Each limit points at the pipeline step it bites.
+flowchart TB
+  F["IBM's full file\n5.08M transfers, 0.10% laundering"]:::data --> S["our slice\n2,824 transfers, 4.0%"]:::data
+  S --> G["IBM's laundering groups, our shape names\n20 of IBM's 1,843 labeled groups"]:::code --> M["model runs\none call per model x version x group"]:::model
+  M --> SC["scorer\nagainst IBM's labels"]:::code --> L["leaderboard\nrings of 20, precision, recall"]:::ui
+  L1["1. the ACH tell\n100% ACH in the slice, 87% in the whole file (a cut artifact)\nrule: recall 100%, precision 25.5%; we show the rule row; say: a tell, not understanding"]:::limit -.-> S
+  L1 -.-> M
+  L2["2. partial labels: bursts, and the tail after day 10\n1 of 12 labeled; after day 10 only 59% labeled, 4 of our 20 units touch it\nstrict score ranks; 'beside a label' count and the 4 tail units marked"]:::limit -.-> SC
+  L3["3. enriched slice\n4.0% here vs 0.10% real; precision would be far lower\nboth rates printed; no operational claim"]:::limit -.-> S
+  L4["4. our pattern names, checked against IBM's\n8 of 12 multi-transfer groups match IBM's pattern file; mesh = gather-scatter; chains = stack fragments; 7 of 8 lone outside any shape\nsay 'our names, checked'"]:::limit -.-> G
+  L5["5. one run per cell\nno interval; a rerun could move a family\nn and rerun cost printed"]:::limit -.-> M
+  L6["6. 'rings found' is not 'cases'\nfound = half the group flagged; 20 is small\nsay 'of 20'; print 'wrong N in ten' beside the percent"]:::limit -.-> L
+  classDef data fill:#e2f2f4,stroke:#2a7f8f
+  classDef code fill:#e6ebfa,stroke:#3b5bdb
+  classDef model fill:#eee7f8,stroke:#7c4dbd
+  classDef ui fill:#e7edf3,stroke:#4a6a8a
+  classDef limit fill:#fde8e1,stroke:#b7411e

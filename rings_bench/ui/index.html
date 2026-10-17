@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rings bench</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <h1>Rings bench</h1>
+    <p class="sub">Many AI models hunt laundering in the same transfers, scored against IBM's own labels.</p>
+  </div>
+  <div class="badges" id="badges"></div>
+  <div class="topctl">
+    <label class="plabel small" for="slicePick">Slice</label><select id="slicePick" class="sm" title="Which cut of the IBM file the page reads"></select>
+    <button id="theme" class="btn sm" type="button" title="Switch between light and dark">Dark</button>
+  </div>
+</header>
+
+<div class="layout">
+  <main class="right">
+    <nav class="screens" id="nav" aria-label="Screens, in order"></nav>
+
+    <section class="card verdict screen" id="verdict" data-screen="1">
+      <p class="eyebrow">The result, scored against IBM's labels</p>
+      <h2 class="headline pending" id="headline"></h2>
+      <p class="versus" id="versus"></p>
+      <div class="pickrow"><label for="modelPick" class="plabel">Model</label><select id="modelPick"></select><span class="plabel muted" id="pickNote"></span></div>
+      <div class="tiles" id="tiles"></div>
+      <section class="rings" id="ringList" hidden></section>
+      <details class="more" id="moreDetails"><summary>Details: recall, cost, time, how the page checked the numbers</summary>
+        <div class="tiles three" id="tilesMore"></div>
+        <p class="heldout" id="heldout" hidden></p>
+        <p class="basis fig" id="basis"></p>
+      </details>
+      <details class="more" id="panelDetails"><summary>Or let the families vote: a group is a pattern when enough families agree</summary>
+        <div class="panelrow" id="panelRow" hidden aria-label="Let the families vote"></div>
+      </details>
+    </section>
+
+    <section class="card screen" id="board" data-screen="2" hidden>
+      <div class="head"><h2>Every model, same transfers, same scorer</h2><span class="small muted" id="boardNote"></span></div>
+      <p class="note">Click a row to put that model's flags on the network. v1: the model reads the raw transfers. v2: code computes the group's facts first.</p>
+      <div class="tablewrap"><table class="board" id="boardTable"></table></div>
+      <label class="chk small"><input type="checkbox" id="boardMore"> More columns: recall, verdicts right, cost, time, the page's recount</label>
+    </section>
+
+    <section class="card screen" id="shapes" data-screen="3" hidden>
+      <div class="head"><h2>Where they fail, by shape</h2><span class="small muted">the root-cause view</span></div>
+      <p class="note">Found of IBM's groups, per shape. Click a cell for the runs and the model's own one-sentence why.</p>
+      <div class="tablewrap"><table class="grid" id="gridTable"></table></div>
+      <div class="keyrow" id="gridKey"></div>
+    </section>
+
+    <section class="card desk screen" id="desk" data-screen="4" hidden>
+      <div class="head"><h2>Follow the money</h2><span class="small muted">search an account, follow it, decide</span></div>
+      <div class="searchrow"><input id="deskSearch" list="deskList" placeholder="account id or bank code" autocomplete="off" spellcheck="false"><datalist id="deskList"></datalist><button id="deskGo" class="btn" type="button">Open</button></div>
+      <div id="deskBody"></div>
+    </section>
+
+    <section class="card screen" id="honest" data-screen="5" hidden aria-label="What this is, and is not">
+      <div class="head"><h2>What this is, and is not</h2></div>
+      <ul id="honestList"></ul>
+    </section>
+
+    <footer id="foot"></footer>
+  </main>
+  <aside class="left">
+    <div class="stage" id="stage">
+      <canvas id="cv"></canvas>
+      <div class="stageHead">
+        <div class="phase" id="phase"></div>
+        <div class="clock fig" id="clock"></div>
+      </div>
+    </div>
+    <p class="what" id="what"></p>
+    <div class="legend">
+      <span class="lg-norm"><i></i>a transfer nobody flagged</span>
+      <span class="lg-ok"><i></i>flagged, and IBM's label agrees</span>
+      <span class="lg-bad"><i></i>flagged, but IBM says ordinary: a false alarm</span>
+      <span class="lg-miss"><i></i>IBM says laundering, the model missed it</span>
+    </div>
+    <div class="replay" aria-label="Replay controls">
+      <button id="play" class="btn primary" type="button">Replay the hunt</button>
+      <button id="skip" class="btn" type="button">Skip to the result</button>
+      <label class="chk"><input type="checkbox" id="truth"> Show IBM's laundering groups</label>
+      <div class="timeline"><div id="bar"></div></div>
+    </div>
+    <div class="honest" id="honestStrip"></div>
+  </aside>
+
+</div>
+
+<aside id="drawer" class="drawer" hidden aria-label="The runs behind this number">
+  <div class="dhead"><div><h2 id="dTitle"></h2><p id="dSub"></p></div><button id="dClose" class="btn sm" type="button">Close</button></div>
+  <div class="dbody" id="dBody"></div>
+</aside>
+<div id="tip" class="tip" hidden></div>
+
+<script>
+/* Which slice: ?slice=heldout_a reads ../slices/heldout_a/, otherwise ../data/. Chosen here, before slice.js loads. */
+(function () { var m = /[?&]slice=([\w-]+)/.exec(location.search); window.SLICE_NAME = m ? m[1] : ''; window.DATA_DIR = m ? '../slices/' + m[1] + '/' : '../data/';
+  document.write('<script src="' + window.DATA_DIR + 'slice.js"><\/script>'); })();
+</script>
+<script src="app.js"></script>
+</body>
+</html>

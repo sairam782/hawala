@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRISM proof map</title>
+<style>
+:root {
+  --bg:#fbfbfa; --fg:#1f2328; --muted:#5b6470; --line:#6b7280; --lane:#f1f2f4; --lane-line:#d6d9de;
+  --panel:#ffffff; --halo:#fbfbfa; --link:#2b55c7;
+  --data:#2a7f8f; --data-bg:#e2f2f4;
+  --code:#3b5bdb; --code-bg:#e6ebfa;
+  --model:#7c4dbd; --model-bg:#eee7f8;
+  --person:#2f8f4e; --person-bg:#e4f3e8;
+  --prism:#c2621a; --prism-bg:#fbead9;
+  --ui:#4a6a8a; --ui-bg:#e7edf3;
+  --limit:#b7411e; --limit-bg:#fde8e1;
+  --note:#8a7a2a; --note-bg:#f8f3d8;
+  --assumed:#6b7280; --pill-fg:#ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#141618; --fg:#e8eaed; --muted:#a0a8b3; --line:#9aa3ad; --lane:#1c1f23; --lane-line:#2e3238;
+    --panel:#1a1d21; --halo:#141618; --link:#8fb0ff;
+    --data:#5fc0cf; --data-bg:#14323a;
+    --code:#8ea2ff; --code-bg:#1c2550;
+    --model:#b794f4; --model-bg:#2b1f44;
+    --person:#6fcf8a; --person-bg:#143a22;
+    --prism:#f0a060; --prism-bg:#3d2410;
+    --ui:#9ab8d6; --ui-bg:#1f2c3a;
+    --limit:#ff8a65; --limit-bg:#43201a;
+    --note:#e0c860; --note-bg:#3a3212;
+    --assumed:#9aa3ad; --pill-fg:#111111;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#141618; --fg:#e8eaed; --muted:#a0a8b3; --line:#9aa3ad; --lane:#1c1f23; --lane-line:#2e3238;
+  --panel:#1a1d21; --halo:#141618; --link:#8fb0ff;
+  --data:#5fc0cf; --data-bg:#14323a;
+  --code:#8ea2ff; --code-bg:#1c2550;
+  --model:#b794f4; --model-bg:#2b1f44;
+  --person:#6fcf8a; --person-bg:#143a22;
+  --prism:#f0a060; --prism-bg:#3d2410;
+  --ui:#9ab8d6; --ui-bg:#1f2c3a;
+  --limit:#ff8a65; --limit-bg:#43201a;
+  --note:#e0c860; --note-bg:#3a3212;
+  --assumed:#9aa3ad; --pill-fg:#111111;
+}
+* { box-sizing: border-box; }
+html, body { margin:0; background:var(--bg); color:var(--fg);
+  font: 15px/1.45 system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+a { color: var(--link); }
+header { display:flex; flex-wrap:wrap; gap:8px 18px; align-items:center; padding:10px 16px;
+  border-bottom:1px solid var(--lane-line); font-size:14px; color:var(--muted); }
+header .crumb a { text-decoration:none; }
+header .spacer { flex:1; }
+header button { font:inherit; color:var(--fg); background:var(--lane); border:1px solid var(--lane-line);
+  border-radius:6px; padding:4px 10px; cursor:pointer; }
+main { max-width:1280px; margin:0 auto; padding:16px 16px 48px; }
+h1 { font-size:24px; margin:8px 0 4px; }
+h2 { font-size:17px; margin:26px 0 8px; }
+.lede { color:var(--muted); margin:0 0 14px; max-width:1000px; }
+figure { margin:0; background:var(--panel); border:1px solid var(--lane-line); border-radius:10px; padding:8px; }
+figure svg { display:block; width:100%; height:auto; }
+.notes p, .notes li { max-width:1000px; }
+details { margin-top:22px; }
+summary { cursor:pointer; color:var(--muted); }
+pre { background:var(--lane); border:1px solid var(--lane-line); border-radius:8px; padding:12px; overflow:auto;
+  font-size:12.5px; line-height:1.4; }
+footer { margin-top:30px; color:var(--muted); font-size:13px; }
+.cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:14px; }
+.card { display:block; text-decoration:none; color:inherit; background:var(--panel); border:1px solid var(--lane-line);
+  border-radius:10px; padding:14px 16px; }
+.card b { display:block; font-size:16px; margin-bottom:4px; }
+.card span { color:var(--muted); font-size:14px; }
+.legend { display:flex; flex-wrap:wrap; gap:8px 16px; margin:10px 0 0; font-size:13px; color:var(--muted); }
+.legend i { display:inline-block; width:14px; height:14px; border-radius:3px; vertical-align:-2px; margin-right:5px; border:1.5px solid; }
+/* SVG */
+svg text { fill:var(--fg); font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+svg .t-title { font-size:14px; font-weight:650; }
+svg .t-body { font-size:12.5px; }
+svg .t-small { font-size:11.5px; fill:var(--muted); }
+svg .t-band { font-size:12px; font-weight:700; letter-spacing:.08em; fill:var(--muted); }
+svg .t-lane { font-size:15px; font-weight:700; }
+svg .t-edge { font-size:11.5px; fill:var(--muted); paint-order:stroke; stroke:var(--panel); stroke-width:4px; stroke-linejoin:round; }
+svg .t-big { font-size:17px; font-weight:700; }
+svg .ptext { font-size:10.5px; font-weight:700; fill:var(--pill-fg); letter-spacing:.04em; }
+svg .box { stroke-width:1.5; }
+svg .box.assumed { stroke-dasharray:6 4; }
+svg .k-data { fill:var(--data-bg); stroke:var(--data); }
+svg .k-code { fill:var(--code-bg); stroke:var(--code); }
+svg .k-model { fill:var(--model-bg); stroke:var(--model); }
+svg .k-person { fill:var(--person-bg); stroke:var(--person); }
+svg .k-prism { fill:var(--prism-bg); stroke:var(--prism); }
+svg .k-ui { fill:var(--ui-bg); stroke:var(--ui); }
+svg .k-limit { fill:var(--limit-bg); stroke:var(--limit); }
+svg .k-note { fill:var(--note-bg); stroke:var(--note); }
+svg .k-plain { fill:var(--panel); stroke:var(--line); }
+svg .p-data { fill:var(--data); } svg .p-code { fill:var(--code); } svg .p-model { fill:var(--model); }
+svg .p-person { fill:var(--person); } svg .p-prism { fill:var(--prism); } svg .p-ui { fill:var(--ui); }
+svg .p-limit { fill:var(--limit); } svg .p-note { fill:var(--note); } svg .p-assumed { fill:var(--assumed); }
+svg .p-plain { fill:var(--line); }
+svg .band { fill:var(--lane); stroke:var(--lane-line); stroke-width:1; }
+svg .lane { fill:var(--lane); stroke:var(--lane-line); stroke-width:1; }
+svg .edge { fill:none; stroke:var(--line); stroke-width:1.6; }
+svg .edge.dashed { stroke-dasharray:5 4; }
+svg .edge.thin { stroke-width:1; stroke-dasharray:3 3; }
+svg .arrhead { fill:var(--line); }
+svg .tick { stroke:var(--lane-line); stroke-width:1; }
+</style>
+</head>
+<body>
+<header>
+  <span class="crumb"><a href="index.html">Rings bench diagrams</a> / PRISM proof map</span>
+  <span>For: the teammate running the PRISM side; a judge asking which proof is which</span>
+  <span class="spacer"></span>
+  <span>2026-10-17 · pencil, unstamped</span>
+  <button id="theme" type="button">Dark mode</button>
+</header>
+<main>
+<h1>PRISM proof map</h1>
+<p class="lede">Which bench run produces which judged proof for the Money Operations track: Sessions (seven tool steps per v2 run), Alert (error rate and latency per model), Root Cause then v2 on the same inputs; with the route, the credits, and what a person clicks.</p>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 996" width="100%" role="img" aria-label="PRISM proof map: which bench run produces which judged proof"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrhead"/></marker></defs><rect x="10" y="10" width="200" height="34" rx="6" class="band"/><text x="20" y="32" class="t-band" text-anchor="start"><tspan x="20" dy="0">The proof judges want</tspan></text><rect x="215" y="10" width="230" height="34" rx="6" class="band"/><text x="225" y="32" class="t-band" text-anchor="start"><tspan x="225" dy="0">Which runs produce it</tspan></text><rect x="450" y="10" width="300" height="34" rx="6" class="band"/><text x="460" y="32" class="t-band" text-anchor="start"><tspan x="460" dy="0">What code sends (route, credits)</tspan></text><rect x="755" y="10" width="240" height="34" rx="6" class="band"/><text x="765" y="32" class="t-band" text-anchor="start"><tspan x="765" dy="0">What a person clicks</tspan></text><rect x="1000" y="10" width="230" height="34" rx="6" class="band"/><text x="1010" y="32" class="t-band" text-anchor="start"><tspan x="1010" dy="0">The proof on screen</tspan></text><text x="10" y="78" class="t-big" text-anchor="start"><tspan x="10" dy="0">Money Operations</tspan></text><text x="192" y="78" class="t-small" text-anchor="start"><tspan x="192" dy="0">demo line: the failure, the fix, and the alert that would have caught it</tspan></text><rect x="10" y="94" width="200" height="252" rx="8" class="box k-plain"/><text x="20" y="116" class="t-title" text-anchor="start"><tspan x="20" dy="0">1. Sessions (6+ steps</tspan><tspan x="20" dy="17">on the Steps tab)</tspan></text><rect x="215" y="94" width="230" height="252" rx="8" class="box k-model"/><text x="225" y="116" class="t-title" text-anchor="start"><tspan x="225" dy="0"></tspan></text><text x="225" y="135" class="t-body" text-anchor="start"><tspan x="225" dy="0">Every v2 run. The runner does</tspan><tspan x="225" dy="15.5">seven named steps per group:</tspan><tspan x="225" dy="15.5">load_rows, degrees, loops,</tspan><tspan x="225" dy="15.5">bursts, pass_through_chains (tool</tspan><tspan x="225" dy="15.5">calls), model (the call),</tspan><tspan x="225" dy="15.5">parse_answer (tool call). Shown</tspan><tspan x="225" dy="15.5">on stage: one strong family's run</tspan><tspan x="225" dy="15.5">on a ring group.</tspan></text><rect x="450" y="94" width="300" height="252" rx="8" class="box k-code"/><text x="460" y="116" class="t-title" text-anchor="start"><tspan x="460" dy="0"></tspan></text><text x="460" y="135" class="t-body" text-anchor="start"><tspan x="460" dy="0">submit_trajectory(steps=[...]) = POST</tspan><tspan x="460" dy="15.5">/api/trajectories, agent_name</tspan><tspan x="460" dy="15.5">rings-&lt;family&gt;-v2, conversation_id = the</tspan><tspan x="460" dy="15.5">group id; each step: step_type, label,</tspan><tspan x="460" dy="15.5">tool_name, input_summary, output_summary,</tspan><tspan x="460" dy="15.5">duration_ms, status. Read back GET</tspan><tspan x="460" dy="15.5">/api/trajectories/{id} (path_signature).</tspan><tspan x="460" dy="15.5">Credits 0. Gotcha: the shared eval config's</tspan><tspan x="460" dy="15.5">authorized tools list does not include ours,</tspan><tspan x="460" dy="15.5">so the governance score reads SAFETY-001</tspan><tspan x="460" dy="15.5">failed; the steps still display.</tspan></text><rect x="755" y="94" width="240" height="252" rx="8" class="box k-person"/><text x="765" y="116" class="t-title" text-anchor="start"><tspan x="765" dy="0"></tspan></text><text x="765" y="135" class="t-body" text-anchor="start"><tspan x="765" dy="0">Nothing live. On stage: open the</tspan><tspan x="765" dy="15.5">run by agent name, Steps tab,</tspan><tspan x="765" dy="15.5">count the seven steps. (A</tspan><tspan x="765" dy="15.5">trajectory is not a trace session:</tspan><tspan x="765" dy="15.5">look under the agent, not under</tspan><tspan x="765" dy="15.5">Sessions.)</tspan></text><rect x="1000" y="94" width="230" height="252" rx="8" class="box k-prism"/><text x="1010" y="116" class="t-title" text-anchor="start"><tspan x="1010" dy="0"></tspan></text><text x="1010" y="135" class="t-body" text-anchor="start"><tspan x="1010" dy="0">The Steps tab with seven tool</tspan><tspan x="1010" dy="15.5">calls in order and the</tspan><tspan x="1010" dy="15.5">path_signature string:</tspan><tspan x="1010" dy="15.5">request_init &gt; tool_call x5 &gt;</tspan><tspan x="1010" dy="15.5">llm_call &gt; tool_call &gt;</tspan><tspan x="1010" dy="15.5">final_answer.</tspan></text><polyline points="210,134 215,134" class="edge" marker-end="url(#arr)"/><polyline points="445,134 450,134" class="edge" marker-end="url(#arr)"/><polyline points="750,134 755,134" class="edge" marker-end="url(#arr)"/><polyline points="995,134 1000,134" class="edge" marker-end="url(#arr)"/><rect x="10" y="356" width="200" height="252" rx="8" class="box k-plain"/><text x="20" y="378" class="t-title" text-anchor="start"><tspan x="20" dy="0">2. Alert (fires on a</tspan><tspan x="20" dy="17">real run)</tspan></text><rect x="215" y="356" width="230" height="252" rx="8" class="box k-model"/><text x="225" y="378" class="t-title" text-anchor="start"><tspan x="225" dy="0"></tspan></text><text x="225" y="397" class="t-body" text-anchor="start"><tspan x="225" dy="0">A good run first, so the agent</tspan><tspan x="225" dy="15.5">exists for the rule. Then the</tspan><tspan x="225" dy="15.5">runs that trip it: a family whose</tspan><tspan x="225" dy="15.5">reply has no answer (empty output</tspan><tspan x="225" dy="15.5">counts as an error) raises</tspan><tspan x="225" dy="15.5">error_rate; a slow family raises</tspan><tspan x="225" dy="15.5">latency. One latency alert has</tspan><tspan x="225" dy="15.5">already fired on a real gpt-6-sol</tspan><tspan x="225" dy="15.5">run.</tspan></text><rect x="450" y="356" width="300" height="252" rx="8" class="box k-code"/><text x="460" y="378" class="t-title" text-anchor="start"><tspan x="460" dy="0"></tspan></text><text x="460" y="397" class="t-body" text-anchor="start"><tspan x="460" dy="0">POST /api/alerts/rules {project_id, name,</tspan><tspan x="460" dy="15.5">metric error_rate | latency, condition</tspan><tspan x="460" dy="15.5">above, threshold, severity, agent_id</tspan><tspan x="460" dy="15.5">rings-&lt;family&gt;-&lt;v&gt;}, one pair per agent,</tspan><tspan x="460" dy="15.5">made by API. GET</tspan><tspan x="460" dy="15.5">/api/alerts/fired?project_id= within</tspan><tspan x="460" dy="15.5">seconds: actual_value (percent for</tspan><tspan x="460" dy="15.5">error_rate, ms for latency), status active,</tspan><tspan x="460" dy="15.5">the trace it points at. Credits 0. Gotchas:</tspan><tspan x="460" dy="15.5">a rule fires once (dedupe); metadata {error}</tspan><tspan x="460" dy="15.5">does not count, only an empty</tspan><tspan x="460" dy="15.5">output_message; no notification_email, so</tspan><tspan x="460" dy="15.5">nothing is mailed.</tspan></text><rect x="755" y="356" width="240" height="252" rx="8" class="box k-person"/><text x="765" y="378" class="t-title" text-anchor="start"><tspan x="765" dy="0"></tspan></text><text x="765" y="397" class="t-body" text-anchor="start"><tspan x="765" dy="0">Alerts page: show the fired alert</tspan><tspan x="765" dy="15.5">and the run it points at. If the</tspan><tspan x="765" dy="15.5">organizers want to see the rule</tspan><tspan x="765" dy="15.5">made by hand: Alerts page, new</tspan><tspan x="765" dy="15.5">rule, metric, threshold, agent</tspan><tspan x="765" dy="15.5">scope.</tspan></text><rect x="1000" y="356" width="230" height="252" rx="8" class="box k-prism"/><text x="1010" y="378" class="t-title" text-anchor="start"><tspan x="1010" dy="0"></tspan></text><text x="1010" y="397" class="t-body" text-anchor="start"><tspan x="1010" dy="0">The fired row: rule name,</tspan><tspan x="1010" dy="15.5">actual_value over threshold, the</tspan><tspan x="1010" dy="15.5">trace id. Screenshot it; it is</tspan><tspan x="1010" dy="15.5">the one proof that depends on</tspan><tspan x="1010" dy="15.5">live timing.</tspan></text><polyline points="210,396 215,396" class="edge" marker-end="url(#arr)"/><polyline points="445,396 450,396" class="edge" marker-end="url(#arr)"/><polyline points="750,396 755,396" class="edge" marker-end="url(#arr)"/><polyline points="995,396 1000,396" class="edge" marker-end="url(#arr)"/><rect x="10" y="618" width="200" height="252" rx="8" class="box k-plain"/><text x="20" y="640" class="t-title" text-anchor="start"><tspan x="20" dy="0">3. Root Cause, then v2</tspan><tspan x="20" dy="17">on the same inputs</tspan></text><rect x="215" y="618" width="230" height="252" rx="8" class="box k-model"/><text x="225" y="640" class="t-title" text-anchor="start"><tspan x="225" dy="0"></tspan></text><text x="225" y="659" class="t-body" text-anchor="start"><tspan x="225" dy="0">5 to 10 v1 failures of one kind,</tspan><tspan x="225" dy="15.5">tagged by the scorer:</tspan><tspan x="225" dy="15.5">missed_ring:&lt;shape&gt; (for example</tspan><tspan x="225" dy="15.5">missed_ring:cycle) or false_ring.</tspan><tspan x="225" dy="15.5">Sent with a status PRISM sees.</tspan><tspan x="225" dy="15.5">Then v2 on the same group ids,</tspan><tspan x="225" dy="15.5">passing.</tspan></text><rect x="450" y="618" width="300" height="252" rx="8" class="box k-code assumed"/><rect x="684" y="625" width="58" height="16" rx="8" class="pill p-assumed"/><text x="713" y="637" class="ptext" text-anchor="middle"><tspan x="713" dy="0">assumed</tspan></text><text x="460" y="640" class="t-title" text-anchor="start"><tspan x="460" dy="0"></tspan></text><text x="460" y="659" class="t-body" text-anchor="start"><tspan x="460" dy="0">POST /api/traces/{row id}/analyze, 1 credit</tspan><tspan x="460" dy="15.5">each (row id from the traces response, not</tspan><tspan x="460" dy="15.5">our trace_id). POST</tspan><tspan x="460" dy="15.5">/api/intelligence/clusters/analyze</tspan><tspan x="460" dy="15.5">{project_id}, 5 credits, 4 to 9 minutes. GET</tspan><tspan x="460" dy="15.5">/api/intelligence/clusters?agent_name=rings-&lt;family&gt;-v1.</tspan><tspan x="460" dy="15.5">v2 traces under rings-&lt;family&gt;-v2 with the</tspan><tspan x="460" dy="15.5">same group id in metadata. Gotcha: plain</tspan><tspan x="460" dy="15.5">failed traces alone did not cluster in</tspan><tspan x="460" dy="15.5">practice; analyzed ones did.</tspan></text><rect x="755" y="618" width="240" height="252" rx="8" class="box k-person"/><text x="765" y="640" class="t-title" text-anchor="start"><tspan x="765" dy="0"></tspan></text><text x="765" y="659" class="t-body" text-anchor="start"><tspan x="765" dy="0">Traces page: tick the failed v1</tspan><tspan x="765" dy="15.5">runs, Analyze selected. Root Cause</tspan><tspan x="765" dy="15.5">page: Analyze now, open the</tspan><tspan x="765" dy="15.5">cluster, read its cause. Traces</tspan><tspan x="765" dy="15.5">view filtered to</tspan><tspan x="765" dy="15.5">rings-&lt;family&gt;-v2: the same</tspan><tspan x="765" dy="15.5">groups, green.</tspan></text><rect x="1000" y="618" width="230" height="252" rx="8" class="box k-prism"/><text x="1010" y="640" class="t-title" text-anchor="start"><tspan x="1010" dy="0"></tspan></text><text x="1010" y="659" class="t-body" text-anchor="start"><tspan x="1010" dy="0">A cluster of 3+ failed v1 runs</tspan><tspan x="1010" dy="15.5">with cause_class (prompt, code or</tspan><tspan x="1010" dy="15.5">policy) and our one sentence why</tspan><tspan x="1010" dy="15.5">(the shape they missed); beside</tspan><tspan x="1010" dy="15.5">it the v2 rows on the same groups</tspan><tspan x="1010" dy="15.5">with the local score next to</tspan><tspan x="1010" dy="15.5">each.</tspan></text><polyline points="210,658 215,658" class="edge" marker-end="url(#arr)"/><polyline points="445,658 450,658" class="edge" marker-end="url(#arr)"/><polyline points="750,658 755,658" class="edge" marker-end="url(#arr)"/><polyline points="995,658 1000,658" class="edge" marker-end="url(#arr)"/><text x="10" y="906" class="t-small" text-anchor="start"><tspan x="10" dy="0">Credits for this map: Sessions 0, Alert 0, Root Cause about 10 to 15. Total about 15 of the plan's 100. Receipts: every route and credit price was seen live on the practice workspace on 2026-10-17 (board cards MONEY-37, 38, 39).</tspan></text><text x="10" y="924" class="t-small" text-anchor="start"><tspan x="10" dy="0">If the track changes back to Trust &amp; Risk: a guardrail on the customer-facing message in Block mode, proven live this morning on the practice workspace; the block check and Root Cause follow the same routes. Not drawn as a chart.</tspan></text><text x="10" y="942" class="t-small" text-anchor="start"><tspan x="10" dy="0">Money Intelligence, not required now: our scoring rule as a PRISM evaluator on v1 and v2 (1 credit per scored trace; needs a retrieval span per trace so {context} fills). Kept as an option in the technical page's credits note.</tspan></text></svg></figure>
+<div class="legend"><span><i style="background:var(--data-bg);border-color:var(--data)"></i>data (files)</span><span><i style="background:var(--code-bg);border-color:var(--code)"></i>code (deterministic, ours)</span><span><i style="background:var(--model-bg);border-color:var(--model)"></i>a model (through Nicrron)</span><span><i style="background:var(--person-bg);border-color:var(--person)"></i>a person</span><span><i style="background:var(--prism-bg);border-color:var(--prism)"></i>PRISM (sponsor observability)</span><span><i style="background:var(--ui-bg);border-color:var(--ui)"></i>the UI page</span><span><i style="background:var(--limit-bg);border-color:var(--limit)"></i>an honest limit</span><span><i style="background:var(--note-bg);border-color:var(--note)"></i>a note</span><span><i style="border-style:dashed;border-color:var(--assumed)"></i>dashed border = assumed (not confirmed with the engine thread)</span></div>
+<section class="notes">
+
+<h2>Who looks at this, for what</h2>
+<p>The teammate running the PRISM side, to know which bench runs to send and which clicks to rehearse; a judge who asks "which of these is the Sessions proof". Read one row left to right: the proof, the runs, the calls, the clicks, the screen. The track is Money Operations (the team's call at 11:14); the organizers' demo line for it is "the failure, the fix, and the alert that would have caught it".</p>
+<h2>What each column is for</h2>
+<ul>
+<li><b>Which runs produce it</b>: the bench already produces all three. Sessions is every v2 run (seven named steps), Alert is any family that returns no answer or runs slow, Root Cause is the scorer's failure tags (missed_ring:shape, false_ring) sent to PRISM.</li>
+<li><b>What code sends</b>: the exact route and credit price, so no proof is attempted without knowing its cost. Two of three proofs cost nothing.</li>
+<li><b>What a person clicks</b>: the organizers' wording asks for dashboard clicks on Root Cause (tick, Analyze selected, Analyze now); Sessions and Alert can be made by code and shown on screen.</li>
+<li><b>The proof on screen</b>: what to screenshot the moment it appears. The fired alert is the one that depends on live timing, so it is screenshotted first.</li>
+</ul>
+<h2>Assumed (dashed cells)</h2>
+<ul>
+<li>Proof 3: that a wrong answer with a success status is invisible to clustering. In the practice runs, analyzed traces clustered and plain error traces alone did not; the exact rule is unconfirmed, so the failed v1 runs are sent with an error status and analyzed.</li>
+</ul>
+<h2>Not drawn</h2>
+<p>Trust & Risk (guardrail in Block mode, block check, Root Cause on blocked runs): the earlier track, dropped at 11:14; one line under the table says what it would take. Money Intelligence (Knowledge Base, evaluator v1 vs v2, Root Cause): not required now; the evaluator stays an option in the technical page's credits note.</p>
+
+</section>
+<details>
+<summary>Editable source: 03_prism_proofs.mmd (Mermaid text, same chart; the SVG above is drawn by make_diagrams.py)</summary>
+<pre>%% PRISM proof map, Rings bench, Money Operations track. One row per judged proof: run -&gt; code -&gt; person -&gt; proof on screen.
+flowchart LR
+  subgraph MO["Money Operations: the failure, the fix, and the alert that would have caught it"]
+    R1["runs: every v2 run, 7 named steps\nload_rows, degrees, loops, bursts, pass_through_chains, model, parse_answer"]:::model
+    C1["submit_trajectory = POST /api/trajectories\nagent_name rings-family-v2, conversation_id = group id · 0 credits\ngotcha: shared authorized-tools config fails SAFETY-001, steps still show"]:::code
+    P1["person: nothing live; on stage open the run, Steps tab"]:::person
+    S1["proof 1: Steps tab with 7 tool calls, path_signature"]:::prism
+    R1 --&gt; C1 --&gt; P1 --&gt; S1
+    R2["runs: a good run first; then a family with no answer (error_rate)\nor a slow family (latency); one latency alert already fired on gpt-6-sol"]:::model
+    C2["POST /api/alerts/rules {metric error_rate | latency, condition above, threshold, agent_id}\nGET /api/alerts/fired · 0 credits · empty output = error; a rule fires once"]:::code
+    P2["person: Alerts page, show the fired alert and its run"]:::person
+    S2["proof 2: fired row, actual_value over threshold, trace id (screenshot first)"]:::prism
+    R2 --&gt; C2 --&gt; P2 --&gt; S2
+    R3["runs: 5 to 10 v1 failures of one kind, tagged missed_ring:shape | false_ring\nthen v2 on the same group ids, passing"]:::model
+    C3["POST /api/traces/{row id}/analyze (1 each)\nPOST /api/intelligence/clusters/analyze (5); GET clusters?agent_name=\nassumed: failed traces need an error status to cluster"]:::code
+    P3["person: Traces tick + Analyze selected; Root Cause Analyze now; Traces filtered to v2"]:::person
+    S3["proof 3: cluster of 3+, cause_class, one sentence; v2 rows green on the same groups"]:::prism
+    R3 --&gt; C3 --&gt; P3 --&gt; S3
+  end
+  N1["side note, not a chart: Trust &amp; Risk guardrail on the customer-facing message (Block mode) was proven live this morning; block check and Root Cause follow the same routes"]:::note
+  N2["side note: Money Intelligence evaluator (our scoring rule, 1 credit per scored trace, needs a retrieval span) is optional now"]:::note
+  classDef model fill:#eee7f8,stroke:#7c4dbd
+  classDef code fill:#e6ebfa,stroke:#3b5bdb
+  classDef person fill:#e4f3e8,stroke:#2f8f4e
+  classDef prism fill:#fbead9,stroke:#c2621a
+  classDef note fill:#f8f3d8,stroke:#8a7a2a
+</pre>
+</details>
+<footer>Rings many-models bench · Money Talks 2, 2026-10-17 · Claude's suggestion, unruled by Alex · no data, keys or model calls on this page.</footer>
+</main>
+<script>
+(function () {
+  var root = document.documentElement;
+  var q = new URLSearchParams(location.search).get('theme');
+  var saved = null;
+  try { saved = localStorage.getItem('rings-theme'); } catch (e) {}
+  if (q === 'dark' || q === 'light') root.dataset.theme = q;
+  else if (saved === 'dark' || saved === 'light') root.dataset.theme = saved;
+  var btn = document.getElementById('theme');
+  function label() {
+    var cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    btn.textContent = cur === 'dark' ? 'Light mode' : 'Dark mode';
+  }
+  if (btn) {
+    label();
+    btn.addEventListener('click', function () {
+      var cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      var next = cur === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      try { localStorage.setItem('rings-theme', next); } catch (e) {}
+      label();
+    });
+  }
+})();
+</script>
+</body>
+</html>

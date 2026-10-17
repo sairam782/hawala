@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>User interaction chart</title>
+<style>
+:root {
+  --bg:#fbfbfa; --fg:#1f2328; --muted:#5b6470; --line:#6b7280; --lane:#f1f2f4; --lane-line:#d6d9de;
+  --panel:#ffffff; --halo:#fbfbfa; --link:#2b55c7;
+  --data:#2a7f8f; --data-bg:#e2f2f4;
+  --code:#3b5bdb; --code-bg:#e6ebfa;
+  --model:#7c4dbd; --model-bg:#eee7f8;
+  --person:#2f8f4e; --person-bg:#e4f3e8;
+  --prism:#c2621a; --prism-bg:#fbead9;
+  --ui:#4a6a8a; --ui-bg:#e7edf3;
+  --limit:#b7411e; --limit-bg:#fde8e1;
+  --note:#8a7a2a; --note-bg:#f8f3d8;
+  --assumed:#6b7280; --pill-fg:#ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#141618; --fg:#e8eaed; --muted:#a0a8b3; --line:#9aa3ad; --lane:#1c1f23; --lane-line:#2e3238;
+    --panel:#1a1d21; --halo:#141618; --link:#8fb0ff;
+    --data:#5fc0cf; --data-bg:#14323a;
+    --code:#8ea2ff; --code-bg:#1c2550;
+    --model:#b794f4; --model-bg:#2b1f44;
+    --person:#6fcf8a; --person-bg:#143a22;
+    --prism:#f0a060; --prism-bg:#3d2410;
+    --ui:#9ab8d6; --ui-bg:#1f2c3a;
+    --limit:#ff8a65; --limit-bg:#43201a;
+    --note:#e0c860; --note-bg:#3a3212;
+    --assumed:#9aa3ad; --pill-fg:#111111;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#141618; --fg:#e8eaed; --muted:#a0a8b3; --line:#9aa3ad; --lane:#1c1f23; --lane-line:#2e3238;
+  --panel:#1a1d21; --halo:#141618; --link:#8fb0ff;
+  --data:#5fc0cf; --data-bg:#14323a;
+  --code:#8ea2ff; --code-bg:#1c2550;
+  --model:#b794f4; --model-bg:#2b1f44;
+  --person:#6fcf8a; --person-bg:#143a22;
+  --prism:#f0a060; --prism-bg:#3d2410;
+  --ui:#9ab8d6; --ui-bg:#1f2c3a;
+  --limit:#ff8a65; --limit-bg:#43201a;
+  --note:#e0c860; --note-bg:#3a3212;
+  --assumed:#9aa3ad; --pill-fg:#111111;
+}
+* { box-sizing: border-box; }
+html, body { margin:0; background:var(--bg); color:var(--fg);
+  font: 15px/1.45 system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+a { color: var(--link); }
+header { display:flex; flex-wrap:wrap; gap:8px 18px; align-items:center; padding:10px 16px;
+  border-bottom:1px solid var(--lane-line); font-size:14px; color:var(--muted); }
+header .crumb a { text-decoration:none; }
+header .spacer { flex:1; }
+header button { font:inherit; color:var(--fg); background:var(--lane); border:1px solid var(--lane-line);
+  border-radius:6px; padding:4px 10px; cursor:pointer; }
+main { max-width:1280px; margin:0 auto; padding:16px 16px 48px; }
+h1 { font-size:24px; margin:8px 0 4px; }
+h2 { font-size:17px; margin:26px 0 8px; }
+.lede { color:var(--muted); margin:0 0 14px; max-width:1000px; }
+figure { margin:0; background:var(--panel); border:1px solid var(--lane-line); border-radius:10px; padding:8px; }
+figure svg { display:block; width:100%; height:auto; }
+.notes p, .notes li { max-width:1000px; }
+details { margin-top:22px; }
+summary { cursor:pointer; color:var(--muted); }
+pre { background:var(--lane); border:1px solid var(--lane-line); border-radius:8px; padding:12px; overflow:auto;
+  font-size:12.5px; line-height:1.4; }
+footer { margin-top:30px; color:var(--muted); font-size:13px; }
+.cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:14px; }
+.card { display:block; text-decoration:none; color:inherit; background:var(--panel); border:1px solid var(--lane-line);
+  border-radius:10px; padding:14px 16px; }
+.card b { display:block; font-size:16px; margin-bottom:4px; }
+.card span { color:var(--muted); font-size:14px; }
+.legend { display:flex; flex-wrap:wrap; gap:8px 16px; margin:10px 0 0; font-size:13px; color:var(--muted); }
+.legend i { display:inline-block; width:14px; height:14px; border-radius:3px; vertical-align:-2px; margin-right:5px; border:1.5px solid; }
+/* SVG */
+svg text { fill:var(--fg); font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+svg .t-title { font-size:14px; font-weight:650; }
+svg .t-body { font-size:12.5px; }
+svg .t-small { font-size:11.5px; fill:var(--muted); }
+svg .t-band { font-size:12px; font-weight:700; letter-spacing:.08em; fill:var(--muted); }
+svg .t-lane { font-size:15px; font-weight:700; }
+svg .t-edge { font-size:11.5px; fill:var(--muted); paint-order:stroke; stroke:var(--panel); stroke-width:4px; stroke-linejoin:round; }
+svg .t-big { font-size:17px; font-weight:700; }
+svg .ptext { font-size:10.5px; font-weight:700; fill:var(--pill-fg); letter-spacing:.04em; }
+svg .box { stroke-width:1.5; }
+svg .box.assumed { stroke-dasharray:6 4; }
+svg .k-data { fill:var(--data-bg); stroke:var(--data); }
+svg .k-code { fill:var(--code-bg); stroke:var(--code); }
+svg .k-model { fill:var(--model-bg); stroke:var(--model); }
+svg .k-person { fill:var(--person-bg); stroke:var(--person); }
+svg .k-prism { fill:var(--prism-bg); stroke:var(--prism); }
+svg .k-ui { fill:var(--ui-bg); stroke:var(--ui); }
+svg .k-limit { fill:var(--limit-bg); stroke:var(--limit); }
+svg .k-note { fill:var(--note-bg); stroke:var(--note); }
+svg .k-plain { fill:var(--panel); stroke:var(--line); }
+svg .p-data { fill:var(--data); } svg .p-code { fill:var(--code); } svg .p-model { fill:var(--model); }
+svg .p-person { fill:var(--person); } svg .p-prism { fill:var(--prism); } svg .p-ui { fill:var(--ui); }
+svg .p-limit { fill:var(--limit); } svg .p-note { fill:var(--note); } svg .p-assumed { fill:var(--assumed); }
+svg .p-plain { fill:var(--line); }
+svg .band { fill:var(--lane); stroke:var(--lane-line); stroke-width:1; }
+svg .lane { fill:var(--lane); stroke:var(--lane-line); stroke-width:1; }
+svg .edge { fill:none; stroke:var(--line); stroke-width:1.6; }
+svg .edge.dashed { stroke-dasharray:5 4; }
+svg .edge.thin { stroke-width:1; stroke-dasharray:3 3; }
+svg .arrhead { fill:var(--line); }
+svg .tick { stroke:var(--lane-line); stroke-width:1; }
+</style>
+</head>
+<body>
+<header>
+  <span class="crumb"><a href="index.html">Rings bench diagrams</a> / User interaction chart</span>
+  <span>For: the presenter, the UX thread, the engine thread</span>
+  <span class="spacer"></span>
+  <span>2026-10-17 · pencil, unstamped</span>
+  <button id="theme" type="button">Dark mode</button>
+</header>
+<main>
+<h1>User interaction chart</h1>
+<p class="lede">Three people as swimlanes: the judge's 3 minutes and four likely questions, the analyst the product is for, and the teammate operating the bench. Dashed arrows are where one person's action lands on another's screen.</p>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 955" width="100%" role="img" aria-label="User interaction chart: judge, analyst and teammate swimlanes"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrhead"/></marker></defs><rect x="10" y="10" width="1220" height="400" rx="10" class="lane"/><text x="22" y="34" class="t-lane" text-anchor="start"><tspan x="22" dy="0">The judge</tspan></text><text x="22" y="52" class="t-small" text-anchor="start"><tspan x="22" dy="0">3 minutes at the demo</tspan><tspan x="22" dy="13">table, then questions</tspan></text><rect x="10" y="425" width="1220" height="240" rx="10" class="lane"/><text x="22" y="449" class="t-lane" text-anchor="start"><tspan x="22" dy="0">The analyst</tspan></text><text x="22" y="467" class="t-small" text-anchor="start"><tspan x="22" dy="0">a bank's</tspan><tspan x="22" dy="13">financial-crime desk,</tspan><tspan x="22" dy="13">the person the</tspan><tspan x="22" dy="13">product is for</tspan></text><rect x="10" y="680" width="1220" height="245" rx="10" class="lane"/><text x="22" y="704" class="t-lane" text-anchor="start"><tspan x="22" dy="0">The teammate</tspan></text><text x="22" y="722" class="t-small" text-anchor="start"><tspan x="22" dy="0">operating the bench</tspan><tspan x="22" dy="13">during the day</tspan></text><text x="20" y="945" class="t-small" text-anchor="start"><tspan x="20" dy="0">Time runs left to right inside each lane. Arrows between lanes are the moments one person's action lands on another's screen.</tspan></text><rect x="160" y="60" width="168" height="142" rx="8" class="box k-ui"/><text x="170" y="82" class="t-title" text-anchor="start"><tspan x="170" dy="0">0:00 The network</tspan></text><text x="170" y="101" class="t-body" text-anchor="start"><tspan x="170" dy="0">The slice replays: blue</tspan><tspan x="170" dy="15.5">dots, ten days. The</tspan><tspan x="170" dy="15.5">line on screen: no</tspan><tspan x="170" dy="15.5">answer key.</tspan></text><polyline points="328,131 340,131" class="edge" marker-end="url(#arr)"/><rect x="340" y="60" width="168" height="142" rx="8" class="box k-ui"/><text x="350" y="82" class="t-title" text-anchor="start"><tspan x="350" dy="0">0:30 One model's</tspan><tspan x="350" dy="17">rings light up</tspan></text><text x="350" y="118" class="t-body" text-anchor="start"><tspan x="350" dy="0">Green where IBM agrees,</tspan><tspan x="350" dy="15.5">red dashed false</tspan><tspan x="350" dy="15.5">alarms, amber dotted</tspan><tspan x="350" dy="15.5">misses.</tspan></text><polyline points="508,131 520,131" class="edge" marker-end="url(#arr)"/><rect x="520" y="60" width="168" height="142" rx="8" class="box k-ui"/><text x="530" y="82" class="t-title" text-anchor="start"><tspan x="530" dy="0">1:00 The</tspan><tspan x="530" dy="17">leaderboard</tspan></text><text x="530" y="118" class="t-body" text-anchor="start"><tspan x="530" dy="0">v1 beside v2 per</tspan><tspan x="530" dy="15.5">family, the rule row,</tspan><tspan x="530" dy="15.5">cost and latency.</tspan></text><polyline points="688,131 700,131" class="edge" marker-end="url(#arr)"/><rect x="700" y="60" width="168" height="142" rx="8" class="box k-ui"/><text x="710" y="82" class="t-title" text-anchor="start"><tspan x="710" dy="0">1:30 Failures by</tspan><tspan x="710" dy="17">shape</tspan></text><text x="710" y="118" class="t-body" text-anchor="start"><tspan x="710" dy="0">Which shapes each model</tspan><tspan x="710" dy="15.5">misses. Click a cell</tspan><tspan x="710" dy="15.5">for the runs behind it.</tspan></text><polyline points="868,131 880,131" class="edge" marker-end="url(#arr)"/><rect x="880" y="60" width="168" height="142" rx="8" class="box k-prism"/><text x="890" y="82" class="t-title" text-anchor="start"><tspan x="890" dy="0">2:00 The PRISM</tspan><tspan x="890" dy="17">proofs</tspan></text><text x="890" y="118" class="t-body" text-anchor="start"><tspan x="890" dy="0">One v2 run's seven</tspan><tspan x="890" dy="15.5">steps; the alert that</tspan><tspan x="890" dy="15.5">fired; the cluster,</tspan><tspan x="890" dy="15.5">then v2 green on the</tspan><tspan x="890" dy="15.5">same groups.</tspan></text><polyline points="1048,131 1060,131" class="edge" marker-end="url(#arr)"/><rect x="1060" y="60" width="168" height="142" rx="8" class="box k-limit"/><text x="1070" y="82" class="t-title" text-anchor="start"><tspan x="1070" dy="0">2:30 One honest</tspan><tspan x="1070" dy="17">limit</tspan></text><text x="1070" y="118" class="t-body" text-anchor="start"><tspan x="1070" dy="0">The ACH tell and the</tspan><tspan x="1070" dy="15.5">enriched rate; 'wrong N</tspan><tspan x="1070" dy="15.5">in ten' said out loud.</tspan></text><rect x="160" y="264" width="258" height="126" rx="8" class="box k-person"/><rect x="378" y="271" width="32" height="16" rx="8" class="pill p-person"/><text x="394" y="283" class="ptext" text-anchor="middle"><tspan x="394" dy="0">Q&amp;A</tspan></text><text x="170" y="286" class="t-title" text-anchor="start"><tspan x="170" dy="0">"Show me the PRISM trace"</tspan></text><text x="170" y="305" class="t-body" text-anchor="start"><tspan x="170" dy="0">Open the run by agent name, Steps</tspan><tspan x="170" dy="15.5">tab: load_rows shows the rows it saw,</tspan><tspan x="170" dy="15.5">model shows the call, parse_answer</tspan><tspan x="170" dy="15.5">the ids.</tspan></text><polyline points="289,264 289,236 964,236 964,202" class="edge dashed" marker-end="url(#arr)"/><rect x="430" y="264" width="258" height="126" rx="8" class="box k-person"/><rect x="648" y="271" width="32" height="16" rx="8" class="pill p-person"/><text x="664" y="283" class="ptext" text-anchor="middle"><tspan x="664" dy="0">Q&amp;A</tspan></text><text x="440" y="286" class="t-title" text-anchor="start"><tspan x="440" dy="0">"How do you know it is the</tspan><tspan x="440" dy="17">right row?"</tspan></text><text x="440" y="322" class="t-body" text-anchor="start"><tspan x="440" dy="0">Click the flag: the transfer id in</tspan><tspan x="440" dy="15.5">the slice, the same id in the model's</tspan><tspan x="440" dy="15.5">answer, the same id in the run's</tspan><tspan x="440" dy="15.5">steps.</tspan></text><polyline points="559,264 559,236 424,236 424,202" class="edge dashed" marker-end="url(#arr)"/><rect x="700" y="264" width="258" height="126" rx="8" class="box k-person"/><rect x="918" y="271" width="32" height="16" rx="8" class="pill p-person"/><text x="934" y="283" class="ptext" text-anchor="middle"><tspan x="934" dy="0">Q&amp;A</tspan></text><text x="710" y="286" class="t-title" text-anchor="start"><tspan x="710" dy="0">"Does it hold on new</tspan><tspan x="710" dy="17">data?"</tspan></text><text x="710" y="322" class="t-body" text-anchor="start"><tspan x="710" dy="0">No claim made. One enriched slice,</tspan><tspan x="710" dy="15.5">one run per cell. Then: here is the</tspan><tspan x="710" dy="15.5">rerun path.</tspan></text><polyline points="829,264 829,236 1144,236 1144,202" class="edge dashed" marker-end="url(#arr)"/><rect x="970" y="264" width="258" height="126" rx="8" class="box k-person"/><rect x="1188" y="271" width="32" height="16" rx="8" class="pill p-person"/><text x="1204" y="283" class="ptext" text-anchor="middle"><tspan x="1204" dy="0">Q&amp;A</tspan></text><text x="980" y="286" class="t-title" text-anchor="start"><tspan x="980" dy="0">"Run it on something we</tspan><tspan x="980" dy="17">choose"</tspan></text><text x="980" y="322" class="t-body" text-anchor="start"><tspan x="980" dy="0">Hand it to the teammate: a chosen set</tspan><tspan x="980" dy="15.5">of groups, one model, rerun and score</tspan><tspan x="980" dy="15.5">in minutes.</tspan></text><polyline points="1099,264 1099,236 604,236 604,202" class="edge dashed" marker-end="url(#arr)"/><text x="20" y="404" class="t-small" text-anchor="start"><tspan x="20" dy="0">Dashed arrows: where the answer to each question lives on screen.</tspan></text><rect x="160" y="465" width="168" height="156" rx="8" class="box k-ui"/><text x="170" y="487" class="t-title" text-anchor="start"><tspan x="170" dy="0">Search an account</tspan><tspan x="170" dy="17">or bank</tspan></text><text x="170" y="523" class="t-body" text-anchor="start"><tspan x="170" dy="0">Type an account id or a</tspan><tspan x="170" dy="15.5">bank code. The data has</tspan><tspan x="170" dy="15.5">those and no names, so</tspan><tspan x="170" dy="15.5">people are not</tspan><tspan x="170" dy="15.5">searchable.</tspan></text><polyline points="328,543 340,543" class="edge" marker-end="url(#arr)"/><rect x="340" y="465" width="168" height="156" rx="8" class="box k-ui"/><text x="350" y="487" class="t-title" text-anchor="start"><tspan x="350" dy="0">A ranked, checkable</tspan><tspan x="350" dy="17">list</tspan></text><text x="350" y="523" class="t-body" text-anchor="start"><tspan x="350" dy="0">Per group: ring or</tspan><tspan x="350" dy="15.5">ordinary, the pattern,</tspan><tspan x="350" dy="15.5">confidence, one</tspan><tspan x="350" dy="15.5">sentence why. Sorted by</tspan><tspan x="350" dy="15.5">confidence.</tspan></text><polyline points="508,543 520,543" class="edge" marker-end="url(#arr)"/><rect x="520" y="465" width="168" height="156" rx="8" class="box k-ui"/><text x="530" y="487" class="t-title" text-anchor="start"><tspan x="530" dy="0">Follow the money</tspan></text><text x="530" y="506" class="t-body" text-anchor="start"><tspan x="530" dy="0">From a flag: the</tspan><tspan x="530" dy="15.5">account's transfers in</tspan><tspan x="530" dy="15.5">and out on a timeline,</tspan><tspan x="530" dy="15.5">then hop to where the</tspan><tspan x="530" dy="15.5">money went next. A</tspan><tspan x="530" dy="15.5">breadcrumb trail.</tspan></text><polyline points="688,543 700,543" class="edge" marker-end="url(#arr)"/><rect x="700" y="465" width="168" height="156" rx="8" class="box k-ui"/><text x="710" y="487" class="t-title" text-anchor="start"><tspan x="710" dy="0">Who else flagged it</tspan></text><text x="710" y="506" class="t-body" text-anchor="start"><tspan x="710" dy="0">Every model's verdict</tspan><tspan x="710" dy="15.5">and reason on this</tspan><tspan x="710" dy="15.5">account, side by side;</tspan><tspan x="710" dy="15.5">the ids each one cited,</tspan><tspan x="710" dy="15.5">highlighted in the</tspan><tspan x="710" dy="15.5">rows.</tspan></text><polyline points="868,543 880,543" class="edge" marker-end="url(#arr)"/><rect x="880" y="465" width="168" height="156" rx="8" class="box k-person"/><text x="890" y="487" class="t-title" text-anchor="start"><tspan x="890" dy="0">Decide</tspan></text><text x="890" y="506" class="t-body" text-anchor="start"><tspan x="890" dy="0">Escalate or dismiss,</tspan><tspan x="890" dy="15.5">with a note. A person</tspan><tspan x="890" dy="15.5">decides; the model</tspan><tspan x="890" dy="15.5">never files. The case</tspan><tspan x="890" dy="15.5">pack (ids, accounts,</tspan><tspan x="890" dy="15.5">reasons) exports as a</tspan><tspan x="890" dy="15.5">file.</tspan></text><polyline points="1048,543 1060,543" class="edge" marker-end="url(#arr)"/><rect x="1060" y="465" width="168" height="156" rx="8" class="box k-prism assumed"/><rect x="1162" y="472" width="58" height="16" rx="8" class="pill p-assumed"/><text x="1191" y="484" class="ptext" text-anchor="middle"><tspan x="1191" dy="0">assumed</tspan></text><text x="1070" y="487" class="t-title" text-anchor="start"><tspan x="1070" dy="0">The record</tspan></text><text x="1070" y="506" class="t-body" text-anchor="start"><tspan x="1070" dy="0">The run and its verdict</tspan><tspan x="1070" dy="15.5">kept in PRISM; the</tspan><tspan x="1070" dy="15.5">decision beside it.</tspan></text><text x="20" y="652" class="t-small" text-anchor="start"><tspan x="20" dy="0">The analyst never sees the leaderboard; that is a bench screen. Search and follow-the-money were asked for at 11:45; the data has account ids and bank codes, no names.</tspan></text><rect x="160" y="725" width="168" height="128" rx="8" class="box k-code assumed"/><rect x="262" y="732" width="58" height="16" rx="8" class="pill p-assumed"/><text x="291" y="744" class="ptext" text-anchor="middle"><tspan x="291" dy="0">assumed</tspan></text><text x="170" y="747" class="t-title" text-anchor="start"><tspan x="170" dy="0">Add a model</tspan></text><text x="170" y="766" class="t-body" text-anchor="start"><tspan x="170" dy="0">One line in the model</tspan><tspan x="170" dy="15.5">list (models.toml): the</tspan><tspan x="170" dy="15.5">family, its Nicrron id,</tspan><tspan x="170" dy="15.5">its per-token prices.</tspan></text><polyline points="328,789 340,789" class="edge" marker-end="url(#arr)"/><rect x="340" y="725" width="168" height="128" rx="8" class="box k-code assumed"/><rect x="442" y="732" width="58" height="16" rx="8" class="pill p-assumed"/><text x="471" y="744" class="ptext" text-anchor="middle"><tspan x="471" dy="0">assumed</tspan></text><text x="350" y="747" class="t-title" text-anchor="start"><tspan x="350" dy="0">Rerun</tspan></text><text x="350" y="766" class="t-body" text-anchor="start"><tspan x="350" dy="0">run_bench.py: 60</tspan><tspan x="350" dy="15.5">requests a minute, 2</tspan><tspan x="350" dy="15.5">workers; N groups x 2</tspan><tspan x="350" dy="15.5">versions. Minutes, not</tspan><tspan x="350" dy="15.5">hours.</tspan></text><polyline points="508,789 520,789" class="edge" marker-end="url(#arr)"/><rect x="520" y="725" width="168" height="128" rx="8" class="box k-code assumed"/><rect x="622" y="732" width="58" height="16" rx="8" class="pill p-assumed"/><text x="651" y="744" class="ptext" text-anchor="middle"><tspan x="651" dy="0">assumed</tspan></text><text x="530" y="747" class="t-title" text-anchor="start"><tspan x="530" dy="0">Score</tspan></text><text x="530" y="766" class="t-body" text-anchor="start"><tspan x="530" dy="0">score_bench.py writes</tspan><tspan x="530" dy="15.5">data/bench_results.json.</tspan><tspan x="530" dy="15.5">Failures tagged by</tspan><tspan x="530" dy="15.5">shape.</tspan></text><polyline points="688,789 700,789" class="edge" marker-end="url(#arr)"/><rect x="700" y="725" width="168" height="128" rx="8" class="box k-ui"/><text x="710" y="747" class="t-title" text-anchor="start"><tspan x="710" dy="0">Refresh the UI</tspan></text><text x="710" y="766" class="t-body" text-anchor="start"><tspan x="710" dy="0">Reload the page: the</tspan><tspan x="710" dy="15.5">new row appears on the</tspan><tspan x="710" dy="15.5">leaderboard, its rings</tspan><tspan x="710" dy="15.5">in the replay.</tspan></text><polyline points="868,789 880,789" class="edge" marker-end="url(#arr)"/><rect x="880" y="725" width="168" height="128" rx="8" class="box k-prism"/><text x="890" y="747" class="t-title" text-anchor="start"><tspan x="890" dy="0">Send to PRISM</tspan></text><text x="890" y="766" class="t-body" text-anchor="start"><tspan x="890" dy="0">Traces for every run,</tspan><tspan x="890" dy="15.5">trajectories for v2;</tspan><tspan x="890" dy="15.5">alert rules per agent;</tspan><tspan x="890" dy="15.5">analyze the wrong ones;</tspan><tspan x="890" dy="15.5">Analyze now.</tspan></text><polyline points="1048,789 1060,789" class="edge" marker-end="url(#arr)"/><rect x="1060" y="725" width="168" height="128" rx="8" class="box k-person"/><text x="1070" y="747" class="t-title" text-anchor="start"><tspan x="1070" dy="0">Read the clusters</tspan></text><text x="1070" y="766" class="t-body" text-anchor="start"><tspan x="1070" dy="0">Root Cause page, filter</tspan><tspan x="1070" dy="15.5">by agent_name; write</tspan><tspan x="1070" dy="15.5">the one sentence why;</tspan><tspan x="1070" dy="15.5">screenshot it.</tspan></text><polyline points="1099,390 1099,415 1225,415 1225,672 424,672 424,725" class="edge dashed" marker-end="url(#arr)"/><text x="851" y="667" class="t-edge" text-anchor="middle"><tspan x="851" dy="0">the judge's chosen groups go to the rerun</tspan></text><polyline points="784,725 784,705 5,705 5,218 564,218 564,202" class="edge dashed" marker-end="url(#arr)"/><text x="442" y="214" class="t-edge" text-anchor="end"><tspan x="442" dy="0">new row on the leaderboard</tspan></text><polyline points="424,202 424,465" class="edge dashed" marker-end="url(#arr)"/><text x="432" y="428" class="t-edge" text-anchor="start"><tspan x="432" dy="0">the same list, one model</tspan></text><text x="20" y="916" class="t-small" text-anchor="start"><tspan x="20" dy="0">Dashed boxes in the teammate lane are the engine thread's files as assumed here; the step order is the design, the names are not confirmed.</tspan></text></svg></figure>
+<div class="legend"><span><i style="background:var(--data-bg);border-color:var(--data)"></i>data (files)</span><span><i style="background:var(--code-bg);border-color:var(--code)"></i>code (deterministic, ours)</span><span><i style="background:var(--model-bg);border-color:var(--model)"></i>a model (through Nicrron)</span><span><i style="background:var(--person-bg);border-color:var(--person)"></i>a person</span><span><i style="background:var(--prism-bg);border-color:var(--prism)"></i>PRISM (sponsor observability)</span><span><i style="background:var(--ui-bg);border-color:var(--ui)"></i>the UI page</span><span><i style="background:var(--limit-bg);border-color:var(--limit)"></i>an honest limit</span><span><i style="background:var(--note-bg);border-color:var(--note)"></i>a note</span><span><i style="border-style:dashed;border-color:var(--assumed)"></i>dashed border = assumed (not confirmed with the engine thread)</span></div>
+<section class="notes">
+
+<h2>Who looks at this, for what</h2>
+<p>Whoever presents, to rehearse the 3 minutes and the four likely questions; the UX thread, to check every click named here has a screen; the engine thread, to check the rerun path exists for the last question.</p>
+<h2>What each lane is for</h2>
+<ul>
+<li><b>The judge</b>: the six beats are the demo in order, matching the audits' advice to show the strong run, the failed run and the rule row rather than every arm. The four questions are the ones the brief expects; each dashed arrow points at the beat that answers it.</li>
+<li><b>The analyst</b>: the product's reason to exist. The audits said the earlier Rings page lacked "a concrete analyst action after a flag"; this lane is that action: search an account, a ranked list, follow the money hop by hop, see which models agree, decide, export the case. The data carries account ids and bank codes only, so "search a person" is not possible on this set.</li>
+<li><b>The teammate</b>: add a model, rerun, score, refresh, send, read. The "run it on something we choose" question lands on the rerun step, so that step has to be minutes, not hours (60 requests a minute, two workers).</li>
+</ul>
+<h2>Assumed (dashed boxes)</h2>
+<ul>
+<li>The teammate's file names (models.toml, run_bench.py, score_bench.py).</li>
+<li>That the analyst's decision is written back beside the PRISM record. The bench design keeps the model's run; whether the person's decision joins it is not designed yet.</li>
+<li>The analyst lane's search, follow-the-money, who-else-flagged-it and case-pack boxes are the request of 11:45 drawn as screens; the UI thread owns whether and how they are built.</li>
+<li>That a judge-chosen rerun is possible in the room: it needs the runner to accept a subset of groups and one model, and the Nicrron budget to have room.</li>
+</ul>
+
+</section>
+<details>
+<summary>Editable source: 04_interaction.mmd (Mermaid text, same chart; the SVG above is drawn by make_diagrams.py)</summary>
+<pre>%% User interaction chart, Rings bench. Three people as subgraphs (swimlanes), time left to right.
+flowchart LR
+  subgraph JUDGE["The judge: 3 minutes, then questions"]
+    direction LR
+    J1["0:00 the network\nslice replays, no answer key"]:::ui --&gt; J2["0:30 one model's rings light up\ngreen agree, red false, amber missed"]:::ui
+    J2 --&gt; J3["1:00 the leaderboard\nv1 | v2 per family, rule row, cost, latency"]:::ui
+    J3 --&gt; J4["1:30 failures by shape\nclick a cell for the runs"]:::ui
+    J4 --&gt; J5["2:00 the PRISM proofs\none v2 run's 7 steps, the fired alert, cluster then v2 green"]:::prism
+    J5 --&gt; J6["2:30 one honest limit\nACH tell, enriched rate, wrong N in ten"]:::limit
+    Q1["Q: show me the PRISM trace"]:::person -.-&gt; J5
+    Q2["Q: how do you know it is the right row?\nid in slice = id in answer = id in the run's steps"]:::person -.-&gt; J2
+    Q3["Q: does it hold on new data?\nno claim; one slice, one run per cell"]:::person -.-&gt; J6
+    Q4["Q: run it on something we choose"]:::person
+  end
+  subgraph ANALYST["The analyst: a bank's financial-crime desk"]
+    direction LR
+    A0["search an account or bank\n(account ids and bank codes; no names in the data)"]:::ui --&gt; A2["a ranked, checkable list\nring | ordinary, pattern, confidence, why"]:::ui
+    A2 --&gt; A3["follow the money\nin and out on a timeline, hop to the next account, breadcrumb"]:::ui
+    A3 --&gt; A3b["who else flagged it\nevery model's verdict and reason, cited ids highlighted"]:::ui
+    A3b --&gt; A4["decide: escalate or dismiss, with a note\na person decides; case pack exports"]:::person
+    A4 --&gt; A5["the record in PRISM (decision beside it: assumed)"]:::prism
+  end
+  subgraph TEAMMATE["The teammate: operating the bench"]
+    direction LR
+    T1["add a model\nmodels.toml (assumed)"]:::code --&gt; T2["rerun\nrun_bench.py, 60/min, 2 workers"]:::code
+    T2 --&gt; T3["score\nscore_bench.py -&gt; bench_results.json"]:::code
+    T3 --&gt; T4["refresh the UI\nnew row, new rings"]:::ui
+    T4 --&gt; T5["send to PRISM\ntraces, v2 trajectories, alert rules, analyze, Analyze now"]:::prism
+    T5 --&gt; T6["read the clusters\nRoot Cause, filter agent_name, one sentence why"]:::person
+  end
+  Q4 -.-&gt;|chosen groups| T2
+  T4 -.-&gt;|new row| J3
+  J2 -.-&gt;|same list, one model| A2
+  classDef ui fill:#e7edf3,stroke:#4a6a8a
+  classDef prism fill:#fbead9,stroke:#c2621a
+  classDef limit fill:#fde8e1,stroke:#b7411e
+  classDef person fill:#e4f3e8,stroke:#2f8f4e
+  classDef data fill:#e2f2f4,stroke:#2a7f8f
+  classDef code fill:#e6ebfa,stroke:#3b5bdb
+</pre>
+</details>
+<footer>Rings many-models bench · Money Talks 2, 2026-10-17 · Claude's suggestion, unruled by Alex · no data, keys or model calls on this page.</footer>
+</main>
+<script>
+(function () {
+  var root = document.documentElement;
+  var q = new URLSearchParams(location.search).get('theme');
+  var saved = null;
+  try { saved = localStorage.getItem('rings-theme'); } catch (e) {}
+  if (q === 'dark' || q === 'light') root.dataset.theme = q;
+  else if (saved === 'dark' || saved === 'light') root.dataset.theme = saved;
+  var btn = document.getElementById('theme');
+  function label() {
+    var cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    btn.textContent = cur === 'dark' ? 'Light mode' : 'Dark mode';
+  }
+  if (btn) {
+    label();
+    btn.addEventListener('click', function () {
+      var cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      var next = cur === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      try { localStorage.setItem('rings-theme', next); } catch (e) {}
+      label();
+    });
+  }
+})();
+</script>
+</body>
+</html>

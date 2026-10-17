@@ -1,0 +1,46 @@
+%% Technical data flow, Rings many-models bench. Dashed boxes (-.-) are assumed file names.
+flowchart TB
+  subgraph DATA
+    IBM["IBM AMLworld HI-Small\n5.08M transfers, 5,177 laundering\nCDLA-Sharing-1.0, HF mirror + IBM's pattern file"]:::data
+    SEL["select_rings.py / classify.py / build_slice.py\n20 of IBM's laundering groups: cycle 2, fan-out 2, fan-in 2,\nscatter-gather 2, chain 2, mesh 1, other 1, lone 8"]:::code
+    SL["data/slice.js (window.SLICE)\n2,824 transfers T0001..T2824, 113 laundering\ntransfers (models see) · key (scorer only) · ring_meta"]:::data
+    GR["data/groups.json (assumed)\ncandidate groups = connected account clusters\nexpected: ring+shape | ordinary"]:::code
+    IBM --> SEL --> SL --> GR
+  end
+  subgraph RUNS
+    PR["prompts v1 raw rows · v2 rows + facts.py\n(degrees, loops, bursts, amounts, formats, ACH share)"]:::code
+    RUN["run_bench.py (assumed)\nmodel x version x group · 2 workers · 60/min"]:::code
+    NIC["Nicrron API https://api.nicrron.ai/v1\nanthropic openai deepseek mistral moonshot xai z-ai"]:::model
+    ANS["answer JSON: verdict, pattern, flagged ids,\nconfidence, why (+ tokens, latency)"]:::model
+    GR -->|one group at a time| PR --> RUN -->|chat/completions| NIC --> ANS
+  end
+  subgraph SCORING
+    SC["score_bench.py (assumed), local, free\nverdict vs expected · pattern vs shape · P/R vs IBM labels\nper model: P, R, rings/20, false rings, $, latency\nfailure = wrong verdict, tagged by shape"]:::code
+    RULE["baseline: flag every ACH\nrecall 100%, precision 25.5%"]:::code
+    ANS --> SC
+  end
+  subgraph PRISM["PRISM (Money Operations) api.prism.blockconvey.com · agent_name rings-family-v1|v2"]
+    TR["POST /api/traces (free)\nmetadata: family, version, group, expected, local_score, failure_tag\nempty output = error"]:::prism
+    SE["Sessions: POST /api/trajectories (free), every v2 run\n7 steps: load_rows, degrees, loops, bursts,\npass_through_chains, model, parse_answer"]:::prism
+    AL["Alert: POST /api/alerts/rules (free)\nerror_rate and latency per rings-* agent\nGET /api/alerts/fired"]:::prism
+    AN["POST /api/traces/{row id}/analyze\n1 credit per wrong run (missed_ring:shape | false_ring), 5 to 10"]:::prism
+    RC["POST /api/intelligence/clusters/analyze\n5 credits, 4 to 9 min; GET clusters?agent_name=\nthen v2 on the same group ids"]:::prism
+    SC -->|every run| TR --> AL
+    SC -->|v2 runs| SE
+    SC -->|wrong runs| AN --> RC
+  end
+  subgraph OUTPUT
+    RES["data/bench_results.json\nmodels · runs · failures_by_shape"]:::data
+    UI["rings_bench/ui/index.html\nreplay · leaderboard v1|v2 · failures grid · honest panel"]:::ui
+    DASH["PRISM dashboard: Steps tab, fired alert, cluster, v2 green"]:::prism
+    SC --> RES --> UI
+    SL -.-> UI
+    RC --> DASH
+    SE --> DASH
+    AL --> DASH
+  end
+  classDef data fill:#e2f2f4,stroke:#2a7f8f
+  classDef code fill:#e6ebfa,stroke:#3b5bdb
+  classDef model fill:#eee7f8,stroke:#7c4dbd
+  classDef prism fill:#fbead9,stroke:#c2621a
+  classDef ui fill:#e7edf3,stroke:#4a6a8a

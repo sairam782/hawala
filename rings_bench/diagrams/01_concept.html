@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Concept flow</title>
+<style>
+:root {
+  --bg:#fbfbfa; --fg:#1f2328; --muted:#5b6470; --line:#6b7280; --lane:#f1f2f4; --lane-line:#d6d9de;
+  --panel:#ffffff; --halo:#fbfbfa; --link:#2b55c7;
+  --data:#2a7f8f; --data-bg:#e2f2f4;
+  --code:#3b5bdb; --code-bg:#e6ebfa;
+  --model:#7c4dbd; --model-bg:#eee7f8;
+  --person:#2f8f4e; --person-bg:#e4f3e8;
+  --prism:#c2621a; --prism-bg:#fbead9;
+  --ui:#4a6a8a; --ui-bg:#e7edf3;
+  --limit:#b7411e; --limit-bg:#fde8e1;
+  --note:#8a7a2a; --note-bg:#f8f3d8;
+  --assumed:#6b7280; --pill-fg:#ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#141618; --fg:#e8eaed; --muted:#a0a8b3; --line:#9aa3ad; --lane:#1c1f23; --lane-line:#2e3238;
+    --panel:#1a1d21; --halo:#141618; --link:#8fb0ff;
+    --data:#5fc0cf; --data-bg:#14323a;
+    --code:#8ea2ff; --code-bg:#1c2550;
+    --model:#b794f4; --model-bg:#2b1f44;
+    --person:#6fcf8a; --person-bg:#143a22;
+    --prism:#f0a060; --prism-bg:#3d2410;
+    --ui:#9ab8d6; --ui-bg:#1f2c3a;
+    --limit:#ff8a65; --limit-bg:#43201a;
+    --note:#e0c860; --note-bg:#3a3212;
+    --assumed:#9aa3ad; --pill-fg:#111111;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#141618; --fg:#e8eaed; --muted:#a0a8b3; --line:#9aa3ad; --lane:#1c1f23; --lane-line:#2e3238;
+  --panel:#1a1d21; --halo:#141618; --link:#8fb0ff;
+  --data:#5fc0cf; --data-bg:#14323a;
+  --code:#8ea2ff; --code-bg:#1c2550;
+  --model:#b794f4; --model-bg:#2b1f44;
+  --person:#6fcf8a; --person-bg:#143a22;
+  --prism:#f0a060; --prism-bg:#3d2410;
+  --ui:#9ab8d6; --ui-bg:#1f2c3a;
+  --limit:#ff8a65; --limit-bg:#43201a;
+  --note:#e0c860; --note-bg:#3a3212;
+  --assumed:#9aa3ad; --pill-fg:#111111;
+}
+* { box-sizing: border-box; }
+html, body { margin:0; background:var(--bg); color:var(--fg);
+  font: 15px/1.45 system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+a { color: var(--link); }
+header { display:flex; flex-wrap:wrap; gap:8px 18px; align-items:center; padding:10px 16px;
+  border-bottom:1px solid var(--lane-line); font-size:14px; color:var(--muted); }
+header .crumb a { text-decoration:none; }
+header .spacer { flex:1; }
+header button { font:inherit; color:var(--fg); background:var(--lane); border:1px solid var(--lane-line);
+  border-radius:6px; padding:4px 10px; cursor:pointer; }
+main { max-width:1280px; margin:0 auto; padding:16px 16px 48px; }
+h1 { font-size:24px; margin:8px 0 4px; }
+h2 { font-size:17px; margin:26px 0 8px; }
+.lede { color:var(--muted); margin:0 0 14px; max-width:1000px; }
+figure { margin:0; background:var(--panel); border:1px solid var(--lane-line); border-radius:10px; padding:8px; }
+figure svg { display:block; width:100%; height:auto; }
+.notes p, .notes li { max-width:1000px; }
+details { margin-top:22px; }
+summary { cursor:pointer; color:var(--muted); }
+pre { background:var(--lane); border:1px solid var(--lane-line); border-radius:8px; padding:12px; overflow:auto;
+  font-size:12.5px; line-height:1.4; }
+footer { margin-top:30px; color:var(--muted); font-size:13px; }
+.cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:14px; }
+.card { display:block; text-decoration:none; color:inherit; background:var(--panel); border:1px solid var(--lane-line);
+  border-radius:10px; padding:14px 16px; }
+.card b { display:block; font-size:16px; margin-bottom:4px; }
+.card span { color:var(--muted); font-size:14px; }
+.legend { display:flex; flex-wrap:wrap; gap:8px 16px; margin:10px 0 0; font-size:13px; color:var(--muted); }
+.legend i { display:inline-block; width:14px; height:14px; border-radius:3px; vertical-align:-2px; margin-right:5px; border:1.5px solid; }
+/* SVG */
+svg text { fill:var(--fg); font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+svg .t-title { font-size:14px; font-weight:650; }
+svg .t-body { font-size:12.5px; }
+svg .t-small { font-size:11.5px; fill:var(--muted); }
+svg .t-band { font-size:12px; font-weight:700; letter-spacing:.08em; fill:var(--muted); }
+svg .t-lane { font-size:15px; font-weight:700; }
+svg .t-edge { font-size:11.5px; fill:var(--muted); paint-order:stroke; stroke:var(--panel); stroke-width:4px; stroke-linejoin:round; }
+svg .t-big { font-size:17px; font-weight:700; }
+svg .ptext { font-size:10.5px; font-weight:700; fill:var(--pill-fg); letter-spacing:.04em; }
+svg .box { stroke-width:1.5; }
+svg .box.assumed { stroke-dasharray:6 4; }
+svg .k-data { fill:var(--data-bg); stroke:var(--data); }
+svg .k-code { fill:var(--code-bg); stroke:var(--code); }
+svg .k-model { fill:var(--model-bg); stroke:var(--model); }
+svg .k-person { fill:var(--person-bg); stroke:var(--person); }
+svg .k-prism { fill:var(--prism-bg); stroke:var(--prism); }
+svg .k-ui { fill:var(--ui-bg); stroke:var(--ui); }
+svg .k-limit { fill:var(--limit-bg); stroke:var(--limit); }
+svg .k-note { fill:var(--note-bg); stroke:var(--note); }
+svg .k-plain { fill:var(--panel); stroke:var(--line); }
+svg .p-data { fill:var(--data); } svg .p-code { fill:var(--code); } svg .p-model { fill:var(--model); }
+svg .p-person { fill:var(--person); } svg .p-prism { fill:var(--prism); } svg .p-ui { fill:var(--ui); }
+svg .p-limit { fill:var(--limit); } svg .p-note { fill:var(--note); } svg .p-assumed { fill:var(--assumed); }
+svg .p-plain { fill:var(--line); }
+svg .band { fill:var(--lane); stroke:var(--lane-line); stroke-width:1; }
+svg .lane { fill:var(--lane); stroke:var(--lane-line); stroke-width:1; }
+svg .edge { fill:none; stroke:var(--line); stroke-width:1.6; }
+svg .edge.dashed { stroke-dasharray:5 4; }
+svg .edge.thin { stroke-width:1; stroke-dasharray:3 3; }
+svg .arrhead { fill:var(--line); }
+svg .tick { stroke:var(--lane-line); stroke-width:1; }
+</style>
+</head>
+<body>
+<header>
+  <span class="crumb"><a href="index.html">Rings bench diagrams</a> / Concept flow</span>
+  <span>For: a judge, first minute</span>
+  <span class="spacer"></span>
+  <span>2026-10-17 · pencil, unstamped</span>
+  <button id="theme" type="button">Dark mode</button>
+</header>
+<main>
+<h1>Concept flow</h1>
+<p class="lede">The same pile of transfers, no answer key, every model family takes a swing. Code gives every piece an id, the model chooses and explains, code checks and gates, a person sees the forks, PRISM holds the record.</p>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 640" width="100%" role="img" aria-label="Concept flow of the Rings many-models bench"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrhead"/></marker></defs><rect x="20" y="20" width="275" height="160" rx="8" class="box k-data"/><rect x="249" y="27" width="38" height="16" rx="8" class="pill p-data"/><text x="268" y="39" class="ptext" text-anchor="middle"><tspan x="268" dy="0">data</tspan></text><text x="30" y="42" class="t-title" text-anchor="start"><tspan x="30" dy="0">1. The pile</tspan></text><text x="30" y="61" class="t-body" text-anchor="start"><tspan x="30" dy="0">2,824 bank transfers from IBM's</tspan><tspan x="30" dy="15.5">laundering simulator, ten days. 113 are</tspan><tspan x="30" dy="15.5">laundering, in 20 of the groups IBM</tspan><tspan x="30" dy="15.5">marked of known shapes. No model ever</tspan><tspan x="30" dy="15.5">sees the answer key.</tspan></text><rect x="330" y="20" width="275" height="160" rx="8" class="box k-code"/><rect x="559" y="27" width="38" height="16" rx="8" class="pill p-code"/><text x="578" y="39" class="ptext" text-anchor="middle"><tspan x="578" dy="0">code</tspan></text><text x="340" y="42" class="t-title" text-anchor="start"><tspan x="340" dy="0">2. Every piece gets an id</tspan></text><text x="340" y="61" class="t-body" text-anchor="start"><tspan x="340" dy="0">Code numbers each transfer (T0001 to</tspan><tspan x="340" dy="15.5">T2824) and groups the accounts that</tspan><tspan x="340" dy="15.5">trade with each other into candidate</tspan><tspan x="340" dy="15.5">groups. An id is what makes an answer</tspan><tspan x="340" dy="15.5">checkable later.</tspan></text><rect x="640" y="20" width="275" height="160" rx="8" class="box k-model"/><rect x="855" y="27" width="52" height="16" rx="8" class="pill p-model"/><text x="881" y="39" class="ptext" text-anchor="middle"><tspan x="881" dy="0">models</tspan></text><text x="650" y="42" class="t-title" text-anchor="start"><tspan x="650" dy="0">3. Every model family</tspan><tspan x="650" dy="17">takes a swing</tspan></text><text x="650" y="78" class="t-body" text-anchor="start"><tspan x="650" dy="0">Seven families through one API</tspan><tspan x="650" dy="15.5">(anthropic, openai, deepseek, mistral,</tspan><tspan x="650" dy="15.5">moonshot, xai, z-ai). Same groups for</tspan><tspan x="650" dy="15.5">all, two prompts each: the raw rows</tspan><tspan x="650" dy="15.5">(v1), the rows plus facts code computed</tspan><tspan x="650" dy="15.5">(v2).</tspan></text><rect x="950" y="20" width="275" height="160" rx="8" class="box k-model"/><rect x="1165" y="27" width="52" height="16" rx="8" class="pill p-model"/><text x="1191" y="39" class="ptext" text-anchor="middle"><tspan x="1191" dy="0">models</tspan></text><text x="960" y="42" class="t-title" text-anchor="start"><tspan x="960" dy="0">4. Each one chooses and</tspan><tspan x="960" dy="17">explains</tspan></text><text x="960" y="78" class="t-body" text-anchor="start"><tspan x="960" dy="0">Per group: ring or ordinary, the pattern</tspan><tspan x="960" dy="15.5">it sees, which transfer ids, how sure,</tspan><tspan x="960" dy="15.5">one sentence why. No model grades</tspan><tspan x="960" dy="15.5">itself.</tspan></text><polyline points="295,100 330,100" class="edge" marker-end="url(#arr)"/><polyline points="605,100 640,100" class="edge" marker-end="url(#arr)"/><polyline points="915,100 950,100" class="edge" marker-end="url(#arr)"/><rect x="950" y="250" width="275" height="160" rx="8" class="box k-code"/><rect x="1179" y="257" width="38" height="16" rx="8" class="pill p-code"/><text x="1198" y="269" class="ptext" text-anchor="middle"><tspan x="1198" dy="0">code</tspan></text><text x="960" y="272" class="t-title" text-anchor="start"><tspan x="960" dy="0">5. Code checks against</tspan><tspan x="960" dy="17">IBM's key</tspan></text><text x="960" y="308" class="t-body" text-anchor="start"><tspan x="960" dy="0">Verdict against the group IBM marked;</tspan><tspan x="960" dy="15.5">flagged ids against IBM's labels. Per</tspan><tspan x="960" dy="15.5">model: precision, recall, rings found of</tspan><tspan x="960" dy="15.5">20, false rings, cost in dollars,</tspan><tspan x="960" dy="15.5">latency. A wrong verdict is a failure,</tspan><tspan x="960" dy="15.5">tagged by ring shape.</tspan></text><rect x="640" y="250" width="275" height="160" rx="8" class="box k-person"/><rect x="842" y="257" width="65" height="16" rx="8" class="pill p-person"/><text x="875" y="269" class="ptext" text-anchor="middle"><tspan x="875" dy="0">a person</tspan></text><text x="650" y="272" class="t-title" text-anchor="start"><tspan x="650" dy="0">6. A person sees the</tspan><tspan x="650" dy="17">forks</tspan></text><text x="650" y="308" class="t-body" text-anchor="start"><tspan x="650" dy="0">Leaderboard with v1 beside v2, the</tspan><tspan x="650" dy="15.5">failures-by-shape grid, the network with</tspan><tspan x="650" dy="15.5">one model's rings lit, the honest panel.</tspan><tspan x="650" dy="15.5">Click a flag to see that account's</tspan><tspan x="650" dy="15.5">transfers.</tspan></text><rect x="20" y="250" width="585" height="160" rx="8" class="box k-limit"/><rect x="499" y="257" width="98" height="16" rx="8" class="pill p-limit"/><text x="548" y="269" class="ptext" text-anchor="middle"><tspan x="548" dy="0">the punchline</tspan></text><text x="30" y="272" class="t-title" text-anchor="start"><tspan x="30" dy="0">7. The honest line</tspan></text><text x="30" y="291" class="t-body" text-anchor="start"><tspan x="30" dy="0">A one-line rule (flag every ACH transfer) catches all 113 laundering transfers and 331</tspan><tspan x="30" dy="15.5">innocent ones: recall 100%, precision 25.5%. The slice has a tell. The best model beats</tspan><tspan x="30" dy="15.5">the rule and is still wrong N in ten (N comes from the bench results). And 4% of this</tspan><tspan x="30" dy="15.5">slice is laundering; 0.1% of IBM's full file is.</tspan></text><polyline points="1088,180 1088,250" class="edge" marker-end="url(#arr)"/><text x="1096" y="219" class="t-edge" text-anchor="start"><tspan x="1096" dy="0">answers as JSON</tspan></text><polyline points="950,330 915,330" class="edge" marker-end="url(#arr)"/><polyline points="640,330 605,330" class="edge" marker-end="url(#arr)"/><rect x="20" y="450" width="1205" height="110" rx="8" class="box k-prism"/><rect x="1172" y="457" width="45" height="16" rx="8" class="pill p-prism"/><text x="1194" y="469" class="ptext" text-anchor="middle"><tspan x="1194" dy="0">PRISM</tspan></text><text x="30" y="472" class="t-title" text-anchor="start"><tspan x="30" dy="0">8. PRISM holds the record (the sponsor's agent observability tool)</tspan></text><text x="30" y="491" class="t-body" text-anchor="start"><tspan x="30" dy="0">Every run lands as a trace; every v2 run also as a session with its seven tool steps (load rows, degrees, loops, bursts, pass-through chains, the model, parse the answer). Alerts fire on</tspan><tspan x="30" dy="15.5">error rate and latency per model. Wrong runs are clustered by cause (Root Cause), and v2 is shown passing on the same inputs. Credits are limited, so PRISM analyzes a subset; our code</tspan><tspan x="30" dy="15.5">scores everything.</tspan></text><polyline points="1088,410 1088,450" class="edge" marker-end="url(#arr)"/><text x="1096" y="434" class="t-edge" text-anchor="start"><tspan x="1096" dy="0">every run with its score</tspan></text><polyline points="778,450 778,410" class="edge" marker-end="url(#arr)"/><text x="786" y="419" class="t-edge" text-anchor="start"><tspan x="786" dy="0">clusters of wrong runs,</tspan><tspan x="786" dy="13">fired alerts</tspan></text><text x="20" y="600" class="t-small" text-anchor="start"><tspan x="20" dy="0">Read left to right, then the second row right to left under step 4. Colors: who does each step (see the key below).</tspan></text><text x="20" y="618" class="t-small" text-anchor="start"><tspan x="20" dy="0">One screen, no file names. The technical page has routes, files and credits.</tspan></text></svg></figure>
+<div class="legend"><span><i style="background:var(--data-bg);border-color:var(--data)"></i>data (files)</span><span><i style="background:var(--code-bg);border-color:var(--code)"></i>code (deterministic, ours)</span><span><i style="background:var(--model-bg);border-color:var(--model)"></i>a model (through Nicrron)</span><span><i style="background:var(--person-bg);border-color:var(--person)"></i>a person</span><span><i style="background:var(--prism-bg);border-color:var(--prism)"></i>PRISM (sponsor observability)</span><span><i style="background:var(--ui-bg);border-color:var(--ui)"></i>the UI page</span><span><i style="background:var(--limit-bg);border-color:var(--limit)"></i>an honest limit</span><span><i style="background:var(--note-bg);border-color:var(--note)"></i>a note</span><span><i style="border-style:dashed;border-color:var(--assumed)"></i>dashed border = assumed (not confirmed with the engine thread)</span></div>
+<section class="notes">
+
+<h2>Who looks at this, for what</h2>
+<p>A judge in the first minute, to get the shape of the whole thing before any number. Teammates use it to say the same story in the same order.</p>
+<h2>What each element is for</h2>
+<ul>
+<li><b>Steps 1 to 4</b> answer "what did the models actually get" (a pile with ids, no key) and "what did they give back" (a verdict with ids and a reason).</li>
+<li><b>Step 5</b> answers "who says it is right": code, against IBM's labels, never the model.</li>
+<li><b>Step 6</b> is the screen the judge will see next; the words match the UI panels.</li>
+<li><b>Step 7</b> is the one line the audits said the earlier Rings page buried: the rule row and the enriched rate, said before anyone asks.</li>
+<li><b>Step 8</b> is the sponsor requirement (Money Operations: Sessions, Alert, Root Cause then v2) in one sentence, with the credits limit so nobody expects PRISM to have analyzed everything.</li>
+</ul>
+<h2>Assumed</h2>
+<p>"N in ten" is a placeholder until the bench results exist. The seven families and the two prompt versions are from the engine thread's design at 11:02; if a family is dropped for budget, step 3 changes.</p>
+
+</section>
+<details>
+<summary>Editable source: 01_concept.mmd (Mermaid text, same chart; the SVG above is drawn by make_diagrams.py)</summary>
+<pre>%% Concept flow, Rings many-models bench (judge view). Edit freely; the HTML page is drawn separately.
+flowchart LR
+  A["1. The pile\n2,824 transfers, 113 laundering\n20 of IBM's laundering groups, no answer key"]:::data
+  B["2. Every piece gets an id\nT0001..T2824, candidate groups"]:::code
+  C["3. Every model family takes a swing\n7 families, one API\nv1 raw rows, v2 rows + computed facts"]:::model
+  D["4. Each one chooses and explains\nring | ordinary, pattern, ids, confidence, why"]:::model
+  E["5. Code checks against IBM's key\nprecision, recall, rings of 20, false rings, cost, latency"]:::code
+  F["6. A person sees the forks\nleaderboard v1 | v2, failures by shape, network, honest panel"]:::person
+  G["7. The honest line\nACH rule: recall 100%, precision 25.5%\nbest model still wrong N in ten\n4% here vs 0.1% real"]:::limit
+  P["8. PRISM holds the record\ntraces; v2 sessions with 7 tool steps; alerts on error rate and latency;\nRoot Cause clusters, then v2 passing on the same inputs"]:::prism
+  A --&gt; B --&gt; C --&gt; D --&gt;|JSON answers| E --&gt;|scores, failures| F --&gt;|the number that matters| G
+  E --&gt;|every run with its score| P
+  P --&gt;|clusters, fired alerts| F
+  classDef data fill:#e2f2f4,stroke:#2a7f8f
+  classDef code fill:#e6ebfa,stroke:#3b5bdb
+  classDef model fill:#eee7f8,stroke:#7c4dbd
+  classDef person fill:#e4f3e8,stroke:#2f8f4e
+  classDef prism fill:#fbead9,stroke:#c2621a
+  classDef limit fill:#fde8e1,stroke:#b7411e
+</pre>
+</details>
+<footer>Rings many-models bench · Money Talks 2, 2026-10-17 · Claude's suggestion, unruled by Alex · no data, keys or model calls on this page.</footer>
+</main>
+<script>
+(function () {
+  var root = document.documentElement;
+  var q = new URLSearchParams(location.search).get('theme');
+  var saved = null;
+  try { saved = localStorage.getItem('rings-theme'); } catch (e) {}
+  if (q === 'dark' || q === 'light') root.dataset.theme = q;
+  else if (saved === 'dark' || saved === 'light') root.dataset.theme = saved;
+  var btn = document.getElementById('theme');
+  function label() {
+    var cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    btn.textContent = cur === 'dark' ? 'Light mode' : 'Dark mode';
+  }
+  if (btn) {
+    label();
+    btn.addEventListener('click', function () {
+      var cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      var next = cur === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      try { localStorage.setItem('rings-theme', next); } catch (e) {}
+      label();
+    });
+  }
+})();
+</script>
+</body>
+</html>

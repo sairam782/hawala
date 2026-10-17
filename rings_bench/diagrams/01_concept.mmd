@@ -1,0 +1,19 @@
+%% Concept flow, Rings many-models bench (judge view). Edit freely; the HTML page is drawn separately.
+flowchart LR
+  A["1. The pile\n2,824 transfers, 113 laundering\n20 of IBM's laundering groups, no answer key"]:::data
+  B["2. Every piece gets an id\nT0001..T2824, candidate groups"]:::code
+  C["3. Every model family takes a swing\n7 families, one API\nv1 raw rows, v2 rows + computed facts"]:::model
+  D["4. Each one chooses and explains\nring | ordinary, pattern, ids, confidence, why"]:::model
+  E["5. Code checks against IBM's key\nprecision, recall, rings of 20, false rings, cost, latency"]:::code
+  F["6. A person sees the forks\nleaderboard v1 | v2, failures by shape, network, honest panel"]:::person
+  G["7. The honest line\nACH rule: recall 100%, precision 25.5%\nbest model still wrong N in ten\n4% here vs 0.1% real"]:::limit
+  P["8. PRISM holds the record\ntraces; v2 sessions with 7 tool steps; alerts on error rate and latency;\nRoot Cause clusters, then v2 passing on the same inputs"]:::prism
+  A --> B --> C --> D -->|JSON answers| E -->|scores, failures| F -->|the number that matters| G
+  E -->|every run with its score| P
+  P -->|clusters, fired alerts| F
+  classDef data fill:#e2f2f4,stroke:#2a7f8f
+  classDef code fill:#e6ebfa,stroke:#3b5bdb
+  classDef model fill:#eee7f8,stroke:#7c4dbd
+  classDef person fill:#e4f3e8,stroke:#2f8f4e
+  classDef prism fill:#fbead9,stroke:#c2621a
+  classDef limit fill:#fde8e1,stroke:#b7411e

@@ -1,0 +1,26 @@
+%% PRISM proof map, Rings bench, Money Operations track. One row per judged proof: run -> code -> person -> proof on screen.
+flowchart LR
+  subgraph MO["Money Operations: the failure, the fix, and the alert that would have caught it"]
+    R1["runs: every v2 run, 7 named steps\nload_rows, degrees, loops, bursts, pass_through_chains, model, parse_answer"]:::model
+    C1["submit_trajectory = POST /api/trajectories\nagent_name rings-family-v2, conversation_id = group id · 0 credits\ngotcha: shared authorized-tools config fails SAFETY-001, steps still show"]:::code
+    P1["person: nothing live; on stage open the run, Steps tab"]:::person
+    S1["proof 1: Steps tab with 7 tool calls, path_signature"]:::prism
+    R1 --> C1 --> P1 --> S1
+    R2["runs: a good run first; then a family with no answer (error_rate)\nor a slow family (latency); one latency alert already fired on gpt-6-sol"]:::model
+    C2["POST /api/alerts/rules {metric error_rate | latency, condition above, threshold, agent_id}\nGET /api/alerts/fired · 0 credits · empty output = error; a rule fires once"]:::code
+    P2["person: Alerts page, show the fired alert and its run"]:::person
+    S2["proof 2: fired row, actual_value over threshold, trace id (screenshot first)"]:::prism
+    R2 --> C2 --> P2 --> S2
+    R3["runs: 5 to 10 v1 failures of one kind, tagged missed_ring:shape | false_ring\nthen v2 on the same group ids, passing"]:::model
+    C3["POST /api/traces/{row id}/analyze (1 each)\nPOST /api/intelligence/clusters/analyze (5); GET clusters?agent_name=\nassumed: failed traces need an error status to cluster"]:::code
+    P3["person: Traces tick + Analyze selected; Root Cause Analyze now; Traces filtered to v2"]:::person
+    S3["proof 3: cluster of 3+, cause_class, one sentence; v2 rows green on the same groups"]:::prism
+    R3 --> C3 --> P3 --> S3
+  end
+  N1["side note, not a chart: Trust & Risk guardrail on the customer-facing message (Block mode) was proven live this morning; block check and Root Cause follow the same routes"]:::note
+  N2["side note: Money Intelligence evaluator (our scoring rule, 1 credit per scored trace, needs a retrieval span) is optional now"]:::note
+  classDef model fill:#eee7f8,stroke:#7c4dbd
+  classDef code fill:#e6ebfa,stroke:#3b5bdb
+  classDef person fill:#e4f3e8,stroke:#2f8f4e
+  classDef prism fill:#fbead9,stroke:#c2621a
+  classDef note fill:#f8f3d8,stroke:#8a7a2a

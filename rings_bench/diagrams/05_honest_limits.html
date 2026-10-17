@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Honest limits map</title>
+<style>
+:root {
+  --bg:#fbfbfa; --fg:#1f2328; --muted:#5b6470; --line:#6b7280; --lane:#f1f2f4; --lane-line:#d6d9de;
+  --panel:#ffffff; --halo:#fbfbfa; --link:#2b55c7;
+  --data:#2a7f8f; --data-bg:#e2f2f4;
+  --code:#3b5bdb; --code-bg:#e6ebfa;
+  --model:#7c4dbd; --model-bg:#eee7f8;
+  --person:#2f8f4e; --person-bg:#e4f3e8;
+  --prism:#c2621a; --prism-bg:#fbead9;
+  --ui:#4a6a8a; --ui-bg:#e7edf3;
+  --limit:#b7411e; --limit-bg:#fde8e1;
+  --note:#8a7a2a; --note-bg:#f8f3d8;
+  --assumed:#6b7280; --pill-fg:#ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#141618; --fg:#e8eaed; --muted:#a0a8b3; --line:#9aa3ad; --lane:#1c1f23; --lane-line:#2e3238;
+    --panel:#1a1d21; --halo:#141618; --link:#8fb0ff;
+    --data:#5fc0cf; --data-bg:#14323a;
+    --code:#8ea2ff; --code-bg:#1c2550;
+    --model:#b794f4; --model-bg:#2b1f44;
+    --person:#6fcf8a; --person-bg:#143a22;
+    --prism:#f0a060; --prism-bg:#3d2410;
+    --ui:#9ab8d6; --ui-bg:#1f2c3a;
+    --limit:#ff8a65; --limit-bg:#43201a;
+    --note:#e0c860; --note-bg:#3a3212;
+    --assumed:#9aa3ad; --pill-fg:#111111;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#141618; --fg:#e8eaed; --muted:#a0a8b3; --line:#9aa3ad; --lane:#1c1f23; --lane-line:#2e3238;
+  --panel:#1a1d21; --halo:#141618; --link:#8fb0ff;
+  --data:#5fc0cf; --data-bg:#14323a;
+  --code:#8ea2ff; --code-bg:#1c2550;
+  --model:#b794f4; --model-bg:#2b1f44;
+  --person:#6fcf8a; --person-bg:#143a22;
+  --prism:#f0a060; --prism-bg:#3d2410;
+  --ui:#9ab8d6; --ui-bg:#1f2c3a;
+  --limit:#ff8a65; --limit-bg:#43201a;
+  --note:#e0c860; --note-bg:#3a3212;
+  --assumed:#9aa3ad; --pill-fg:#111111;
+}
+* { box-sizing: border-box; }
+html, body { margin:0; background:var(--bg); color:var(--fg);
+  font: 15px/1.45 system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+a { color: var(--link); }
+header { display:flex; flex-wrap:wrap; gap:8px 18px; align-items:center; padding:10px 16px;
+  border-bottom:1px solid var(--lane-line); font-size:14px; color:var(--muted); }
+header .crumb a { text-decoration:none; }
+header .spacer { flex:1; }
+header button { font:inherit; color:var(--fg); background:var(--lane); border:1px solid var(--lane-line);
+  border-radius:6px; padding:4px 10px; cursor:pointer; }
+main { max-width:1280px; margin:0 auto; padding:16px 16px 48px; }
+h1 { font-size:24px; margin:8px 0 4px; }
+h2 { font-size:17px; margin:26px 0 8px; }
+.lede { color:var(--muted); margin:0 0 14px; max-width:1000px; }
+figure { margin:0; background:var(--panel); border:1px solid var(--lane-line); border-radius:10px; padding:8px; }
+figure svg { display:block; width:100%; height:auto; }
+.notes p, .notes li { max-width:1000px; }
+details { margin-top:22px; }
+summary { cursor:pointer; color:var(--muted); }
+pre { background:var(--lane); border:1px solid var(--lane-line); border-radius:8px; padding:12px; overflow:auto;
+  font-size:12.5px; line-height:1.4; }
+footer { margin-top:30px; color:var(--muted); font-size:13px; }
+.cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:14px; }
+.card { display:block; text-decoration:none; color:inherit; background:var(--panel); border:1px solid var(--lane-line);
+  border-radius:10px; padding:14px 16px; }
+.card b { display:block; font-size:16px; margin-bottom:4px; }
+.card span { color:var(--muted); font-size:14px; }
+.legend { display:flex; flex-wrap:wrap; gap:8px 16px; margin:10px 0 0; font-size:13px; color:var(--muted); }
+.legend i { display:inline-block; width:14px; height:14px; border-radius:3px; vertical-align:-2px; margin-right:5px; border:1.5px solid; }
+/* SVG */
+svg text { fill:var(--fg); font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+svg .t-title { font-size:14px; font-weight:650; }
+svg .t-body { font-size:12.5px; }
+svg .t-small { font-size:11.5px; fill:var(--muted); }
+svg .t-band { font-size:12px; font-weight:700; letter-spacing:.08em; fill:var(--muted); }
+svg .t-lane { font-size:15px; font-weight:700; }
+svg .t-edge { font-size:11.5px; fill:var(--muted); paint-order:stroke; stroke:var(--panel); stroke-width:4px; stroke-linejoin:round; }
+svg .t-big { font-size:17px; font-weight:700; }
+svg .ptext { font-size:10.5px; font-weight:700; fill:var(--pill-fg); letter-spacing:.04em; }
+svg .box { stroke-width:1.5; }
+svg .box.assumed { stroke-dasharray:6 4; }
+svg .k-data { fill:var(--data-bg); stroke:var(--data); }
+svg .k-code { fill:var(--code-bg); stroke:var(--code); }
+svg .k-model { fill:var(--model-bg); stroke:var(--model); }
+svg .k-person { fill:var(--person-bg); stroke:var(--person); }
+svg .k-prism { fill:var(--prism-bg); stroke:var(--prism); }
+svg .k-ui { fill:var(--ui-bg); stroke:var(--ui); }
+svg .k-limit { fill:var(--limit-bg); stroke:var(--limit); }
+svg .k-note { fill:var(--note-bg); stroke:var(--note); }
+svg .k-plain { fill:var(--panel); stroke:var(--line); }
+svg .p-data { fill:var(--data); } svg .p-code { fill:var(--code); } svg .p-model { fill:var(--model); }
+svg .p-person { fill:var(--person); } svg .p-prism { fill:var(--prism); } svg .p-ui { fill:var(--ui); }
+svg .p-limit { fill:var(--limit); } svg .p-note { fill:var(--note); } svg .p-assumed { fill:var(--assumed); }
+svg .p-plain { fill:var(--line); }
+svg .band { fill:var(--lane); stroke:var(--lane-line); stroke-width:1; }
+svg .lane { fill:var(--lane); stroke:var(--lane-line); stroke-width:1; }
+svg .edge { fill:none; stroke:var(--line); stroke-width:1.6; }
+svg .edge.dashed { stroke-dasharray:5 4; }
+svg .edge.thin { stroke-width:1; stroke-dasharray:3 3; }
+svg .arrhead { fill:var(--line); }
+svg .tick { stroke:var(--lane-line); stroke-width:1; }
+</style>
+</head>
+<body>
+<header>
+  <span class="crumb"><a href="index.html">Rings bench diagrams</a> / Honest limits map</span>
+  <span>For: the presenter before Q&amp;A; the UX thread for the honest panel</span>
+  <span class="spacer"></span>
+  <span>2026-10-17 · pencil, unstamped</span>
+  <button id="theme" type="button">Dark mode</button>
+</header>
+<main>
+<h1>Honest limits map</h1>
+<p class="lede">Where the data lies to us, pinned to the pipeline step it bites: the ACH tell, partial labels inside bursts, the enriched rate, our pattern names, one run per cell, and 'rings found' read as cases. Each card ends with the sentence to say.</p>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 885" width="100%" role="img" aria-label="Honest limits map: where the data lies to us, and what we do about it"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrhead"/></marker></defs><rect x="20" y="354" width="190" height="100" rx="8" class="box k-data"/><text x="30" y="376" class="t-title" text-anchor="start"><tspan x="30" dy="0">IBM's full file</tspan></text><text x="30" y="395" class="t-body" text-anchor="start"><tspan x="30" dy="0">5.08 M transfers, 0.10%</tspan><tspan x="30" dy="15.5">laundering</tspan></text><polyline points="210,404 226,404" class="edge" marker-end="url(#arr)"/><rect x="226" y="354" width="190" height="100" rx="8" class="box k-data"/><text x="236" y="376" class="t-title" text-anchor="start"><tspan x="236" dy="0">Our slice</tspan></text><text x="236" y="395" class="t-body" text-anchor="start"><tspan x="236" dy="0">2,824 transfers, 4.0%</tspan><tspan x="236" dy="15.5">laundering</tspan></text><polyline points="416,404 432,404" class="edge" marker-end="url(#arr)"/><rect x="432" y="354" width="190" height="100" rx="8" class="box k-code"/><text x="442" y="376" class="t-title" text-anchor="start"><tspan x="442" dy="0">IBM's groups, our</tspan><tspan x="442" dy="17">shape names</tspan></text><text x="442" y="412" class="t-body" text-anchor="start"><tspan x="442" dy="0">20 of IBM's 1,843 labeled</tspan><tspan x="442" dy="15.5">groups</tspan></text><polyline points="622,404 638,404" class="edge" marker-end="url(#arr)"/><rect x="638" y="354" width="190" height="100" rx="8" class="box k-model"/><text x="648" y="376" class="t-title" text-anchor="start"><tspan x="648" dy="0">Model runs</tspan></text><text x="648" y="395" class="t-body" text-anchor="start"><tspan x="648" dy="0">one call per model x</tspan><tspan x="648" dy="15.5">version x group</tspan></text><polyline points="828,404 844,404" class="edge" marker-end="url(#arr)"/><rect x="844" y="354" width="190" height="100" rx="8" class="box k-code"/><text x="854" y="376" class="t-title" text-anchor="start"><tspan x="854" dy="0">Scorer</tspan></text><text x="854" y="395" class="t-body" text-anchor="start"><tspan x="854" dy="0">against IBM's labels</tspan></text><polyline points="1034,404 1050,404" class="edge" marker-end="url(#arr)"/><rect x="1050" y="354" width="190" height="100" rx="8" class="box k-ui"/><text x="1060" y="376" class="t-title" text-anchor="start"><tspan x="1060" dy="0">Leaderboard</tspan></text><text x="1060" y="395" class="t-body" text-anchor="start"><tspan x="1060" dy="0">rings of 20, precision,</tspan><tspan x="1060" dy="15.5">recall</tspan></text><rect x="20" y="20" width="395" height="284" rx="8" class="box k-limit"/><rect x="362" y="27" width="45" height="16" rx="8" class="pill p-limit"/><text x="384" y="39" class="ptext" text-anchor="middle"><tspan x="384" dy="0">limit</tspan></text><text x="30" y="42" class="t-title" text-anchor="start"><tspan x="30" dy="0">1. The ACH tell</tspan></text><text x="30" y="61" class="t-body" text-anchor="start"><tspan x="30" dy="0">What the data does: every laundering transfer in the slice</tspan><tspan x="30" dy="15.5">is paid by ACH. In IBM's whole file it is 87% (data audit,</tspan><tspan x="30" dy="15.5">11:40), so the 100% is an artifact of how we cut the slice,</tspan><tspan x="30" dy="15.5">on top of the simulator's habit.</tspan><tspan x="30" dy="15.5">What it does to the number: a one-line rule (flag every ACH</tspan><tspan x="30" dy="15.5">transfer) gets recall 100%, precision 25.5% here, and would</tspan><tspan x="30" dy="15.5">miss 13% of laundering in the full file. A model can lean</tspan><tspan x="30" dy="15.5">on it without saying so; the earlier strong run's own log</tspan><tspan x="30" dy="15.5">searched ACH windows.</tspan><tspan x="30" dy="15.5">What we do: the rule row sits on the leaderboard; the v2</tspan><tspan x="30" dy="15.5">facts name the ACH share, so the lean is visible.</tspan><tspan x="30" dy="15.5">What we say: a tell in this data, not proof a model</tspan><tspan x="30" dy="15.5">understands laundering.</tspan></text><polyline points="218,304 218,316 321,316 321,354" class="edge thin"/><polyline points="234,304 234,316 733,316 733,354" class="edge thin"/><rect x="427" y="20" width="395" height="284" rx="8" class="box k-limit"/><rect x="769" y="27" width="45" height="16" rx="8" class="pill p-limit"/><text x="792" y="39" class="ptext" text-anchor="middle"><tspan x="792" dy="0">limit</tspan></text><text x="437" y="42" class="t-title" text-anchor="start"><tspan x="437" dy="0">2. Partial labels: bursts, and the tail</tspan><tspan x="437" dy="17">after day 10</tspan></text><text x="437" y="78" class="t-body" text-anchor="start"><tspan x="437" dy="0">What the data does: an account takes twelve ACH transfers</tspan><tspan x="437" dy="15.5">in half an hour; IBM labels one of them. And after day 10</tspan><tspan x="437" dy="15.5">the file's labeling thins to 59% (data audit, 11:40); four</tspan><tspan x="437" dy="15.5">of our 20 ring units touch that tail.</tspan><tspan x="437" dy="15.5">What it does to the number: a correct flag on the other</tspan><tspan x="437" dy="15.5">eleven is scored a false alarm (30 of 46 false alarms sat</tspan><tspan x="437" dy="15.5">beside a label in the earlier strong run), and a miss on a</tspan><tspan x="437" dy="15.5">tail ring may be the label's miss, not the model's.</tspan><tspan x="437" dy="15.5">What we do: the strict score is IBM's answer and the one we</tspan><tspan x="437" dy="15.5">rank by; beside it, a 'beside a label' count (same account</tspan><tspan x="437" dy="15.5">within 120 minutes, our rule); the four tail units are</tspan><tspan x="437" dy="15.5">marked on the failures grid.</tspan><tspan x="437" dy="15.5">What we say: the strict number is the number; the second</tspan><tspan x="437" dy="15.5">one is our reading.</tspan></text><polyline points="624,304 624,323 939,323 939,354" class="edge thin"/><rect x="834" y="20" width="395" height="284" rx="8" class="box k-limit"/><rect x="1176" y="27" width="45" height="16" rx="8" class="pill p-limit"/><text x="1198" y="39" class="ptext" text-anchor="middle"><tspan x="1198" dy="0">limit</tspan></text><text x="844" y="42" class="t-title" text-anchor="start"><tspan x="844" dy="0">3. Enriched slice</tspan></text><text x="844" y="61" class="t-body" text-anchor="start"><tspan x="844" dy="0">What the data does: 4.0% of the slice is laundering; 0.10%</tspan><tspan x="844" dy="15.5">of IBM's full file is. Forty times richer.</tspan><tspan x="844" dy="15.5">What it does to the number: at the same recall, precision</tspan><tspan x="844" dy="15.5">in a real stream would be far lower. The flood of false</tspan><tspan x="844" dy="15.5">alarms is the product problem, and it is understated here.</tspan><tspan x="844" dy="15.5">What we do: both rates printed on the honest panel; no</tspan><tspan x="844" dy="15.5">operational precision claimed anywhere.</tspan><tspan x="844" dy="15.5">What we say: built to compare models on one pile, not to</tspan><tspan x="844" dy="15.5">size a desk's workload.</tspan></text><polyline points="1032,304 1032,330 321,330 321,354" class="edge thin"/><rect x="20" y="504" width="395" height="284" rx="8" class="box k-limit"/><rect x="362" y="511" width="45" height="16" rx="8" class="pill p-limit"/><text x="384" y="523" class="ptext" text-anchor="middle"><tspan x="384" dy="0">limit</tspan></text><text x="30" y="526" class="t-title" text-anchor="start"><tspan x="30" dy="0">4. Our pattern names, checked against</tspan><tspan x="30" dy="17">IBM's</tspan></text><text x="30" y="562" class="t-body" text-anchor="start"><tspan x="30" dy="0">What the data does: we named the shapes ourselves from the</tspan><tspan x="30" dy="15.5">labeled edges, then checked them against IBM's pattern file</tspan><tspan x="30" dy="15.5">(downloaded 11:40): 8 of 12 multi-transfer groups match</tspan><tspan x="30" dy="15.5">IBM's name exactly; our mesh is IBM's gather-scatter; our</tspan><tspan x="30" dy="15.5">two chains are fragments of IBM's stacks; 7 of our 8 lone</tspan><tspan x="30" dy="15.5">transfers are outside any named shape.</tspan><tspan x="30" dy="15.5">What it does to the number: 'pattern named correctly' means</tspan><tspan x="30" dy="15.5">agreement with our name; on 4 of 12 groups and the lone</tspan><tspan x="30" dy="15.5">transfers, IBM would say something else.</tspan><tspan x="30" dy="15.5">What we do: say 'our name' wherever a shape is shown; keep</tspan><tspan x="30" dy="15.5">the heuristic and the check in the provenance folder.</tspan><tspan x="30" dy="15.5">What we say: the labels are IBM's; the names are ours,</tspan><tspan x="30" dy="15.5">checked against IBM's file.</tspan></text><polyline points="218,504 218,492 527,492 527,454" class="edge thin"/><rect x="427" y="504" width="395" height="284" rx="8" class="box k-limit"/><rect x="769" y="511" width="45" height="16" rx="8" class="pill p-limit"/><text x="792" y="523" class="ptext" text-anchor="middle"><tspan x="792" dy="0">limit</tspan></text><text x="437" y="526" class="t-title" text-anchor="start"><tspan x="437" dy="0">5. One run per cell</tspan></text><text x="437" y="545" class="t-body" text-anchor="start"><tspan x="437" dy="0">What the data does: one call per model x version x group.</tspan><tspan x="437" dy="15.5">Models are not deterministic.</tspan><tspan x="437" dy="15.5">What it does to the number: a rerun could move a family by</tspan><tspan x="437" dy="15.5">a ring or two; no number carries an interval.</tspan><tspan x="437" dy="15.5">What we do: n is printed on the leaderboard; the cost of</tspan><tspan x="437" dy="15.5">one rerun is printed, so a judge can ask for three and see</tspan><tspan x="437" dy="15.5">the price.</tspan><tspan x="437" dy="15.5">What we say: a demo, not a benchmark.</tspan></text><polyline points="624,504 624,485 733,485 733,454" class="edge thin"/><rect x="834" y="504" width="395" height="284" rx="8" class="box k-limit"/><rect x="1176" y="511" width="45" height="16" rx="8" class="pill p-limit"/><text x="1198" y="523" class="ptext" text-anchor="middle"><tspan x="1198" dy="0">limit</tspan></text><text x="844" y="526" class="t-title" text-anchor="start"><tspan x="844" dy="0">6. 'Rings found' is not 'cases'</tspan></text><text x="844" y="545" class="t-body" text-anchor="start"><tspan x="844" dy="0">What the data does: 'found' means at least half of one of</tspan><tspan x="844" dy="15.5">IBM's groups was flagged (our rule); 20 groups is a small</tspan><tspan x="844" dy="15.5">count.</tspan><tspan x="844" dy="15.5">What it does to the number: one ring is five points; 'rings</tspan><tspan x="844" dy="15.5">found' sounds like cases to investigate (the audits flagged</tspan><tspan x="844" dy="15.5">this misread).</tspan><tspan x="844" dy="15.5">What we do: the leaderboard says 'of 20'; precision is</tspan><tspan x="844" dy="15.5">translated as 'wrong N in ten' next to the percent, so</tspan><tspan x="844" dy="15.5">nobody has to do that in their head.</tspan><tspan x="844" dy="15.5">What we say: read rings as IBM's laundering groups caught,</tspan><tspan x="844" dy="15.5">not as cases.</tspan></text><polyline points="1032,504 1032,478 1145,478 1145,454" class="edge thin"/><text x="20" y="816" class="t-small" text-anchor="start"><tspan x="20" dy="0">Thin dotted lines: the pipeline step each limit bites. Read each card top to bottom: what the data does, what it does to the number, what we do, what we say.</tspan></text><text x="20" y="834" class="t-small" text-anchor="start"><tspan x="20" dy="0">Numbers on this page come from the earlier Rings page's runs (2026-10-15, one run per arm) and the slice itself; the bench will replace them with its own.</tspan></text></svg></figure>
+<div class="legend"><span><i style="background:var(--data-bg);border-color:var(--data)"></i>data (files)</span><span><i style="background:var(--code-bg);border-color:var(--code)"></i>code (deterministic, ours)</span><span><i style="background:var(--model-bg);border-color:var(--model)"></i>a model (through Nicrron)</span><span><i style="background:var(--person-bg);border-color:var(--person)"></i>a person</span><span><i style="background:var(--prism-bg);border-color:var(--prism)"></i>PRISM (sponsor observability)</span><span><i style="background:var(--ui-bg);border-color:var(--ui)"></i>the UI page</span><span><i style="background:var(--limit-bg);border-color:var(--limit)"></i>an honest limit</span><span><i style="background:var(--note-bg);border-color:var(--note)"></i>a note</span><span><i style="border-style:dashed;border-color:var(--assumed)"></i>dashed border = assumed (not confirmed with the engine thread)</span></div>
+<section class="notes">
+
+<h2>Who looks at this, for what</h2>
+<p>The presenter before Q&A, so each limit is said before it is asked; the judge who asks "does it hold on new data"; the UX thread, because the honest panel on the UI page should carry these six in the same words.</p>
+<h2>Why these six</h2>
+<ul>
+<li>The first five are the ones the brief named. The sixth (rings are not cases) is from the audits of the earlier Rings page: both reviewers read "rings found" as cases, and one noted that a person has to translate "10.5% precision" into "wrong nine in ten" themselves.</li>
+<li>Two facts came from the data audit relayed at 11:40 and are folded into cards 1 and 2: ACH is 87% of laundering in the whole file (100% in our slice is a cut artifact), and the file's tail after day 10 is 59% labeled, touching four of our 20 ring units.</li>
+<li>Each card ends with the sentence to say, so the limit is a line, not a confession.</li>
+</ul>
+<h2>Not drawn</h2>
+<p>Limits of the models themselves (a family that returns no JSON, rate limits mid-run) belong on the leaderboard as failed cells, not here. PRISM's own soft spot (its evaluator judge said right on wrong answers in practice) sits with the evaluator, now an option in the technical page's credits note.</p>
+
+</section>
+<details>
+<summary>Editable source: 05_honest_limits.mmd (Mermaid text, same chart; the SVG above is drawn by make_diagrams.py)</summary>
+<pre>%% Honest limits map, Rings bench. Each limit points at the pipeline step it bites.
+flowchart TB
+  F["IBM's full file\n5.08M transfers, 0.10% laundering"]:::data --&gt; S["our slice\n2,824 transfers, 4.0%"]:::data
+  S --&gt; G["IBM's laundering groups, our shape names\n20 of IBM's 1,843 labeled groups"]:::code --&gt; M["model runs\none call per model x version x group"]:::model
+  M --&gt; SC["scorer\nagainst IBM's labels"]:::code --&gt; L["leaderboard\nrings of 20, precision, recall"]:::ui
+  L1["1. the ACH tell\n100% ACH in the slice, 87% in the whole file (a cut artifact)\nrule: recall 100%, precision 25.5%; we show the rule row; say: a tell, not understanding"]:::limit -.-&gt; S
+  L1 -.-&gt; M
+  L2["2. partial labels: bursts, and the tail after day 10\n1 of 12 labeled; after day 10 only 59% labeled, 4 of our 20 units touch it\nstrict score ranks; 'beside a label' count and the 4 tail units marked"]:::limit -.-&gt; SC
+  L3["3. enriched slice\n4.0% here vs 0.10% real; precision would be far lower\nboth rates printed; no operational claim"]:::limit -.-&gt; S
+  L4["4. our pattern names, checked against IBM's\n8 of 12 multi-transfer groups match IBM's pattern file; mesh = gather-scatter; chains = stack fragments; 7 of 8 lone outside any shape\nsay 'our names, checked'"]:::limit -.-&gt; G
+  L5["5. one run per cell\nno interval; a rerun could move a family\nn and rerun cost printed"]:::limit -.-&gt; M
+  L6["6. 'rings found' is not 'cases'\nfound = half the group flagged; 20 is small\nsay 'of 20'; print 'wrong N in ten' beside the percent"]:::limit -.-&gt; L
+  classDef data fill:#e2f2f4,stroke:#2a7f8f
+  classDef code fill:#e6ebfa,stroke:#3b5bdb
+  classDef model fill:#eee7f8,stroke:#7c4dbd
+  classDef ui fill:#e7edf3,stroke:#4a6a8a
+  classDef limit fill:#fde8e1,stroke:#b7411e
+</pre>
+</details>
+<footer>Rings many-models bench · Money Talks 2, 2026-10-17 · Claude's suggestion, unruled by Alex · no data, keys or model calls on this page.</footer>
+</main>
+<script>
+(function () {
+  var root = document.documentElement;
+  var q = new URLSearchParams(location.search).get('theme');
+  var saved = null;
+  try { saved = localStorage.getItem('rings-theme'); } catch (e) {}
+  if (q === 'dark' || q === 'light') root.dataset.theme = q;
+  else if (saved === 'dark' || saved === 'light') root.dataset.theme = saved;
+  var btn = document.getElementById('theme');
+  function label() {
+    var cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    btn.textContent = cur === 'dark' ? 'Light mode' : 'Dark mode';
+  }
+  if (btn) {
+    label();
+    btn.addEventListener('click', function () {
+      var cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      var next = cur === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      try { localStorage.setItem('rings-theme', next); } catch (e) {}
+      label();
+    });
+  }
+})();
+</script>
+</body>
+</html>
