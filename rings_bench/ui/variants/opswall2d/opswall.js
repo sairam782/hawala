@@ -118,7 +118,8 @@ function modelStats(id, ver) {
   return (STAT[key] = { kind: 'model', id, ver, name: shortName(id) + ' ' + ver, runs, F, byUnit, alarmUnits: new Set(fa.map(r => r.unit)), found: foundFromRuns(runs), row: (BE.models || []).find(m => m.id === id && (m.version || 'v1') === ver) || null, caught: (((BE.models || []).find(m => m.id === id && (m.version || 'v1') === ver) || {}).rings_found), traced: TRUTH.filter(t => F.has(t.id)).length, f: fa.length, g: fa.filter(r => (r.ring_accounts_flagged || []).length).length });
 }
 /* the combined vote, by panel.py's rule: a neighborhood is called a ring when at least k families say so; its flagged transfers are
-   the ones at least k of those families flagged; a ring is caught when that covers at least half of its labeled transfers.
+   the ones at least k of those families flagged; a ring is caught when that covers at least half of its labeled transfers and the
+   wrong flags in the neighborhood do not sweep it (no more than the ring's size, and never fewer than 2 allowed).
    The headline's counts come straight from panel.json's vote_table row for k. */
 const TRUTH_OF_UNIT = {}; (UN.units || []).forEach(u => { TRUTH_OF_UNIT[u.id] = new Set(u.truth_ids || (u.ring_id != null && RINGS[u.ring_id] ? RINGS[u.ring_id].ids : [])); });
 function panelStats(ver, k) {
@@ -128,10 +129,10 @@ function panelStats(ver, k) {
     const runs = (u.said_ring || []).map(fm => modelStats(fm, ver).byUnit[u.unit]).filter(Boolean);
     if (runs[0]) byUnit[u.unit] = runs[0];
     const cnt = {}; runs.forEach(r => (r.flagged_transfer_ids || []).forEach(id => { cnt[id] = (cnt[id] || 0) + 1; }));
-    const truth = TRUTH_OF_UNIT[u.unit] || new Set(); let t = 0;
-    Object.keys(cnt).forEach(id => { if (cnt[id] >= k) { if (BYID[id]) F.add(id); if (truth.has(id)) t++; } }); tp += t;
+    const truth = TRUTH_OF_UNIT[u.unit] || new Set(); let t = 0, wrong = 0;
+    Object.keys(cnt).forEach(id => { if (cnt[id] >= k) { if (BYID[id]) F.add(id); if (truth.has(id)) t++; else wrong++; } }); tp += t;
     if (u.expected === 'ordinary') { f++; alarmUnits.add(u.unit); if (runs.some(r => (r.ring_accounts_flagged || []).length)) g++; }
-    else if (RING_OF_UNIT[u.unit] != null && truth.size && t >= Math.ceil(truth.size / 2)) found.push(RING_OF_UNIT[u.unit]);
+    else if (RING_OF_UNIT[u.unit] != null && truth.size && t >= Math.ceil(truth.size / 2) && wrong <= Math.max(2, truth.size)) found.push(RING_OF_UNIT[u.unit]);
   });
   const row = (V.vote_table || []).find(x => x.votes_needed === k);
   const caught = row ? row.rings_found : found.length, traced = row ? Math.round(row.recall * NT) : tp, alarms = row ? row.false_rings : f;
@@ -149,50 +150,60 @@ function pickerModels() {
 /* ---------- state ---------- */
 const ST = { ver: VERSIONS[0] || 'v1', k: 5, n: 9, pick: 'panel', scrub: T1, playing: false, sel: null, hover: null, traffic: 0, trafficTo: 0 };
 const CELLS = RING_IDS.map(r => ({ r, unit: UNIT_OF_RING[r] || null, votes: 0, of: 0, said: [], litT: 0, from: 0, to: 0 }));
-/* cells sit in agreement order, most families first; the order is fixed at load so nothing moves later */
+/* rings sit in agreement order, most families first; the order is fixed at load so nothing moves later */
 (function order() { const v0 = VERSIONS[0]; CELLS.forEach(c => { const u = c.unit && AG[v0] ? AG[v0][c.unit] : null; c.v0 = u ? u.ring_votes : 0; }); CELLS.sort((a, b) => b.v0 - a.v0 || a.r - b.r); })();
 const CELL_OF = {}; CELLS.forEach(c => { CELL_OF[c.r] = c; });
+/* IBM's single-transfer rings ("no named shape") share one tile; the rest get a tile each */
+const isSingleRaw = r => RINGS[r].ids.length === 1;
+let SINGLES = CELLS.filter(c => isSingleRaw(c.r)).map(c => c.r); if (SINGLES.length < 2) SINGLES = [];
+const SINGLE_SET = new Set(SINGLES); const isSingle = r => SINGLE_SET.has(r);
+const TILES = CELLS.filter(c => !isSingle(c.r)).map(c => ({ kind: 'ring', r: c.r, c }));
+if (SINGLES.length) TILES.push({ kind: 'single', rs: SINGLES });
+/* the shared tile's title says what IBM called them: mostly "no named shape", sometimes a named one-row pattern */
+function singleTitle() { const nn = SINGLES.filter(r => /no named shape/i.test(IBM_SHAPE[UNIT_OF_RING[r]] || 'no named shape')).length; const rest = SINGLES.filter(r => !/no named shape/i.test(IBM_SHAPE[UNIT_OF_RING[r]] || 'no named shape')).map(r => ringName(r).replace(/\s*\(.*\)$/, '').toLowerCase());
+  return 'Single transfers (' + (rest.length ? nn + ' with no named shape, ' + rest.join(', ') : 'no named shape') + ')'; }
 const ORD = (UN.units || []).filter(u => u.expected !== 'ring').map(u => ({ unit: u.id, n: (u.accounts || []).length, rows: (u.rows || []).length, votes: 0, of: 0, said: [] }));
 
 /* ---------- geometry ---------- */
 const stage = $('#stage'), cv = $('#cv'), ctx = cv.getContext('2d');
-const G = { W: 900, H: 500, dpr: 1, cols: 5, rows: 4 };
+const G = { W: 900, H: 500, dpr: 1 };
+function placeRing(c, bx, by, bw, bh, pad) {
+  const R = RINGS[c.r];
+  let minx = 1e9, miny = 1e9, maxx = -1e9, maxy = -1e9; R.acc.forEach(a => { const p = R.lx[a]; minx = Math.min(minx, p[0]); maxx = Math.max(maxx, p[0]); miny = Math.min(miny, p[1]); maxy = Math.max(maxy, p[1]); });
+  const s = Math.min(bw / Math.max(1e-3, maxx - minx), bh / Math.max(1e-3, maxy - miny));
+  const ox = bx + (bw - (maxx - minx) * s) / 2, oy = by + (bh - (maxy - miny) * s) / 2;
+  c.sp = {}; R.acc.forEach(a => { c.sp[a] = [ox + (R.lx[a][0] - minx) * s, oy + (R.lx[a][1] - miny) * s]; });
+  c.cx = ox + (maxx - minx) * s / 2; c.cy = oy + (maxy - miny) * s / 2;
+  /* the halo is an outline ring (an ellipse) around the shape, not a skin over it */
+  c.rx = Math.max((maxx - minx) * s / 2 + pad, pad * 1.6); c.ry = Math.max((maxy - miny) * s / 2 + pad, pad * 1.6);
+  const per = {}; R.stubs.forEach(st => { (per[st.a] = per[st.a] || new Map()); if (!per[st.a].has(st.o)) per[st.a].set(st.o, per[st.a].size); });
+  c.stubEnd = {};
+  Object.keys(per).forEach(a => { const p = c.sp[a]; let ang = Math.atan2(p[1] - c.cy, p[0] - c.cx); if (Math.abs(p[0] - c.cx) < 0.5 && Math.abs(p[1] - c.cy) < 0.5) ang = -Math.PI / 2; const m = per[a].size;
+    per[a].forEach((k, o) => { const a2 = ang + (m > 1 ? (k / (m - 1) - 0.5) * Math.min(2.6, 0.25 * m) : 0); const L = pad + 6 + (k % 3) * 4; c.stubEnd[a + '>' + o] = [p[0] + Math.cos(a2) * L, p[1] + Math.sin(a2) * L]; }); });
+}
 function fit() {
   const w = stage.clientWidth || 900, h = stage.clientHeight || 500; const dpr = Math.min(window.devicePixelRatio || 1, 2);
   cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); G.W = w; G.H = h; G.dpr = dpr;
-  G.cols = Math.min(5, Math.max(1, CELLS.length)); G.rows = Math.max(1, Math.ceil(CELLS.length / G.cols));
-  const cw = w / G.cols, ch = h / G.rows;
-  CELLS.forEach((c, i) => {
-    const R = RINGS[c.r]; const col = i % G.cols, row = Math.floor(i / G.cols);
-    c.x0 = col * cw; c.y0 = row * ch; c.w = cw; c.h = ch;
-    const bx = c.x0 + 36, by = c.y0 + 22, bw = cw - 72, bh = Math.max(20, ch - 82);
-    let minx = 1e9, miny = 1e9, maxx = -1e9, maxy = -1e9; R.acc.forEach(a => { const p = R.lx[a]; minx = Math.min(minx, p[0]); maxx = Math.max(maxx, p[0]); miny = Math.min(miny, p[1]); maxy = Math.max(maxy, p[1]); });
-    const s = Math.min(bw / Math.max(1e-3, maxx - minx), bh / Math.max(1e-3, maxy - miny), 60);
-    const ox = bx + (bw - (maxx - minx) * s) / 2, oy = by + (bh - (maxy - miny) * s) / 2;
-    c.sp = {}; R.acc.forEach(a => { c.sp[a] = [ox + (R.lx[a][0] - minx) * s, oy + (R.lx[a][1] - miny) * s]; });
-    let cx = 0, cy = 0; R.acc.forEach(a => { cx += c.sp[a][0]; cy += c.sp[a][1]; }); c.cx = cx / R.acc.length; c.cy = cy / R.acc.length;
-    c.hull = padHull(R.acc.map(a => c.sp[a]), 10);
-    /* stubs for the accounts' other traffic: short spokes pointing away from the group's center */
-    const per = {}; R.stubs.forEach(st => { (per[st.a] = per[st.a] || new Map()); if (!per[st.a].has(st.o)) per[st.a].set(st.o, per[st.a].size); });
-    c.stubEnd = {};
-    Object.keys(per).forEach(a => { const p = c.sp[a]; let ang = Math.atan2(p[1] - c.cy, p[0] - c.cx); if (!isFinite(ang) || (Math.abs(p[0] - c.cx) < 0.5 && Math.abs(p[1] - c.cy) < 0.5)) ang = -Math.PI / 2; const m = per[a].size;
-      per[a].forEach((k, o) => { const a2 = ang + (m > 1 ? (k / (m - 1) - 0.5) * Math.min(2.6, 0.25 * m) : 0); const L = 16 + (k % 3) * 5; c.stubEnd[a + '>' + o] = [p[0] + Math.cos(a2) * L, p[1] + Math.sin(a2) * L]; }); });
+  const named = TILES.filter(t => t.kind === 'ring'); const single = TILES.find(t => t.kind === 'single');
+  const cols = named.length > 9 ? 4 : Math.max(1, Math.min(3, named.length)); const rows = Math.max(1, Math.ceil(named.length / cols));
+  const stripH = single ? Math.round(Math.min(116, Math.max(92, h * 0.19))) : 0;
+  const cw = w / cols, ch = (h - stripH) / rows;
+  named.forEach((t, i) => {
+    const col = i % cols, row = Math.floor(i / cols); t.x0 = col * cw; t.y0 = row * ch; t.w = cw; t.h = ch;
+    const pad = 13; const top = 10, label = 26; const bw = Math.min(cw - 2 * pad - 30, 180), bh = Math.max(40, ch - top - label - 2 * pad - 10);
+    placeRing(t.c, t.x0 + (cw - bw) / 2, t.y0 + top + pad + 5, bw, bh, pad);
   });
+  if (single) {
+    single.x0 = 0; single.y0 = h - stripH; single.w = w; single.h = stripH;
+    const n = single.rs.length, sw = w / n;
+    single.rs.forEach((r, i) => { const c = CELL_OF[r]; c.mx0 = i * sw; c.mw = sw; const bw = Math.min(sw - 44, 64); placeRing(c, i * sw + (sw - bw) / 2, single.y0 + 40, bw, Math.max(8, stripH - 72), 10); });
+  }
 }
-function hull(pts) {
-  pts.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
-  const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
-  const lo = [], up = [];
-  for (const p of pts) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
-  for (let i = pts.length - 1; i >= 0; i--) { const p = pts[i]; while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); }
-  up.pop(); lo.pop(); return lo.concat(up);
-}
-function padHull(P, pad) { const pts = []; P.forEach(p => { for (let k = 0; k < 16; k++) { const a = k / 16 * Math.PI * 2; pts.push([p[0] + Math.cos(a) * pad, p[1] + Math.sin(a) * pad]); } }); return hull(pts); }
 
 /* agreement halo: stroke width and brightness both follow the number of families that called it a ring */
 const wOf = v => Math.max(1, 1.15 * v);
 const aOf = v => 0.14 + 0.86 * Math.pow(v / Math.max(1, ST.n), 1.4);
-const rOf = a => Math.min(6.5, 2 + Math.sqrt(DEG[a] || 1) * 0.45);
+const rOf = a => Math.min(6, 3 + Math.sqrt(DEG[a] || 1) * 0.35);
 
 /* ---------- motion bookkeeping ---------- */
 let raf = 0; const DIAL = { t0: 0, dur: 250, on: false }; const TRAF = { t0: 0, from: 0, on: false };
@@ -211,67 +222,75 @@ function frame(now) {
 }
 
 /* ---------- draw ---------- */
-function pathPoly(P) { ctx.beginPath(); P.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath(); }
+function drawRing(c, now, small) {
+  const T = ST.scrub, sel = ST.sel, R = RINGS[c.r];
+  const animating = CATCH.has(c.r), pend = PENDING.has(c.r);
+  const e = animating ? easeOut(reduced() ? 1 : (now - CATCH.get(c.r)) / RESOLVE_MS) : 1; const s = animating ? 0.45 + 0.55 * e : 1;
+  const P = a => [c.cx + (c.sp[a][0] - c.cx) * s, c.cy + (c.sp[a][1] - c.cy) * s];
+  /* below the dial the whole ring dims; the dial's effect is on the shape itself, not only the halo */
+  const dim = 0.32 + 0.68 * c.litT; const A = x => { ctx.globalAlpha = Math.max(0, Math.min(1, x * dim)); };
+  if (R.start > T) { ctx.globalAlpha = 1; ctx.fillStyle = C.rule; ctx.font = '12px "IBM Plex Sans", "Segoe UI", sans-serif'; ctx.textAlign = 'center'; ctx.fillText('starts ' + fmtT(R.start), c.cx, c.cy + 4); return; }
+  if (ST.traffic > 0.01) {
+    A(0.10 * ST.traffic); ctx.strokeStyle = C.ink; ctx.fillStyle = C.ink; ctx.lineWidth = 1; ctx.setLineDash([]); ctx.beginPath();
+    R.stubs.forEach(st => { if (st.t > T) return; const a = P(st.a), b = c.stubEnd[st.a + '>' + st.o]; ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }); ctx.stroke();
+  }
+  /* the halo: an outline ring; width and brightness = families that called it a ring, at every dial position */
+  const k = small ? 0.55 : 1; const w = (c.votes ? wOf(c.votes) : 1.2) * k;
+  ctx.beginPath(); ctx.ellipse(c.cx, c.cy, c.rx * s + w / 2, c.ry * s + w / 2, 0, 0, Math.PI * 2);
+  if (animating) { ctx.setLineDash([]); ctx.strokeStyle = C.ok; ctx.globalAlpha = 0.35 + 0.65 * e; ctx.lineWidth = w + 2.5 * (1 - e); ctx.stroke(); }
+  else {
+    if (c.votes && c.litT > 0.01) { ctx.setLineDash([]); ctx.strokeStyle = C.ok; ctx.globalAlpha = aOf(c.votes) * c.litT; ctx.lineWidth = w; ctx.stroke(); }
+    if (c.litT < 0.99) { ctx.setLineDash([Math.max(1.5, w * 0.5), Math.max(3.5, w * 1.1)]); ctx.strokeStyle = C.warn; ctx.globalAlpha = Math.max(0.35, aOf(c.votes) * 0.6) * (1 - c.litT); ctx.lineWidth = w; ctx.stroke(); }
+  }
+  ctx.setLineDash([]);
+  /* flags on the ring's accounts that IBM calls ordinary: quiet red dashed spokes */
+  if (sel) { ctx.beginPath(); let any = false;
+    R.stubs.forEach(st => { if (st.t > T || !sel.F.has(st.id)) return; const a = P(st.a), b = c.stubEnd[st.a + '>' + st.o]; ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); any = true; });
+    if (any) { ctx.strokeStyle = C.bad; ctx.lineWidth = 1; ctx.setLineDash([4, 3]); A(0.45); ctx.stroke(); ctx.setLineDash([]); } }
+  /* the ring's transfers in the catch color; missed ones amber dotted; grey while a catch waits its turn */
+  const q = animating ? clamp01(e * 1.25) : 1; const ok = [], miss = [], wait = [];
+  R.ids.forEach(id => { const t = BYID[id]; if (t.t > T || t.self) return; (pend || !sel ? wait : sel.F.has(id) ? ok : miss).push(t); });
+  const strokeT = (list, color, lw, dash, alpha) => { if (!list.length) return; ctx.beginPath(); list.forEach(t => { const a = P(t.from), b = P(t.to); ctx.moveTo(a[0], a[1]); ctx.lineTo(a[0] + (b[0] - a[0]) * q, a[1] + (b[1] - a[1]) * q); }); ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.setLineDash(dash); A(alpha); ctx.stroke(); };
+  ctx.lineCap = 'round';
+  strokeT(wait, C.muted, small ? 1.4 : 1.8, [], 0.7);
+  strokeT(miss, C.warn, small ? 1.4 : 1.8, [0.5, 4], 0.7);
+  strokeT(ok, C.ok, small ? 2 : 2.6, [], 1);
+  ctx.lineCap = 'butt'; ctx.setLineDash([]);
+  /* accounts: clear dots with a dark rim so they separate from the lines */
+  ctx.beginPath(); R.acc.forEach(a => { if (R.first[a] > T) return; const p = P(a), rr = small ? 3 : rOf(a); ctx.moveTo(p[0] + rr, p[1]); ctx.arc(p[0], p[1], rr, 0, Math.PI * 2); });
+  A(1); ctx.fillStyle = C.ink; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = C.ground; ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+function caughtShown(r) { return !!(ST.sel && ST.sel.found.includes(r) && CARDS.has(r)); }
 function draw(now) {
-  const T = ST.scrub, sel = ST.sel;
   ctx.setTransform(G.dpr, 0, 0, G.dpr, 0, 0); ctx.fillStyle = C.ground; ctx.fillRect(0, 0, G.W, G.H);
-  CELLS.forEach(c => {
-    const R = RINGS[c.r]; const started = R.start <= T;
-    const p = CATCH.has(c.r) ? (reduced() ? 1 : clamp01((now - CATCH.get(c.r)) / RESOLVE_MS)) : 1; const animating = CATCH.has(c.r); const pend = PENDING.has(c.r);
-    const e = easeOut(p); const s = animating ? 0.45 + 0.55 * e : 1;
-    const P = a => [c.cx + (c.sp[a][0] - c.cx) * s, c.cy + (c.sp[a][1] - c.cy) * s];
-
-    /* label: IBM's shape name, and how many families agreed */
-    const lit = c.to > 0;
-    ctx.font = '600 14px "Source Serif 4", Georgia, serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = lit ? C.ink : C.muted; const name = ringName(c.r);
-    ctx.fillText(name, c.x0 + c.w / 2, c.y0 + c.h - 20);
-    ctx.font = '11px "IBM Plex Mono", Consolas, monospace'; ctx.fillStyle = lit ? C.ok : C.warn;
-    ctx.fillText(c.votes + ' of ' + (c.of || ST.n) + ' families', c.x0 + c.w / 2, c.y0 + c.h - 6);
-    /* the tile says plainly whether the selection caught this ring */
-    if (sel && sel.found.includes(c.r) && CARDS.has(c.r)) { ctx.font = '600 10.5px "IBM Plex Mono", Consolas, monospace'; ctx.textAlign = 'left'; ctx.fillStyle = C.ok; ctx.fillText('CAUGHT', c.x0 + 10, c.y0 + 16); ctx.textAlign = 'center'; }
-    if (!started) { ctx.fillStyle = C.rule; ctx.font = '12px "IBM Plex Sans", "Segoe UI", sans-serif'; ctx.fillText('starts ' + fmtT(R.start), c.cx, c.cy); return; }
-
-    /* other traffic, only when asked for, at 10 percent */
-    if (ST.traffic > 0.01) {
-      ctx.globalAlpha = 0.10 * ST.traffic; ctx.strokeStyle = C.ink; ctx.fillStyle = C.ink; ctx.lineWidth = 1; ctx.beginPath();
-      R.stubs.forEach(st => { if (st.t > T) return; const a = P(st.a), b = c.stubEnd[st.a + '>' + st.o]; ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }); ctx.stroke();
-      ctx.beginPath(); R.stubs.forEach(st => { if (st.t > T) return; const b = c.stubEnd[st.a + '>' + st.o]; ctx.moveTo(b[0] + 1.5, b[1]); ctx.arc(b[0], b[1], 1.5, 0, Math.PI * 2); }); ctx.fill(); ctx.globalAlpha = 1;
-    }
-    /* the halo */
-    ctx.lineJoin = 'round';
-    if (animating) {
-      ctx.save(); ctx.translate(c.cx, c.cy); ctx.scale(s, s); ctx.translate(-c.cx, -c.cy); pathPoly(c.hull); ctx.restore();
-      ctx.setLineDash([]); ctx.strokeStyle = C.ok; ctx.globalAlpha = 0.35 + 0.65 * e; ctx.lineWidth = Math.max(wOf(c.votes || 1), 2) + 2.5 * (1 - e); ctx.stroke();
+  ctx.textBaseline = 'alphabetic';
+  TILES.forEach(t => {
+    if (t.kind === 'ring') {
+      const c = t.c; const lit = c.to > 0; const dim = 0.32 + 0.68 * c.litT;
+      drawRing(c, now, false);
+      ctx.textAlign = 'center'; ctx.globalAlpha = dim;
+      const nm = ringName(c.r), vt = c.votes + ' of ' + (c.of || ST.n);
+      ctx.font = '600 15px "Source Serif 4", Georgia, serif'; const w1 = ctx.measureText(nm).width; ctx.font = '12px "IBM Plex Mono", Consolas, monospace'; const w2 = ctx.measureText(vt).width;
+      const lx = t.x0 + (t.w - w1 - 8 - w2) / 2, ly = t.y0 + t.h - 12; ctx.textAlign = 'left';
+      ctx.font = '600 15px "Source Serif 4", Georgia, serif'; ctx.fillStyle = C.ink; ctx.fillText(nm, lx, ly);
+      ctx.font = '12px "IBM Plex Mono", Consolas, monospace'; ctx.fillStyle = lit ? C.ok : C.warn; ctx.fillText(vt, lx + w1 + 8, ly);
+      ctx.globalAlpha = 1;
+      if (caughtShown(c.r)) { ctx.font = '600 10.5px "IBM Plex Mono", Consolas, monospace'; ctx.textAlign = 'left'; ctx.fillStyle = C.ok; ctx.fillText('CAUGHT', t.x0 + 12, t.y0 + 16); }
     } else {
-      pathPoly(c.hull);
-      /* the weight never changes with the dial; the dial only switches lit green to dim amber dashes */
-      if (c.votes && c.litT > 0.01) { ctx.setLineDash([]); ctx.strokeStyle = C.ok; ctx.globalAlpha = aOf(c.votes) * c.litT; ctx.lineWidth = wOf(c.votes); ctx.stroke(); }
-      if (c.litT < 0.99) { const w = c.votes ? wOf(c.votes) : 1.3; ctx.setLineDash([Math.max(1.5, w * 0.5), Math.max(3.5, w * 1.1)]); ctx.strokeStyle = C.warn; ctx.globalAlpha = Math.max(0.35, aOf(c.votes) * 0.6) * (1 - c.litT); ctx.lineWidth = w; ctx.stroke(); }
+      ctx.strokeStyle = C.rule; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, t.y0 + 0.5); ctx.lineTo(G.W, t.y0 + 0.5); ctx.stroke();
+      const sel = ST.sel; const caught = t.rs.filter(r => sel && sel.found.includes(r)).length;
+      ctx.textAlign = 'left'; ctx.font = '600 15px "Source Serif 4", Georgia, serif'; ctx.fillStyle = C.ink; const ttl = singleTitle(); ctx.fillText(ttl, 14, t.y0 + 22);
+      const lead = ctx.measureText(ttl).width;
+      ctx.font = '12px "IBM Plex Mono", Consolas, monospace'; ctx.fillStyle = caught ? C.ok : C.warn;
+      ctx.fillText(caught + ' of ' + t.rs.length + ' caught' + (sel && sel.kind === 'panel' ? ' at this dial' : sel ? ' by ' + sel.name : ''), 14 + lead + 14, t.y0 + 22);
+      t.rs.forEach(r => { const c = CELL_OF[r]; drawRing(c, now, true);
+        ctx.textAlign = 'center'; ctx.font = '11px "IBM Plex Mono", Consolas, monospace'; ctx.globalAlpha = 0.32 + 0.68 * c.litT; ctx.fillStyle = c.to ? C.ok : C.warn;
+        const nmd = /no named shape/i.test(IBM_SHAPE[UNIT_OF_RING[r]] || 'no named shape') ? '' : ringName(r).replace(/\s*\(.*\)$/, '').toLowerCase() + ' · ';
+        ctx.fillText(nmd + c.votes + ' of ' + (c.of || ST.n), c.mx0 + c.mw / 2, t.y0 + t.h - 8); ctx.globalAlpha = 1; });
     }
-    ctx.globalAlpha = 1; ctx.setLineDash([]);
-
-    /* false flags on the group's own accounts: red dashed spokes */
-    if (sel) {
-      ctx.beginPath(); let any = false;
-      R.stubs.forEach(st => { if (st.t > T || !sel.F.has(st.id)) return; const a = P(st.a), b = c.stubEnd[st.a + '>' + st.o]; ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); any = true; });
-      if (any) { ctx.strokeStyle = C.bad; ctx.lineWidth = 1; ctx.setLineDash([4, 3]); ctx.globalAlpha = 0.45; ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1; }
-    }
-    /* the group's transfers: green when flagged, amber dotted when missed; grey while a catch waits its turn */
-    const q = animating ? clamp01(e * 1.25) : 1;
-    const ok = [], miss = [], wait = [];
-    R.ids.forEach(id => { const t = BYID[id]; if (t.t > T || t.self) return; (pend ? wait : !sel ? wait : sel.F.has(id) ? ok : miss).push(t); });
-    const strokeT = (list, color, w, dash) => { if (!list.length) return; ctx.beginPath(); list.forEach(t => { const a = P(t.from), b = P(t.to); ctx.moveTo(a[0], a[1]); ctx.lineTo(a[0] + (b[0] - a[0]) * q, a[1] + (b[1] - a[1]) * q); }); ctx.strokeStyle = color; ctx.lineWidth = w; ctx.setLineDash(dash); ctx.stroke(); };
-    ctx.lineCap = 'round';
-    strokeT(wait, 'rgba(163,171,184,0.55)', 1.2, []);
-    ctx.globalAlpha = 0.6; strokeT(miss, C.warn, 1.4, [0.5, 3.5]); ctx.globalAlpha = 1;
-    strokeT(ok, C.ok, 2, []);
-    ctx.lineCap = 'butt'; ctx.setLineDash([]);
-    /* accounts */
-    ctx.fillStyle = C.ink; ctx.beginPath();
-    R.acc.forEach(a => { if (R.first[a] > T) return; const pt = P(a), rr = rOf(a); ctx.moveTo(pt[0] + rr, pt[1]); ctx.arc(pt[0], pt[1], rr, 0, Math.PI * 2); }); ctx.fill();
   });
-  if (ST.hover && ST.hover.hull) { pathPoly(ST.hover.hull); ctx.strokeStyle = C.ink; ctx.globalAlpha = 0.9; ctx.lineWidth = 1; ctx.stroke(); ctx.globalAlpha = 1; }
+  const hv = ST.hover; if (hv) { ctx.strokeStyle = C.ink; ctx.globalAlpha = 0.5; ctx.lineWidth = 1; ctx.strokeRect(hv.x0 + 3.5, hv.y0 + 3.5, hv.w - 7, hv.h - 7); ctx.globalAlpha = 1; }
 }
 
 /* ---------- the forty ordinary neighborhoods: one quiet row of squares ---------- */
@@ -287,18 +306,18 @@ function paintOrd() {
   $('#ordCap').innerHTML = '<b class="mono" style="color:var(--bad)">' + lit + ' of ' + ORD.length + '</b> ordinary neighborhoods light red at this dial: families wrongly called them rings. Deeper red, more families.' + (sel && sel.kind === 'model' ? ' Underlined: ' + esc(sel.name) + ' raised the alarm.' : '');
 }
 
-/* ---------- small drawing of one group, for the roster and the copy that travels into it ---------- */
+/* ---------- small drawing of one ring, for the caught list and the copy that travels into it ---------- */
 function drawThumb(canvas, r, w, h) {
   const dpr = Math.min(window.devicePixelRatio || 1, 2); canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
   const c = canvas.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); const R = RINGS[r];
   let minx = 1e9, miny = 1e9, maxx = -1e9, maxy = -1e9; R.acc.forEach(a => { const p = R.lx[a]; minx = Math.min(minx, p[0]); maxx = Math.max(maxx, p[0]); miny = Math.min(miny, p[1]); maxy = Math.max(maxy, p[1]); });
-  const pad = 7; const s = Math.min((w - 2 * pad) / Math.max(1e-3, maxx - minx), (h - 2 * pad) / Math.max(1e-3, maxy - miny));
+  const pad = 5; const s = Math.min((w - 2 * pad) / Math.max(1e-3, maxx - minx), (h - 2 * pad) / Math.max(1e-3, maxy - miny));
   const ox = (w - (maxx - minx) * s) / 2, oy = (h - (maxy - miny) * s) / 2; const P = a => [ox + (R.lx[a][0] - minx) * s, oy + (R.lx[a][1] - miny) * s];
-  c.strokeStyle = C.ok; c.lineWidth = 1.6; c.lineCap = 'round'; c.beginPath(); R.ids.forEach(id => { const t = BYID[id]; if (t.self) return; const a = P(t.from), b = P(t.to); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); }); c.stroke();
-  c.fillStyle = C.ink; c.beginPath(); R.acc.forEach(a => { const p = P(a); c.moveTo(p[0] + 2.2, p[1]); c.arc(p[0], p[1], 2.2, 0, Math.PI * 2); }); c.fill();
+  c.strokeStyle = C.ok; c.lineWidth = 1.5; c.lineCap = 'round'; c.beginPath(); R.ids.forEach(id => { const t = BYID[id]; if (t.self) return; const a = P(t.from), b = P(t.to); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); }); c.stroke();
+  c.fillStyle = C.ink; c.beginPath(); R.acc.forEach(a => { const p = P(a); c.moveTo(p[0] + 1.8, p[1]); c.arc(p[0], p[1], 1.8, 0, Math.PI * 2); }); c.fill();
 }
 
-/* ---------- hover cards: one per group, per ordinary square, per caught card ---------- */
+/* ---------- hover cards: per ring tile, the single-transfer tile, each ordinary square, each caught card ---------- */
 const hov = $('#hover');
 function moneyLine(r) { const p = RINGS[r].paid; const cur = Object.keys(p).sort((a, b) => p[b] - p[a]); if (!cur.length) return ''; return compact(p[cur[0]]) + ' ' + cur[0] + (cur.length > 1 ? ' +' + (cur.length - 1) + (cur.length > 2 ? ' more currencies' : ' more currency') : ''); }
 function firstSentence(s) { s = String(s || '').trim(); const m = /^(.{20,}?[.;])\s/.exec(s); s = m ? m[1] : s; return s.length > 170 ? s.slice(0, 167) + '...' : s; }
@@ -318,6 +337,13 @@ function ringCard(c) {
     (sel ? '<p>' + esc(sel.name) + (caught ? ' <b style="color:var(--ok)">caught it</b>' + (sel.kind === 'model' ? (also.length ? '; also caught by ' + esc(also.join(', ')) : '; no other family did') : '') + '.' : ' <span style="color:var(--warn)">did not catch it</span>.') + '</p>' : '') +
     (w ? '<p class="why"><span class="who">' + esc(w.who) + ':</span> ' + esc(firstSentence(w.why)) + '</p>' : '');
 }
+function singleCard() {
+  const sel = ST.sel; const caught = SINGLES.filter(r => sel && sel.found.includes(r)).length; const fams = famsOf(ST.ver);
+  const rows = fams.map(f => { const n = SINGLES.filter(r => modelStats(f, ST.ver).found.includes(r)).length; return '<tr><td>' + esc(shortName(f)) + '</td><td class="mono">' + n + ' of ' + SINGLES.length + '</td></tr>'; }).join('');
+  return '<p class="eyebrow">' + SINGLES.length + ' IBM groups of one transfer each</p><h3>' + esc(singleTitle()) + '</h3>' +
+    '<p>' + (sel ? esc(sel.name) + ' caught <b class="mono" style="color:var(--ok)">' + caught + ' of ' + SINGLES.length + '</b>.' : '') + ' Each mark is one IBM group: two accounts and one transfer.</p>' +
+    '<p class="who">Caught by each family on ' + esc(ST.ver) + ':</p><table class="fam">' + rows + '</table>';
+}
 function ordCard(o) {
   const said = o.said.map(shortName); const w = whyFor(o.unit);
   return '<p class="eyebrow">Ordinary neighborhood ' + esc(o.unit) + '</p><h3>IBM labels nothing here as laundering</h3><p class="mono">' + plural(o.n, 'account', 'accounts') + (o.rows ? ' · ' + plural(o.rows, 'transfer', 'transfers') : '') + '</p>' +
@@ -331,68 +357,89 @@ function showHover(html, x, y, cls) {
   hov.style.left = Math.max(8, lx) + 'px'; hov.style.top = ly + 'px';
 }
 function hideHover() { hov.hidden = true; if (ST.hover) { ST.hover = null; requestDraw(); } }
+function tileAt(x, y) { return TILES.find(t => x >= t.x0 && x < t.x0 + t.w && y >= t.y0 && y < t.y0 + t.h); }
 cv.addEventListener('mousemove', ev => {
-  const rc = cv.getBoundingClientRect(); const x = ev.clientX - rc.left, y = ev.clientY - rc.top;
-  const c = CELLS.find(k => x >= k.x0 && x < k.x0 + k.w && y >= k.y0 && y < k.y0 + k.h);
-  if (!c) { hideHover(); return; }
-  if (ST.hover !== c) { ST.hover = c; requestDraw(); }
-  showHover(ringCard(c), ev.clientX, ev.clientY);
+  const rc = cv.getBoundingClientRect(); const t = tileAt(ev.clientX - rc.left, ev.clientY - rc.top);
+  if (!t) { hideHover(); return; }
+  if (ST.hover !== t) { ST.hover = t; requestDraw(); }
+  showHover(t.kind === 'ring' ? ringCard(t.c) : singleCard(), ev.clientX, ev.clientY);
 });
 cv.addEventListener('mouseleave', hideHover);
 ORD.forEach(o => { const on = ev => { const r = o.el.getBoundingClientRect(); showHover(ordCard(o), ev && ev.clientX != null ? ev.clientX : r.right, ev && ev.clientY != null ? ev.clientY : r.top, 'ord'); };
   o.el.addEventListener('mouseenter', on); o.el.addEventListener('focus', () => on()); o.el.addEventListener('mouseleave', () => { hov.hidden = true; }); o.el.addEventListener('blur', () => { hov.hidden = true; }); });
 
-/* ---------- the caught list ---------- */
+/* ---------- the caught list: the landing target for each catch; single transfers share one card ---------- */
 const strip = $('#strip');
-const CARDS = new Map(); const QUEUE = []; let qBusy = false, epoch = 0;
-function buildCard(r, pending) {
-  const R = RINGS[r]; const el = document.createElement('article'); el.className = 'card' + (pending ? ' pending' : ''); el.tabIndex = 0;
-  const cvs = document.createElement('canvas'); drawThumb(cvs, r, 44, 30); el.append(cvs);
-  const t = document.createElement('div'); t.innerHTML = '<h3>' + esc(ringName(r)) + '</h3><p class="mono">' + esc(moneyLine(r)) + '</p>'; el.append(t);
-  el.dataset.ring = r; el.setAttribute('aria-label', 'Caught: ' + ringName(r) + ', ' + moneyLine(r) + ' moved');
-  const on = ev => { const b = el.getBoundingClientRect(); showHover(ringCard(CELL_OF[r]), ev && ev.clientX != null ? ev.clientX : b.left, ev && ev.clientY != null ? ev.clientY : b.top); };
+const CARDS = new Map(); const QUEUE = []; let qBusy = false, epoch = 0; let SINGLE_EL = null; const SINGLE_LANDED = new Set();
+function hoverable(el, html) {
+  const on = ev => { const b = el.getBoundingClientRect(); showHover(html(), ev && ev.clientX != null ? ev.clientX : b.left, ev && ev.clientY != null ? ev.clientY : b.top); };
   el.addEventListener('mouseenter', on); el.addEventListener('focus', () => on()); el.addEventListener('mouseleave', () => { hov.hidden = true; }); el.addEventListener('blur', () => { hov.hidden = true; });
+}
+function buildCard(r, pending) {
+  const el = document.createElement('article'); el.className = 'card' + (pending ? ' pending' : ''); el.tabIndex = 0;
+  const cvs = document.createElement('canvas'); drawThumb(cvs, r, 34, 22); el.append(cvs);
+  const t = document.createElement('div'); t.innerHTML = '<h3>' + esc(ringName(r)) + '</h3><p class="mono">' + esc(moneyLine(r)) + '</p>'; el.append(t);
+  el.dataset.ring = r; el.setAttribute('aria-label', 'Caught: ' + ringName(r) + ', ' + moneyLine(r) + ' moved'); hoverable(el, () => ringCard(CELL_OF[r]));
   return el;
 }
-function insertCard(r, el) { const after = [...strip.children].find(c => RINGS[+c.dataset.ring].end > RINGS[r].end); strip.insertBefore(el, after || null); CARDS.set(r, el); }
+function singleEl(pending) {
+  if (!SINGLE_EL) {
+    const el = document.createElement('article'); el.className = 'card single' + (pending ? ' pending' : ''); el.tabIndex = 0; el.dataset.ring = 'single';
+    const cvs = document.createElement('canvas'); drawThumb(cvs, SINGLES[0], 34, 22); el.append(cvs);
+    const t = document.createElement('div'); t.innerHTML = '<h3>Single transfers</h3><p class="mono"></p>'; el.append(t);
+    hoverable(el, singleCard); strip.append(el); SINGLE_EL = el;
+  }
+  return SINGLE_EL;
+}
+function paintSingle() { if (!SINGLE_EL) return; const n = SINGLE_LANDED.size; SINGLE_EL.querySelector('p').textContent = n + ' of ' + SINGLES.length + ' caught'; SINGLE_EL.setAttribute('aria-label', 'Caught: ' + n + ' of ' + SINGLES.length + ' single transfers'); }
+function insertCard(r, el) {
+  if (isSingle(r)) { CARDS.set(r, el); return; }
+  const after = [...strip.children].find(c => c.dataset.ring === 'single' || RINGS[+c.dataset.ring].end > RINGS[r].end); strip.insertBefore(el, after || null); CARDS.set(r, el);
+}
+function landSingle(r) { SINGLE_LANDED.add(r); paintSingle(); }
+function dropCard(r) {
+  const el = CARDS.get(r); CARDS.delete(r);
+  if (isSingle(r)) { SINGLE_LANDED.delete(r); if (![...CARDS.keys()].some(isSingle) && SINGLE_EL) { SINGLE_EL.remove(); SINGLE_EL = null; } else paintSingle(); }
+  else if (el) el.remove();
+}
 let OPENING = true;
 function syncRoster(reset) {
-  if (reset) { epoch++; QUEUE.length = 0; PENDING.clear(); CATCH.clear(); CARDS.clear(); strip.innerHTML = ''; document.querySelectorAll('.flyer').forEach(f => f.remove()); qBusy = false; }
+  if (reset) { epoch++; QUEUE.length = 0; PENDING.clear(); CATCH.clear(); CARDS.clear(); SINGLE_LANDED.clear(); SINGLE_EL = null; strip.innerHTML = ''; document.querySelectorAll('.flyer').forEach(f => f.remove()); qBusy = false; }
   const sel = ST.sel; const want = sel ? sel.found.filter(r => RINGS[r].end <= ST.scrub).sort((a, b) => RINGS[a].end - RINGS[b].end) : [];
   const W = new Set(want);
-  CARDS.forEach((el, r) => { if (!W.has(r)) { el.remove(); CARDS.delete(r); } });
+  [...CARDS.keys()].forEach(r => { if (!W.has(r)) dropCard(r); });
   for (let i = QUEUE.length - 1; i >= 0; i--) if (!W.has(QUEUE[i])) { PENDING.delete(QUEUE[i]); QUEUE.splice(i, 1); }
   want.forEach(r => { if (!CARDS.has(r) && !QUEUE.includes(r) && !CATCH.has(r)) { QUEUE.push(r); PENDING.add(r); } });
+  /* the opening frame: one reveal under half a second, cards already in place; no flights until a control is touched */
   if (OPENING) { OPENING = false; const now = performance.now();
-    QUEUE.splice(0).forEach(r => { PENDING.delete(r); insertCard(r, buildCard(r, false)); if (!reduced()) CATCH.set(r, now); });
+    QUEUE.splice(0).forEach(r => { PENDING.delete(r); if (isSingle(r)) { insertCard(r, singleEl(false)); landSingle(r); } else insertCard(r, buildCard(r, false)); if (!reduced()) CATCH.set(r, now); });
     if (!reduced()) settleAfter(RESOLVE_MS + 40); }
   renderRosterHead(); if (!qBusy) nextCatch(epoch); requestDraw();
 }
 function renderRosterHead() {
   const sel = ST.sel; $('#rcount').textContent = sel ? CARDS.size + ' of ' + NR : '';
-  $('#rnote').textContent = !sel ? '' : ST.scrub < T1 && sel.found.length > CARDS.size + QUEUE.length ? 'More land as the clock reaches the end of each ring.' : (sel.kind === 'panel' ? 'Caught by the vote: at least ' + sel.k + ' families called it a ring, and at least ' + sel.k + ' of them flagged half of its labeled transfers (panel.py).' : 'Caught by the engine rule: at least half of the ring flagged, without sweeping in its neighborhood.') + ' Hover a card for the details.';
+  $('#rnote').textContent = !sel ? '' : ST.scrub < T1 && sel.found.length > CARDS.size + QUEUE.length ? 'More land as the clock reaches the end of each ring.' : (sel.kind === 'panel' ? 'Caught by the vote: at least ' + sel.k + ' families called it a ring, at least ' + sel.k + ' of them flagged half of it, and the agreed flags did not sweep the neighborhood.' : 'Caught by the engine rule: at least half of the ring flagged, without sweeping its neighborhood.');
 }
 function nextCatch(ep) {
   if (ep !== epoch) return;
   if (!QUEUE.length) { qBusy = false; renderRosterHead(); return; }
   qBusy = true; const r = QUEUE.shift();
-  if (reduced()) { PENDING.delete(r); insertCard(r, buildCard(r, false)); renderRosterHead(); requestDraw(); setTimeout(() => nextCatch(ep), 0); return; }
+  if (reduced()) { PENDING.delete(r); if (isSingle(r)) { insertCard(r, singleEl(false)); landSingle(r); } else insertCard(r, buildCard(r, false)); renderRosterHead(); requestDraw(); setTimeout(() => nextCatch(ep), 0); return; }
   PENDING.delete(r); CATCH.set(r, performance.now()); requestDraw(); settleAfter(RESOLVE_MS + 40);
   setTimeout(() => fly(r, ep), 300); setTimeout(() => nextCatch(ep), 230);
 }
 function fly(r, ep) {
   if (ep !== epoch) return;
-  const c = CELL_OF[r]; const card = buildCard(r, true); insertCard(r, card); renderRosterHead();
-  const sr = strip.getBoundingClientRect(); const cr = card.getBoundingClientRect();
-  if (cr.right > sr.right || cr.left < sr.left) strip.scrollLeft += (cr.left - sr.left) - (sr.width - cr.width) / 2;
+  const c = CELL_OF[r]; const single = isSingle(r); const fresh = single && !SINGLE_EL;
+  const card = single ? singleEl(true) : buildCard(r, true); insertCard(r, card); renderRosterHead();
   const target = card.querySelector('canvas').getBoundingClientRect();
   let minx = 1e9, miny = 1e9, maxx = -1e9, maxy = -1e9; RINGS[r].acc.forEach(a => { const p = c.sp[a]; minx = Math.min(minx, p[0]); maxx = Math.max(maxx, p[0]); miny = Math.min(miny, p[1]); maxy = Math.max(maxy, p[1]); });
-  const st = cv.getBoundingClientRect(); const bw = Math.max(56, maxx - minx + 14), bh = Math.max(40, maxy - miny + 14);
-  const fl = document.createElement('canvas'); fl.className = 'flyer'; drawThumb(fl, r, 44, 30); document.body.append(fl);
-  const k0 = Math.max(bw / 44, bh / 30);
-  const from = 'translate(' + (st.left + (minx + maxx) / 2 - 22 * k0) + 'px,' + (st.top + (miny + maxy) / 2 - 15 * k0) + 'px) scale(' + k0 + ')';
+  const st = cv.getBoundingClientRect(); const bw = Math.max(40, maxx - minx + 14), bh = Math.max(26, maxy - miny + 14);
+  const fl = document.createElement('canvas'); fl.className = 'flyer'; drawThumb(fl, r, 34, 22); document.body.append(fl);
+  const k0 = Math.max(bw / 34, bh / 22);
+  const from = 'translate(' + (st.left + (minx + maxx) / 2 - 17 * k0) + 'px,' + (st.top + (miny + maxy) / 2 - 11 * k0) + 'px) scale(' + k0 + ')';
   const to = 'translate(' + target.left + 'px,' + target.top + 'px) scale(1)';
-  let landed = false; const done = () => { if (landed) return; landed = true; fl.remove(); if (ep === epoch) card.classList.remove('pending'); };
+  let landed = false; const done = () => { if (landed) return; landed = true; fl.remove(); if (ep !== epoch) return; card.classList.remove('pending'); if (single) landSingle(r); if (fresh || !single) requestDraw(); else requestDraw(); };
   setTimeout(done, 640); /* the card lands even if the animation is never painted (background tab, headless) */
   if (fl.animate) { const an = fl.animate([{ transform: from, opacity: 0.95 }, { transform: to, opacity: 1 }], { duration: 560, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'forwards' }); an.onfinish = done; an.oncancel = done; } else done();
 }
@@ -419,7 +466,7 @@ function setVotes(animate) {
   if (animate && !reduced()) { DIAL.t0 = performance.now(); DIAL.on = true; settleAfter(DIAL.dur + 40); } else CELLS.forEach(c => { c.litT = c.to; });
   const lr = CELLS.filter(c => c.to).length;
   $('#dialVal').textContent = ST.k + ' of ' + ST.n;
-  $('#dialNote').innerHTML = 'At this dial <span class="mono" style="color:var(--ok)">' + lr + ' of ' + NR + '</span> IBM groups light green; the rest wait in amber dots.';
+  $('#dialNote').innerHTML = 'At this dial <span class="mono" style="color:var(--ok)">' + lr + ' of ' + NR + '</span> IBM groups lit; the rest dim to amber dashes, same weight.';
   requestDraw();
 }
 function select(reset) {
