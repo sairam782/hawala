@@ -908,6 +908,69 @@ def _board(models, units, rings_total, n_ordinary, bold=lambda m: False, top=Non
     return head + "\n" + "\n".join(rows)
 
 
+def _prompt_table(pc):
+    rows = ["| Prompt | What it changes | Mean F1 | vs S0 | 95% range of the change | Better than S0 in | Models improved "
+            "| Rings caught | False alarms | Sweeps |", "|---|---|---:|---:|---|---:|---:|---:|---:|---:|"]
+    for r in pc["prompts"]:
+        base = r["prompt"] == pc["baseline"]
+        rows.append(f"| **{r['prompt']}** | {r['label']} | {r['mean_f1']:.3f} | {'–' if base else '%+.3f' % r['delta_vs_base']} "
+                    f"| {'–' if base else '%+.3f to %+.3f' % tuple(r['delta_ci95'])} | {'–' if base else '%.0f%% of resamples' % (100 * r['p_better_than_base'])} "
+                    f"| {'–' if base else '%d of %d' % (r['models_improved'], r['models'])} | {r['rings_found']} | {r['false_rings']} | {r['sweeps']} |")
+    return rows
+
+
+def _prompt_section(load):
+    s1 = load(HERE / "data" / "prompt_compare_step1.json")
+    if not s1:
+        return []
+    s2 = load(HERE / "data" / "prompt_compare_step2.json")
+    s3 = load(HERE / "slices" / "heldout_c" / "prompt_compare_heldout.json")
+    L = ["## System prompt search", ""]
+    final = s3 or s2 or s1
+    if final:
+        best = next((r for r in final["prompts"] if r["prompt"] != final["baseline"]), None)
+        if best and best["delta_vs_base"] <= 0:
+            L += [f"**Decision: keep S0, the bench's own system prompt.** No candidate beat it. The closest, {best['prompt']} "
+                  f"({best['label']}), scored {best['delta_vs_base']:+.3f} mean F1 (95% range {best['delta_ci95'][0]:+.3f} to "
+                  f"{best['delta_ci95'][1]:+.3f}) and improved {best['models_improved']} of {best['models']} models. The candidates "
+                  "did cut false alarms, as designed, but every one of them also missed rings, and the misses cost more than the "
+                  "alarms saved. Stopped early for time: the comparison covers the "
+                  f"{final['units']} neighborhoods every candidate had finished on all five models, so it is a direction, "
+                  "not a verdict. prompts.py records the result next to SYSTEM.", ""]
+        elif best:
+            where = "held-out C, which no prompt was tuned on" if final is s3 else "the main slice"
+            L += [f"**Best system prompt: {best['prompt']} ({best['label']}).** On {where}, across {best['models']} models, mean F1 "
+                  f"{best['mean_f1']:.3f} against S0's {best['mean_f1'] - best['delta_vs_base']:.3f} ({best['delta_vs_base']:+.3f}; "
+                  f"95% range {best['delta_ci95'][0]:+.3f} to {best['delta_ci95'][1]:+.3f}); better than S0 in "
+                  f"{best['p_better_than_base']:.0%} of resamples and for {best['models_improved']} of {best['models']} models.", ""]
+    L += ["Only the system message changes. Rows, code facts, the question and the answer format are the bench's v2, so a "
+          "change in score is the system prompt's doing. Candidates were written from round one's failures (31% of all "
+          "answers called an ordinary neighborhood a ring; 7% caught a ring by sweeping in about 11 wrong transfers per "
+          "real one) and none mentions the data's artifacts (the ACH tell, late timestamps, neighborhood size). Changes are "
+          "paired: the same models on the same neighborhoods, resampled together.", "",
+          f"### Eight candidates on a five-model panel, {s1['units']} neighborhoods", "",
+          "Panel: " + ", ".join(s1["models"]) + ". S0 is the bench's own runs of the same models.", ""]
+    L += _prompt_table(s1) + [""]
+    if s2:
+        L += [f"### Step 2: the best two on the top {len(s2['models'])} models, {s2['units']} neighborhoods", ""]
+        L += _prompt_table(s2) + [""]
+        per = {r["prompt"]: r["per_model_f1"] for r in s2["prompts"]}
+        ids = [r["prompt"] for r in s2["prompts"]]
+        L += ["F1 per model:", "", "| Model | " + " | ".join(ids) + " |", "|---|" + "---:|" * len(ids)]
+        for m in s2["models"]:
+            vals = [per[i][m] for i in ids]; top = max(vals)
+            L.append(f"| {m} | " + " | ".join(("**%.3f**" if v == top else "%.3f") % v for v in vals) + " |")
+        L.append("")
+    if s3:
+        L += [f"### Step 3: the winner against S0 on held-out C ({s3['units']} neighborhoods, {len(s3['models'])} models)", ""]
+        L += _prompt_table(s3) + [""]
+    L += ["### The prompts", ""]
+    texts = dict(s1.get("texts") or {})
+    for sid, t in texts.items():
+        L += [f"<details><summary><b>{sid}</b>: {system_prompts.CANDIDATES[sid][0]}</summary>", "", "```text", t, "```", "", "</details>", ""]
+    return L
+
+
 def cmd_report(a):
     def load(p):
         return json.load(open(p, encoding="utf-8")) if p.exists() else None
@@ -959,6 +1022,7 @@ def cmd_report(a):
     if r2:
         L += ["## Finalists on all 60 neighborhoods", "", _board(r2["models"], r2["units"], r2["rings_total"], n_ord(r2),
               bold=lambda m: m["rank"] <= 3), ""]
+    L += _prompt_section(load)
     if r1:
         adv = {m["id"] for m in r2["models"]} if r2 else set()
         L += ["## Round one: every chat model on 20 neighborhoods", "",
