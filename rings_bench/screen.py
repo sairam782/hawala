@@ -10,6 +10,7 @@ new. The bench's earlier runs of the same version (data/bench_results.json) join
   python3 screen.py run --models all [--units 60] [--workers 6] [--rpm 50] [--budget 25]
   python3 screen.py subset                           out/screen/subset_screen20.json: 7 ring units across shapes + 13 ordinary
   python3 screen.py score [--boot 2000] [--subset screen20]   data/screen_results_<v>[_<subset>].json (+ .js) and the table
+  python3 screen.py report                           evals.md from whichever rounds have been scored
 
 --subset screen20 restricts run and score to the stratified 20 (stage 1 of the staged screen); every model, the bench's
 included, is then ranked on exactly those 20 units.
@@ -639,6 +640,114 @@ def cmd_subset(a):
     print(f"{len(pick)} units -> {p}:", ", ".join(f"{u['id']} {u['shape'] or 'ordinary'}" for u in chosen))
 
 
+def _fmt_model(m, bold):
+    name = m["id"] + (" †" if m["source"] == "bench" else "")
+    return f"**{name}**" if bold else name
+
+
+def _board(models, units, rings_total, n_ordinary, bold=lambda m: False, top=None):
+    head = ("| # | Model | Run | F1 | 95% range | P(top 3) | Precision | Recall | Rings caught | False alarms | Errors | Cost "
+            "| $ per ring | Median |\n|---:|---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
+    rows = []
+    for m in models[:top] if top else models:
+        lo, hi = m["f1_ci95"]
+        rows.append(f"| {m['rank']} | {_fmt_model(m, bold(m))} | {m['runs']}/{units} | {m['f1']:.3f} | {lo:.2f} to {hi:.2f} "
+                    f"| {m['p_top3']:.0%} | {m['precision']:.0%} | {m['recall']:.0%} | {m['rings_found']} of {rings_total} "
+                    f"| {m['false_rings']} of {n_ordinary} | {m['technical_failures'] or ''} | ${m['cost_usd']:.2f} "
+                    f"| {'$%.3f' % m['usd_per_ring_found'] if m['usd_per_ring_found'] else '–'} "
+                    f"| {(m['latency_ms_median'] or 0) / 1000:.1f} s |")
+    return head + "\n" + "\n".join(rows)
+
+
+def cmd_report(a):
+    def load(p):
+        return json.load(open(p, encoding="utf-8")) if p.exists() else None
+    r1 = load(HERE / "data" / "screen_results_v2_screen20.json")
+    r2 = load(HERE / "data" / "screen_results_v2.json")
+    r3 = load(HERE / "slices" / "heldout_c" / "screen_results_v2.json")
+    if not (r1 or r2):
+        sys.exit("nothing scored yet: run `screen.py score --subset screen20` first")
+    cat = catalog()
+    spent = spent_so_far()  # every round, held-out included, writes to out/screen
+    calls = sum(1 for p in OUT.glob("*.jsonl") for _ in p.open(encoding="utf-8"))
+
+    def n_ord(r):
+        return r["units"] - r["rings_total"]
+
+    def complete(r):
+        return all(m["runs"] == r["units"] for m in r["models"])
+
+    final = r2 if r2 and complete(r2) else None
+    L = ["# Model screen: every Nicrron chat model on the Rings bench", ""]
+    stage = ("Held-out check done" if r3 and complete(r3) else "Finalists done" if final else
+             "Round one done" if r1 and complete(r1) else "Round one in progress")
+    L += [f"**{stage}.** {len(cat)} chat models in the catalog, {calls:,} model calls so far, ${spent:.2f} spent. "
+          f"Written {time.strftime('%Y-%m-%d %H:%M')} by `screen.py report`; every number below is read from the scored files "
+          "it names, so rerun it rather than editing this file.", ""]
+    if not final and r1 and not complete(r1):
+        least = min(m["runs"] for m in r1["models"])
+        L += [f"> **Not a ranking yet.** Some models have answered only {least} of the {r1['units']} round-one neighborhoods, "
+              "so their scores rest on different and fewer cases. Read the Run column before comparing rows.", ""]
+    if final:
+        top3 = final["models"][:3]
+        L += ["## Top 3", "", "Ranked by F1 on all 60 neighborhoods (20 hold one of IBM's laundering groups, 40 are ordinary).", ""]
+        L += ["| Rank | Model | F1 | 95% range | In the top 3 | Rings caught | False alarms | Cost of 60 runs | Held-out C F1 |",
+              "|---:|---|---:|---|---:|---:|---:|---:|---:|"]
+        held = {m["id"]: m for m in (r3 or {}).get("models", [])}
+        for m in top3:
+            lo, hi = m["f1_ci95"]; h = held.get(m["id"])
+            L.append(f"| {m['rank']} | **{m['id']}** | {m['f1']:.3f} | {lo:.2f} to {hi:.2f} | {m['p_top3']:.0%} of resamples "
+                     f"| {m['rings_found']} of {final['rings_total']} | {m['false_rings']} of {n_ord(final)} | ${m['cost_usd']:.2f} "
+                     f"| {('%.3f' % h['f1']) if h else 'not run'} |")
+        L.append("")
+        for pr in final.get("podium_pairs", []):
+            L.append(f"- {pr['a']} beats {pr['b']} in {pr['p_a_beats_b']:.0%} of resamples.")
+        L.append("")
+    if r3:
+        L += ["## Held-out C: does the order hold on unseen data?", "",
+              "A fresh cut of the same IBM file, no account shared with the main slice, never used to tune a prompt.", "",
+              _board(r3["models"], r3["units"], r3["rings_total"], n_ord(r3)), ""]
+    if r2:
+        L += ["## Finalists on all 60 neighborhoods", "", _board(r2["models"], r2["units"], r2["rings_total"], n_ord(r2),
+              bold=lambda m: m["rank"] <= 3), ""]
+    if r1:
+        adv = {m["id"] for m in r2["models"]} if r2 else set()
+        L += ["## Round one: every chat model on 20 neighborhoods", "",
+              f"A stratified 20 of the 60: {r1['rings_total']} laundering groups across shapes and {n_ord(r1)} ordinary "
+              "neighborhoods. It only decides who gets the full run, so the ranges are wide by design."
+              + (" Bold models went on to all 60." if adv else ""), "",
+              _board(r1["models"], r1["units"], r1["rings_total"], n_ord(r1), bold=lambda m: m["id"] in adv), ""]
+    L += ["## How to read the tables", "",
+          "- **F1** balances precision and recall over individual transfers, scored against IBM's labels. It is the ranking rule, fixed before any run.",
+          "- **95% range** comes from resampling the neighborhoods 2,000 times, the same draw for every model. Where two models' ranges overlap, their order could flip on other data.",
+          "- **P(top 3)** is the share of resamples in which the model finished in the top 3.",
+          "- **Rings caught** means the model called the neighborhood a ring, flagged at least half of IBM's labeled transfers, and did not sweep (its wrong flags did not outnumber the ring).",
+          "- **False alarms** are ordinary neighborhoods the model called a ring. **Errors** are calls that failed or gave no readable answer; they count as flagging nothing.",
+          "- **Cost** is Nicrron's list price times the tokens each call reported. **Median** is the median time to answer.",
+          "- † marks the nine models the bench ran earlier (data/bench_results.json), joined here and rescored with the same rules; every other row ran in this screen.", "",
+          "## Method", "",
+          "- Data: IBM AMLworld HI-Small, synthetic. Labels come from IBM's generator, not from us or from a model. Same 60 neighborhoods for every model (data/units.json).",
+          "- Prompt: the bench's v2 (raw transfers plus code-computed facts: degrees, loops, bursts, pass-through chains), with the answer format every v2 run on the board used. Temperature 0, one run per model per neighborhood.",
+          "- Rounds: all 57 models the bench had not run were screened on the stratified 20. The ten best overall ran all 60. The top five then ran held-out C.",
+          "- Limits: synthetic data; the slice is about 4% laundering where the file is 0.1%; every laundering transfer here is ACH, a shortcut a model can learn; ring neighborhoods are larger than ordinary ones; one run per cell.", "",
+          "## Reproduce", "", "```",
+          "cd rings_bench",
+          "python3 screen.py subset                                  # the stratified 20 (seeded)",
+          "python3 screen.py run --models new --subset screen20      # round one; key in ~/.nicrron_key",
+          "python3 screen.py score --subset screen20",
+          "python3 screen.py run --models <top 10, comma list>       # finalists on all 60",
+          "python3 screen.py score",
+          "RINGS_SLICE=heldout_c python3 screen.py run --models <top 5>",
+          "RINGS_SLICE=heldout_c python3 screen.py score",
+          "python3 screen.py report                                  # this file",
+          "```", "",
+          "Raw evidence: one JSONL per model in `out/screen/` holding each call's full answer, verdict, flagged transfer ids, tokens, cost and latency. "
+          "Scored runs, with each model's reason in its own words, are in the `runs` list of the results files above."]
+    out = HERE / "evals.md"
+    out.write_text("\n".join(L) + "\n", encoding="utf-8")
+    print("written", out)
+
+
 def load_batch_file(p):
     recs = {}
     for line in p.read_text(encoding="utf-8").splitlines():
@@ -672,10 +781,12 @@ def main():
     s = sub.add_parser("score")
     s.add_argument("--version", default="v2"); s.add_argument("--boot", type=int, default=2000)
     s.add_argument("--partial", action="store_true"); s.add_argument("--subset", default=None)
+    sub.add_parser("report")
     b = sub.add_parser("subset")
     b.add_argument("--name", default="screen20"); b.add_argument("--seed", type=int, default=20261017)
     a = ap.parse_args()
-    {"catalog": cmd_catalog, "estimate": cmd_estimate, "probe": cmd_probe, "run": cmd_run, "score": cmd_score, "subset": cmd_subset}[a.cmd](a)
+    {"catalog": cmd_catalog, "estimate": cmd_estimate, "probe": cmd_probe, "run": cmd_run, "score": cmd_score, "subset": cmd_subset,
+     "report": cmd_report}[a.cmd](a)
 
 
 if __name__ == "__main__":
