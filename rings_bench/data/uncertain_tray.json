@@ -1,0 +1,365 @@
+[
+ {
+  "unit": "u01",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "medium",
+  "ring_votes": 4,
+  "families": 8,
+  "reasons": [
+   "families split: 4 of 8 called it a ring"
+  ]
+ },
+ {
+  "unit": "u03",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ring",
+  "first_pass_confidence": "low",
+  "ring_votes": 6,
+  "families": 9,
+  "reasons": [
+   "first pass called it a ring at low confidence",
+   "families split: 6 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u04",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "medium",
+  "ring_votes": 5,
+  "families": 9,
+  "reasons": [
+   "families split: 5 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u05",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "low",
+  "ring_votes": 5,
+  "families": 9,
+  "reasons": [
+   "families split: 5 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u08",
+  "expected": "ring",
+  "shape": "chain",
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "medium",
+  "ring_votes": 5,
+  "families": 8,
+  "reasons": [
+   "families split: 5 of 8 called it a ring"
+  ]
+ },
+ {
+  "unit": "u12",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "medium",
+  "ring_votes": 3,
+  "families": 9,
+  "reasons": [
+   "families split: 3 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u13",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ring",
+  "first_pass_confidence": "low",
+  "ring_votes": 8,
+  "families": 9,
+  "reasons": [
+   "first pass called it a ring at low confidence"
+  ]
+ },
+ {
+  "unit": "u14",
+  "expected": "ring",
+  "shape": "other",
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "medium",
+  "ring_votes": 3,
+  "families": 8,
+  "reasons": [
+   "families split: 3 of 8 called it a ring"
+  ]
+ },
+ {
+  "unit": "u16",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "medium",
+  "ring_votes": 3,
+  "families": 9,
+  "reasons": [
+   "families split: 3 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u17",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "low",
+  "ring_votes": 5,
+  "families": 9,
+  "reasons": [
+   "families split: 5 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u18",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "low",
+  "ring_votes": 3,
+  "families": 9,
+  "reasons": [
+   "families split: 3 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u19",
+  "expected": "ring",
+  "shape": "lone",
+  "first_pass_verdict": "ring",
+  "first_pass_confidence": "low",
+  "ring_votes": 3,
+  "families": 9,
+  "reasons": [
+   "first pass called it a ring at low confidence",
+   "families split: 3 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u20",
+  "expected": "ring",
+  "shape": "lone",
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "low",
+  "ring_votes": 6,
+  "families": 9,
+  "reasons": [
+   "families split: 6 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u21",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "medium",
+  "ring_votes": 4,
+  "families": 9,
+  "reasons": [
+   "families split: 4 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u23",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "medium",
+  "ring_votes": 3,
+  "families": 9,
+  "reasons": [
+   "families split: 3 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u24",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "medium",
+  "ring_votes": 3,
+  "families": 9,
+  "reasons": [
+   "families split: 3 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u25",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "low",
+  "ring_votes": 4,
+  "families": 9,
+  "reasons": [
+   "families split: 4 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u28",
+  "expected": "ring",
+  "shape": "lone",
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "low",
+  "ring_votes": 6,
+  "families": 9,
+  "reasons": [
+   "families split: 6 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u33",
+  "expected": "ring",
+  "shape": "chain",
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "low",
+  "ring_votes": 5,
+  "families": 9,
+  "reasons": [
+   "families split: 5 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u36",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "low",
+  "ring_votes": 5,
+  "families": 8,
+  "reasons": [
+   "families split: 5 of 8 called it a ring"
+  ]
+ },
+ {
+  "unit": "u37",
+  "expected": "ring",
+  "shape": "lone",
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "low",
+  "ring_votes": 6,
+  "families": 9,
+  "reasons": [
+   "families split: 6 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u38",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "medium",
+  "ring_votes": 3,
+  "families": 8,
+  "reasons": [
+   "families split: 3 of 8 called it a ring"
+  ]
+ },
+ {
+  "unit": "u40",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "medium",
+  "ring_votes": 5,
+  "families": 9,
+  "reasons": [
+   "families split: 5 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u41",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ring",
+  "first_pass_confidence": "low",
+  "ring_votes": 5,
+  "families": 9,
+  "reasons": [
+   "first pass called it a ring at low confidence",
+   "families split: 5 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u45",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "medium",
+  "ring_votes": 3,
+  "families": 9,
+  "reasons": [
+   "families split: 3 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u52",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "medium",
+  "ring_votes": 5,
+  "families": 9,
+  "reasons": [
+   "families split: 5 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u54",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "medium",
+  "ring_votes": 5,
+  "families": 9,
+  "reasons": [
+   "families split: 5 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u55",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "low",
+  "ring_votes": 4,
+  "families": 9,
+  "reasons": [
+   "families split: 4 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u58",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "low",
+  "ring_votes": 6,
+  "families": 9,
+  "reasons": [
+   "families split: 6 of 9 called it a ring"
+  ]
+ },
+ {
+  "unit": "u59",
+  "expected": "ordinary",
+  "shape": null,
+  "first_pass_verdict": "ordinary",
+  "first_pass_confidence": "medium",
+  "ring_votes": 3,
+  "families": 9,
+  "reasons": [
+   "families split: 3 of 9 called it a ring"
+  ]
+ }
+]
