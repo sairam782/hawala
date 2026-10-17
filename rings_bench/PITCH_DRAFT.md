@@ -66,4 +66,10 @@ only where it is needed, and you can see every call it made.
   two rings nobody else did; running it on all 60 would cost twice as much for the same catches on the easy ones.
 - "What does the AI add over the rules?" On this slice: fewer false alarms than the one-line rule at similar recall,
   a reason in words with cited rows, and a triage of what a human should read first.
+- "Why does it miss the single transfers?" Eight of IBM's twenty rings are one transfer each: one ACH row sitting
+  inside an ordinary neighborhood of 11 to 28 rows, same amounts and currencies as its neighbors. IBM labels it
+  laundering because its generator's hidden launderer made it, not because of anything in the row. There is no shape to
+  find, so no model finds it from the rows; the only two ever caught (by the investigator) sat inside a small burst.
+  Five rings were never found by any of 26 arms, all five single transfers. On real data these need a different
+  instrument (account history, counterparty risk), and we score them on their own line rather than hide them.
 - "Who pays?" The bank's financial-crime operations desk, per investigator seat, measured in alerts closed per hour.
