@@ -1,4 +1,4 @@
-# Rings bench, variant "board2d": the evidence board (loop 2)
+# Rings bench, variant "board2d": the evidence board (loop 3, final before freeze)
 
 Open `index.html` by double-click. It reads `../../../data/slice.js`, `units.js` and `bench_results.js`. If any of the three is missing, the page builds a small made-up network and labels it SAMPLE in the header badge, the limit line and the footer.
 
@@ -27,6 +27,20 @@ Behind a hover or a click:
   - A switch shows the ordinary traffic around the ring; it is off by default.
 - **The alarm strip under the board:** opens the 40 ordinary neighborhoods. A red dashed tile is one the model called a ring.
 - **Closed sections:** "The caught rings as cards", and the honest panel at the foot. The panel has three lines computed from the data: synthetic data with IBM's labels; the slice is enriched (4.0 vs 0.1 percent) and cut around IBM's groups; every laundering transfer in the slice is ACH, a tell.
+
+## Changes in loop 3 (REVIEW_2.md)
+
+- **Alarm strip visible:** the strip is readable and clickable above the tray at 1280 x 900 and at 1280 x 800, with no scrolling.
+  - Shaped drawings are 128 px tall.
+  - When the window is 860 px tall or less, they drop to 100 px, the marks to 34 px and the big numeral to 52 px.
+  - Before this fix, a CSS ordering bug kept the shapes at their natural height.
+- **Sweeps:** transfers flagged inside a sweep draw in muted green in a missed tile or mark. The single-transfer tile adds "· 3 flagged inside a sweep" after its count, and a swept shaped tile reads "missed (swept)".
+- **Stagger:** catches are 150 ms apart so they can be narrated. The real-browser timings in the animation section below were measured at the earlier 60 ms stagger and were not re-measured.
+- **Em dashes:** the models' reasons have their em dashes replaced with commas at display time (148 of 1,560 reasons carry one). The reasons are otherwise verbatim.
+- **Lows:**
+  - "Model said: ordinary" no longer prints the pattern "none".
+  - The single-transfer hover names IBM's pattern file, HI-Small_Patterns.txt.
+  - Not done: distinct fan-in and fan-out tray icons. At 38 x 24 they still look alike; the tile labels tell them apart.
 
 ## Changes in loop 2
 
@@ -57,7 +71,7 @@ Carried from loop 1:
 | Motion | Duration | What it carries |
 |---|---|---|
 | Misses light | one beat at 120 ms, 180 ms ease-out color change | The verdict on the misses, quietly and all at once |
-| Catches light in sequence | from 300 ms, 60 ms stagger, 180 ms ease-out each | The verdict arriving catch by catch |
+| Catches light in sequence | from 300 ms, 150 ms stagger (about 1.4 s for nine), 180 ms ease-out each | The verdict arriving catch by catch, slow enough to narrate |
 | Caught counter ticks | one step per catch | The running total, in step with the tiles |
 | Catch resolve: accounts move from the tile center into the shape | 300 ms, ease-out | The ring snapping into IBM's shape |
 | Catch resolve: the caught transfers draw along their paths | 440 ms, starting 30 percent in, ease-out | The loop closing, the star filling in |

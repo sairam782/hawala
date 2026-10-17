@@ -16,7 +16,9 @@
   function fmtDay(ms) { const d = new Date(ms); return MON[d.getUTCMonth()] + ' ' + d.getUTCDate(); }
   function fmtTime(ms) { const d = new Date(ms); return fmtDay(ms) + ', ' + String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); }
   function compact(v) { const a = Math.abs(v); return a >= 1e9 ? (v / 1e9).toFixed(1) + 'B' : a >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : a >= 1e3 ? (v / 1e3).toFixed(1) + 'k' : a >= 10 ? v.toFixed(0) : v.toFixed(2); }
-  function firstSentence(s) { if (!s) return ''; const m = /^(.+?[.!?])(\s+[A-Z(]|$)/.exec(String(s).trim()); return m ? m[1] : String(s).trim(); }
+  /* models' reasons are shown verbatim except that em dashes become commas at display time */
+  function clean(s) { return String(s == null ? '' : s).replace(/\s*—\s*/g, ', '); }
+  function firstSentence(s) { if (!s) return ''; s = clean(s); const m = /^(.+?[.!?])(\s+[A-Z(]|$)/.exec(String(s).trim()); return m ? m[1] : String(s).trim(); }
   const CUR3 = { 'US Dollar': 'USD', 'Euro': 'EUR', 'Yuan': 'CNY', 'Rupee': 'INR', 'Yen': 'JPY', 'Swiss Franc': 'CHF', 'Canadian Dollar': 'CAD', 'Australian Dollar': 'AUD', 'UK Pound': 'GBP', 'Ruble': 'RUB', 'Brazil Real': 'BRL', 'Mexican Peso': 'MXN', 'Shekel': 'ILS', 'Saudi Riyal': 'SAR', 'Bitcoin': 'BTC' };
   function curCode(c) { return CUR3[c] || String(c || '').slice(0, 3).toUpperCase(); }
   function seeded(seed) { let s = seed >>> 0; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; }
@@ -299,12 +301,13 @@
       t.appendChild(d.svg);
       if (!run || !run.verdict) t.classList.add('noans');
       const T = { el: t, u, run, ring: true, found, d, alarm: false };
+      if (isSwept(T)) d.svg.classList.add('swept');
       wireTile(T); rg.appendChild(t); TILES.push(T);
     });
     GROUP = null;
     if (singles.length) {
       const g = H('div', 'tile rt gt'); g.tabIndex = 0;
-      g.appendChild(H('div', 'th', '<span class="sh">Single transfers (no named shape)</span><span class="st"><b class="gk">0</b> of ' + singles.length + ' caught</span>'));
+      g.appendChild(H('div', 'th', '<span class="sh">Single transfers (no named shape)</span><span class="st"><b class="gk">0</b> of ' + singles.length + ' caught<span class="gsw"></span></span>'));
       const marks = H('div', 'marks'); g.appendChild(marks);
       GROUP = { el: g, n: singles.length, k: 0, items: [] };
       singles.forEach(u => {
@@ -313,11 +316,12 @@
         const mk = H('div', 'mark'); mk.tabIndex = 0; mk.appendChild(d.svg);
         if (!run || !run.verdict) mk.classList.add('noans');
         const T = { el: mk, u, run, ring: true, found: ringFound(run, u), d, alarm: false, mark: true };
+        if (isSwept(T)) { d.svg.classList.add('swept'); GROUP.swept = (GROUP.swept || 0) + 1; }
         wireTile(T); marks.appendChild(mk); TILES.push(T); GROUP.items.push(T);
       });
       const raw = singles.map(u => String(ibmRaw(u) || '').toLowerCase());
       const nNo = raw.filter(w => /^no named|^lone/.test(w)).length, nBi = raw.filter(w => /^bipartite/.test(w)).length;
-      const gtip = '<h4>Single transfers (no named shape)</h4><p>' + singles.length + ' of IBM\'s laundering groups are one transfer each, with no visible structure around it. IBM\'s pattern file names ' + nNo + ' of them "no named shape"' + (nBi ? ' and ' + nBi + ' "bipartite" (only one of its rows is in this slice)' : '') + '. From the rows alone a single transfer looks like ordinary traffic, so this is the part detectors find least.</p><p>Each mark is one of them: green caught, amber dotted missed. Hover a mark for its counts and reason; click it to open it.</p>';
+      const gtip = '<h4>Single transfers (no named shape)</h4><p>' + singles.length + ' of IBM\'s laundering groups are one transfer each, with no visible structure around it. IBM\'s pattern file (HI-Small_Patterns.txt) names ' + nNo + ' of them "no named shape"' + (nBi ? ' and ' + nBi + ' "bipartite" (only one of its rows is in this slice)' : '') + '. From the rows alone a single transfer looks like ordinary traffic, so this is the part detectors find least.</p><p>Each mark is one of them: green caught, amber dotted missed. Hover a mark for its counts and reason; click it to open it.</p>';
       GROUP.tip = gtip;
       g.addEventListener('mouseenter', () => { tip.innerHTML = gtip; tip.hidden = false; });
       g.addEventListener('mousemove', moveTip);
@@ -343,10 +347,13 @@
     if (T.mark) {
       T.el.classList.toggle('caught', T.found); T.el.classList.toggle('missed', !T.found);
       if (T.found && GROUP) { GROUP.k++; const gk = GROUP.el.querySelector('.gk'); if (gk) gk.textContent = GROUP.k; }
-      if (GROUP && GROUP.items.every(x => x === T || x.el.classList.contains('lit'))) GROUP.el.classList.add('lit', GROUP.k ? 'some' : 'none');
+      if (GROUP && GROUP.items.every(x => x === T || x.el.classList.contains('lit'))) {
+        GROUP.el.classList.add('lit', GROUP.k ? 'some' : 'none');
+        const sw = GROUP.el.querySelector('.gsw'); if (sw && GROUP.swept) sw.textContent = ' · ' + GROUP.swept + ' flagged inside a sweep';
+      }
     } else if (T.ring) {
       T.el.classList.toggle('caught', T.found); T.el.classList.toggle('missed', !T.found);
-      if (st) st.textContent = !T.run || !T.run.verdict ? 'no answer' : T.found ? 'caught' : 'missed';
+      if (st) st.textContent = !T.run || !T.run.verdict ? 'no answer' : T.found ? 'caught' : isSwept(T) ? 'missed (swept)' : 'missed';
     } else T.el.classList.toggle('alarm', T.alarm);
     T.el.classList.add('lit');
   }
@@ -370,7 +377,7 @@
         if (my !== SEQ) return;
         setStatus(T);
         caughtN++; $('#nCaught').textContent = caughtN; catchMoment(T, my);
-      }, 300 + i * 60);
+      }, 300 + i * 150);
     });
   }
 
@@ -464,7 +471,7 @@
     } else h = '<h4>Ordinary neighborhood ' + esc(T.u.id) + '</h4><p>IBM labels none of these transfers as laundering.</p>';
     if (!run) h += '<p><i>No run for this model here.</i></p>';
     else if (!run.verdict) h += '<p><i>No answer: ' + esc(firstSentence(run.error || 'the model returned nothing usable')).slice(0, 140) + '</i></p>';
-    else h += '<p><b>Model said: ' + esc(run.verdict) + (run.pattern ? ', ' + esc(run.pattern) : '') + '.</b> ' + esc(firstSentence(run.why)) + '</p>';
+    else h += '<p><b>Model said: ' + esc(run.verdict) + (run.pattern && run.pattern !== 'none' ? ', ' + esc(run.pattern) : '') + '.</b> ' + esc(firstSentence(run.why)) + '</p>';
     if (byCat.ok.length) h += '<div class="ids">Flagged, IBM agrees: ' + idList(byCat.ok, 'g', 10) + '</div>';
     if (byCat.bad.length) h += '<div class="ids">Flagged, IBM says ordinary: ' + idList(byCat.bad, 'r', 10) + '</div>';
     if (byCat.miss.length) h += '<div class="ids">Missed: ' + idList(byCat.miss, 'y', 10) + '</div>';
@@ -500,7 +507,7 @@
     $('#dTitle').textContent = T.ring ? shape + ', one of IBM\'s laundering rings' : 'Ordinary neighborhood';
     const stat = T.ring ? (T.found ? 'caught' : (T.run && T.run.verdict ? 'missed' : 'no answer')) : (T.alarm ? 'called a ring: a false alarm' : (T.run && T.run.verdict ? 'left alone' : 'no answer'));
     $('#dSub').textContent = prettyName(CUR) + ': ' + stat + ' · ' + ids.length + ' transfers among ' + Object.keys(layoutUnit(u).pos).length + ' accounts · scrub ' + days + ' days for this group only';
-    $('#dWhy').innerHTML = T.run ? ('<b>The model\'s reason.</b> ' + esc(T.run.why || T.run.error || 'none given')) : 'No run for this model here.';
+    $('#dWhy').innerHTML = T.run ? ('<b>The model\'s reason.</b> ' + esc(clean(T.run.why || T.run.error || 'none given'))) : 'No run for this model here.';
     const L = $('#dList'); L.innerHTML = '';
     const rows = ids.map(id => { const t = TX[id]; const c = big.cats[id]; const row = H('div', 'row c-' + c, '<span class="dot"></span><span>' + esc(id) + '</span><span>' + esc(fmtTime(t.ms)) + '</span><span>' + esc(t.from) + ' to ' + esc(t.to) + '</span><span class="amt">' + esc(compact(t.paid)) + ' ' + esc(curCode(t.cur)) + '</span>'); row.title = { ok: 'flagged, IBM agrees', bad: 'flagged, IBM says ordinary', miss: 'IBM says laundering, missed', bg: 'ordinary, not flagged' }[c] + ' · ' + t.fmt + ' · ' + t.paid + ' ' + t.cur; L.appendChild(row); return { row, ms: t.ms }; });
     DLG = { big, rows, start, hours, T };

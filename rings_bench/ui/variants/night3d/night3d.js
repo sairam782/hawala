@@ -189,7 +189,7 @@ function init(sample) {
     const kind = shapeKind(r, ts); const P = {}; const R = 17;
     const role = n => out[n] > 0 && inn[n] === 0 ? 0 : inn[n] > 0 && out[n] === 0 ? 2 : 1;
     const spread = (list, gap, max) => { const k = list.length; const s = k > 1 ? Math.min(gap, max / (k - 1)) : 0; return list.map((n, i) => (i - (k - 1) / 2) * s); };
-    if (kind === 'single') { const t = ts[0]; P[t.u] = [0, 5]; P[t.v] = [0, -5]; }
+    if (kind === 'single') { const t = ts[0]; P[t.u] = [0, 10]; P[t.v] = [0, -10]; }
     else if (kind === 'star') {
       const hub = ns.slice().sort((a, b) => (out[b] + inn[b]) - (out[a] + inn[a]))[0]; P[hub] = [0, 0];
       const rest = ns.filter(n => n !== hub); rest.forEach((n, i) => { const a = -Math.PI / 2 + i / rest.length * Math.PI * 2; P[n] = [Math.cos(a) * R, Math.sin(a) * R]; });
@@ -209,14 +209,21 @@ function init(sample) {
   const SHAPE_ORDER = ['FAN-OUT', 'FAN-IN', 'CYCLE', 'SCATTER-GATHER', 'GATHER-SCATTER', 'STACK', 'BIPARTITE'];
   const rank = r => { const n = ibmName(r).toUpperCase(); const i = SHAPE_ORDER.findIndex(s => n.indexOf(s) === 0); return i < 0 ? SHAPE_ORDER.length : i; };
   const GROUPS = RING_IDS.map(localLayout);
-  const shaped = GROUPS.filter(g => g.kind !== 'single').sort((a, b) => rank(a.r) - rank(b.r) || +a.r - +b.r);
+  const shaped = GROUPS.filter(g => g.kind !== 'single');
   const singles = GROUPS.filter(g => g.kind === 'single');
   const COLS = Math.min(4, Math.max(1, shaped.length)), ROWS = Math.ceil(shaped.length / COLS), CW = 68, CH = 58;
-  const top = ((ROWS - 1) * CH + (singles.length ? 46 : 0)) / 2;
-  shaped.forEach((g, i) => { const c = i % COLS, row = Math.floor(i / COLS); g.c = [(c - (COLS - 1) / 2) * CW, top - row * CH, (row - (ROWS - 1) / 2) * 10]; });
-  const singleY = top - (ROWS - 1) * CH - 50, SW = Math.min(24, (COLS * CW) / Math.max(1, singles.length));
-  singles.forEach((g, i) => { g.c = [(i - (singles.length - 1) / 2) * SW, singleY, ((ROWS - 1) / 2 + 0.6) * 10]; });
-  GROUPS.forEach(g => { g.W = {}; g.ns.forEach(n => g.W[n] = [g.c[0] + g.P[n][0], g.c[1] + g.P[n][1], g.c[2]]); });
+  const top = ((ROWS - 1) * CH + (singles.length ? 56 : 0)) / 2;
+  const singleY = top - (ROWS - 1) * CH - 58, SW = (COLS * CW) / Math.max(1, singles.length);
+  /* slots are fixed; which group sits in which slot follows the selected model: caught first, then missed, so green leads */
+  function placeGroups(found, instant) {
+    const byCaught = (a, b) => (found.has(b.r) ? 1 : 0) - (found.has(a.r) ? 1 : 0) || rank(a.r) - rank(b.r) || +a.r - +b.r;
+    shaped.slice().sort(byCaught).forEach((g, i) => { const c = i % COLS, row = Math.floor(i / COLS); g.home = [(c - (COLS - 1) / 2) * CW, top - row * CH, (row - (ROWS - 1) / 2) * 10]; });
+    singles.slice().sort(byCaught).forEach((g, i) => { g.home = [(i - (singles.length - 1) / 2) * SW, singleY, ((ROWS - 1) / 2 + 0.6) * 10]; });
+    GROUPS.forEach(g => { if (instant || !g.c) g.c = g.home.slice(); });
+    syncWorld();
+  }
+  function syncWorld() { GROUPS.forEach(g => { if (!g.W) g.W = {}; g.ns.forEach(n => { const w = g.W[n] || (g.W[n] = [0, 0, 0]); w[0] = g.c[0] + g.P[n][0]; w[1] = g.c[1] + g.P[n][1]; w[2] = g.c[2]; }); }); }
+  placeGroups(new Set(), true);
   const GBY = {}; GROUPS.forEach(g => GBY[g.r] = g);
 
   /* ---------- three.js scene ---------- */
@@ -242,7 +249,8 @@ function init(sample) {
   const TUBE_R = 0.6, NODE_R = 1.7, CONE_H = 2.8;
   const tube = new THREE.InstancedMesh(new THREE.CylinderGeometry(TUBE_R, TUBE_R, 1, 8, 1), new THREE.MeshLambertMaterial({ color: 0xffffff }), Math.max(1, GE.length));
   const cone = new THREE.InstancedMesh(new THREE.ConeGeometry(1.3, CONE_H, 12), new THREE.MeshLambertMaterial({ color: 0xffffff }), Math.max(1, GE.length));
-  const DOTS = []; GE.forEach((e, k) => { const L = Math.hypot(e.b[0] - e.a[0], e.b[1] - e.a[1], e.b[2] - e.a[2]) - 2 * NODE_R; const n = Math.max(1, Math.floor(L / 2.2)); for (let i = 1; i <= n; i++) { const f = (NODE_R + L * i / (n + 1)) / (L + 2 * NODE_R); DOTS.push({ k, p: [e.a[0] + (e.b[0] - e.a[0]) * f, e.a[1] + (e.b[1] - e.a[1]) * f, e.a[2] + (e.b[2] - e.a[2]) * f] }); } });
+  const DOTS = []; GE.forEach((e, k) => { const L = Math.hypot(e.b[0] - e.a[0], e.b[1] - e.a[1], e.b[2] - e.a[2]) - 2 * NODE_R; const n = Math.max(1, Math.floor(L / 2.2)); for (let i = 1; i <= n; i++) { const f = (NODE_R + L * i / (n + 1)) / (L + 2 * NODE_R); DOTS.push({ k, f }); } });
+  const dotAt = d => { const e = GE[d.k]; return [e.a[0] + (e.b[0] - e.a[0]) * d.f, e.a[1] + (e.b[1] - e.a[1]) * d.f, e.a[2] + (e.b[2] - e.a[2]) * d.f]; };
   const dots = new THREE.InstancedMesh(new THREE.SphereGeometry(0.55, 8, 6), new THREE.MeshBasicMaterial({ color: COL.miss, transparent: true, opacity: 0.38, depthWrite: false }), Math.max(1, DOTS.length));
   function setEdge(k, q) {   /* q: 0 hidden, 1 full length */
     const e = GE[k]; V1.set(e.a[0], e.a[1], e.a[2]); V2.set(e.b[0], e.b[1], e.b[2]); const dir = V2.clone().sub(V1); const L = dir.length(); dir.normalize();
@@ -254,14 +262,21 @@ function init(sample) {
   }
   GE.forEach((e, k) => { setEdge(k, 1); tube.setColorAt(k, tmpC.set(COL.pending)); cone.setColorAt(k, tmpC.set(COL.pending)); });
   tube.computeBoundingSphere(); cone.computeBoundingSphere(); scene.add(tube); scene.add(cone);
-  DOTS.forEach((d, i) => { M4.makeTranslation(d.p[0], d.p[1], d.p[2]); dots.setMatrixAt(i, M4); }); dots.computeBoundingSphere(); scene.add(dots);
+  DOTS.forEach((d, i) => { const p = dotAt(d); M4.makeTranslation(p[0], p[1], p[2]); dots.setMatrixAt(i, M4); }); dots.computeBoundingSphere(); scene.add(dots);
+  /* (4) forgiving hover: one invisible sphere per group, a little larger than the shape */
+  GROUPS.forEach(g => { g.hitR = Math.max(4, ...g.ns.map(n => Math.hypot(g.P[n][0], g.P[n][1]))) + 5; });
+  const HIT = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 12, 8), new THREE.MeshBasicMaterial({ visible: false }), Math.max(1, GROUPS.length));
+  function writeHits() { GROUPS.forEach((g, i) => { M4.makeScale(g.hitR, g.hitR, g.hitR); M4.setPosition(g.c[0], g.c[1], g.c[2]); HIT.setMatrixAt(i, M4); }); HIT.instanceMatrix.needsUpdate = true; }
+  writeHits(); HIT.computeBoundingSphere(); scene.add(HIT);
+  function writeNodes() { GN.forEach((x, i) => { M4.makeScale(1.7, 1.7, 1.7); M4.setPosition(x.p[0], x.p[1], x.p[2]); gSph.setMatrixAt(i, M4); }); gSph.instanceMatrix.needsUpdate = true; }
 
   /* the crowd: off by default; faint dust behind the groups, ring accounts pinned where their group sits */
   const pinned = new Uint8Array(nodes.length), pinPos = new Float32Array(nodes.length * 3);
-  GN.forEach(x => { if (!pinned[x.n]) { pinned[x.n] = 1; pinPos.set(x.p, x.n * 3); } });
+  const pinRef = []; GN.forEach(x => { if (!pinned[x.n]) { pinned[x.n] = 1; pinRef[x.n] = x.p; } });
   const pairs = new Map(); TR.forEach(t => { if (t.u !== t.v) { const k = t.u < t.v ? t.u * 100000 + t.v : t.v * 100000 + t.u; pairs.set(k, [t.u, t.v]); } });
   let CP = null, crowd = null;
   function buildCrowd() {
+    pinRef.forEach((p, n) => { if (p) pinPos.set(p, n * 3); });
     CP = crowdLayout(nodes.length, [...pairs.values()], pinned, pinPos);
     const vec = i => [CP[i * 3], CP[i * 3 + 1], CP[i * 3 + 2]];
     const lineObj = (list, mat) => { const a = new Float32Array(Math.max(1, list.length) * 6); list.forEach((t, k) => { a.set(vec(t.u), k * 6); a.set(vec(t.v), k * 6 + 3); }); const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(a, 3)); g.setDrawRange(0, list.length * 2); const o = new THREE.LineSegments(g, mat); o.userData = { list, times: list.map(t => t.t) }; return o; };
@@ -271,6 +286,7 @@ function init(sample) {
     const dust = new THREE.InstancedMesh(new THREE.SphereGeometry(0.9, 6, 4), new THREE.MeshBasicMaterial({ color: COL.dust, transparent: true, opacity: 0, depthWrite: false }), Math.max(1, free.length));
     free.forEach((n, i) => { M4.makeTranslation(CP[n * 3], CP[n * 3 + 1], CP[n * 3 + 2]); dust.setMatrixAt(i, M4); }); dust.count = free.length; dust.userData.times = free.map(n => nodes[n].t);
     crowd = { hair, dust, red: null, vec, lineObj, target: 0 };
+    crowd.refresh = () => { pinRef.forEach((p, n) => { if (p) { CP[n * 3] = p[0]; CP[n * 3 + 1] = p[1]; CP[n * 3 + 2] = p[2]; } }); [crowd.hair, crowd.red].forEach(o => { if (!o) return; const a = o.geometry.attributes.position.array; o.userData.list.forEach((t, k) => { a.set(vec(t.u), k * 6); a.set(vec(t.v), k * 6 + 3); }); o.geometry.attributes.position.needsUpdate = true; if (o === crowd.red) o.computeLineDistances(); }); };
     scene.add(hair); scene.add(dust); buildRed();
   }
   function buildRed() {
@@ -281,7 +297,7 @@ function init(sample) {
   }
 
   /* ---------- state ---------- */
-  const S = { m: null, scrub: Infinity, playing: false, rings: [], st: {}, queue: [], nextCatch: 0, hover: null, openUntil: 0, crowdOn: false };
+  const S = { m: null, scrub: Infinity, playing: false, rings: [], st: {}, queue: [], nextCatch: 0, hover: null, openUntil: 0, crowdOn: false, missAt: 0, sync: false };
   const upper = (arr, x) => { let lo = 0, hi = arr.length; while (lo < hi) { const mid = (lo + hi) >> 1; if (arr[mid] <= x) lo = mid + 1; else hi = mid; } return lo; };
   const TR_T = TR.map(t => t.t);
   function applyScrub() {
@@ -296,6 +312,9 @@ function init(sample) {
   const dotScale = new Float32Array(DOTS.length);
   function stepGroups(now, dt) {
     const k = REDUCED() ? 1 : 1 - Math.exp(-dt / TAU); const m = S.m; const c = new THREE.Color();
+    const km = REDUCED() ? 1 : 1 - Math.exp(-dt / 95); let moving = false;
+    GROUPS.forEach(g => { for (let j = 0; j < 3; j++) { const d = g.home[j] - g.c[j]; if (Math.abs(d) > 0.02) { g.c[j] += d * km; moving = true; } else g.c[j] = g.home[j]; } });
+    if (moving || S.sync) { S.sync = moving; syncWorld(); writeNodes(); writeHits(); if (crowd) crowd.refresh(); }
     GE.forEach((e, i) => {
       const t = e.t, shown = t.t <= S.scrub, fl = m.F.has(t.id), found = m.found.has(t.ring), st = S.st[t.ring];
       let q = 0, col = COL.pending;
@@ -309,9 +328,9 @@ function init(sample) {
       tmpC.setRGB(eCur[i * 3], eCur[i * 3 + 1], eCur[i * 3 + 2]); tube.setColorAt(i, tmpC); cone.setColorAt(i, tmpC);
     });
     tube.instanceMatrix.needsUpdate = true; cone.instanceMatrix.needsUpdate = true; tube.instanceColor.needsUpdate = true; cone.instanceColor.needsUpdate = true;
-    let dMoved = false;
-    DOTS.forEach((d, i) => { const tg = GE[d.k].miss ? 1 : 0; const v = dotScale[i] + (tg - dotScale[i]) * k; if (Math.abs(v - dotScale[i]) > 1e-4 || (v !== tg && Math.abs(v - tg) < 1e-3)) { dotScale[i] = Math.abs(v - tg) < 1e-3 ? tg : v; const s = Math.max(0.0001, dotScale[i]); M4.makeScale(s, s, s); M4.setPosition(d.p[0], d.p[1], d.p[2]); dots.setMatrixAt(i, M4); dMoved = true; } });
-    if (dMoved) dots.instanceMatrix.needsUpdate = true;
+    const beat = now >= S.missAt;   /* misses light together, in one quiet beat, before the catches */
+    DOTS.forEach((d, i) => { const tg = GE[d.k].miss && beat ? 1 : 0; dotScale[i] += (tg - dotScale[i]) * k; if (Math.abs(tg - dotScale[i]) < 1e-3) dotScale[i] = tg; const s = Math.max(0.0001, dotScale[i]); const p = dotAt(d); M4.makeScale(s, s, s); M4.setPosition(p[0], p[1], p[2]); dots.setMatrixAt(i, M4); });
+    dots.instanceMatrix.needsUpdate = true;
     GN.forEach((x, i) => { const st = S.st[x.g.r]; c.set(st && st.start != null ? COL.ok : COL.node); nCur[i * 3] += (c.r - nCur[i * 3]) * k; nCur[i * 3 + 1] += (c.g - nCur[i * 3 + 1]) * k; nCur[i * 3 + 2] += (c.b - nCur[i * 3 + 2]) * k; tmpC.setRGB(nCur[i * 3], nCur[i * 3 + 1], nCur[i * 3 + 2]); gSph.setColorAt(i, tmpC); });
     gSph.instanceColor.needsUpdate = true;
     if (crowd) {
@@ -323,13 +342,13 @@ function init(sample) {
 
   /* ---------- labels under each group ---------- */
   const labelsEl = $('#labels'); const LABELS = [];
-  shaped.forEach(g => { const el = document.createElement('div'); el.className = 'glabel'; el.innerHTML = '<div class="n">' + esc(ibmName(g.r)) + '</div><div class="s"></div>'; labelsEl.appendChild(el); el.addEventListener('mouseenter', () => setHover({ r: g.r }, el.getBoundingClientRect())); el.addEventListener('mouseleave', () => setHover(null)); const lo = Math.min(...g.ns.map(n => g.P[n][1])); LABELS.push({ el, g, anchor: [g.c[0], g.c[1] + lo - 4, g.c[2]] }); });
-  if (singles.length) { const el = document.createElement('div'); el.className = 'glabel'; el.innerHTML = '<div class="n">' + singles.length + ' single transfers</div><div class="s">IBM gives these no shape name</div>'; labelsEl.appendChild(el); LABELS.push({ el, g: null, anchor: [0, singleY - 13, singles[0].c[2]] }); }
+  shaped.forEach(g => { const el = document.createElement('div'); el.className = 'glabel'; el.innerHTML = '<div class="n">' + esc(ibmName(g.r)) + '</div><div class="s"></div>'; labelsEl.appendChild(el); el.addEventListener('mouseenter', () => setHover({ r: g.r }, el.getBoundingClientRect())); el.addEventListener('mouseleave', () => setHover(null)); const lo = Math.min(...g.ns.map(n => g.P[n][1])); LABELS.push({ el, g, lo }); });
+  if (singles.length) { const el = document.createElement('div'); el.className = 'glabel'; el.innerHTML = '<div class="n">' + singles.length + ' single transfers</div><div class="s">IBM gives these no shape name</div>'; labelsEl.appendChild(el); el.addEventListener('mouseenter', () => setHover({ singles: true }, el.getBoundingClientRect())); el.addEventListener('mouseleave', () => setHover(null)); LABELS.push({ el, g: null, anchor: [0, singleY - 17, singles[0].home[2]] }); }
   function statusOf(r) { const m = S.m, st = S.st[r]; if (m.found.has(r)) return st && st.start != null ? ['caught', 'caught'] : ['', '']; if (S.scrub !== Infinity) return ['', '']; const hit = RINGS[r].filter(t => m.F.has(t.id)).length; const n = RINGS[r].length; if (hit && hit / n >= .5) return ['partial', 'missed: too broad']; return hit ? ['partial', 'partly, ' + hit + ' of ' + n] : ['missed', 'missed']; }
   function placeLabels() {
     const rect = cv.getBoundingClientRect(), srect = stage.getBoundingClientRect();
     LABELS.forEach(L => {
-      const v = V1.set(L.anchor[0], L.anchor[1], L.anchor[2]).project(camera);
+      const a = L.g ? [L.g.c[0], L.g.c[1] + L.lo - 4, L.g.c[2]] : L.anchor; const v = V1.set(a[0], a[1], a[2]).project(camera);
       L.el.style.left = ((v.x + 1) / 2 * rect.width + rect.left - srect.left) + 'px'; L.el.style.top = ((1 - v.y) / 2 * rect.height + rect.top - srect.top) + 'px';
       if (L.g) { const [cls, text] = statusOf(L.g.r); L.el.className = 'glabel ' + cls; const s = L.el.lastChild; if (s.textContent !== text) s.textContent = text; }
     });
@@ -337,7 +356,9 @@ function init(sample) {
 
   /* ---------- select a model ---------- */
   function selectModel(m) {
-    S.m = m; S.queue = []; clearRoster();
+    const first = !S.m; S.m = m; S.queue = []; clearRoster();
+    placeGroups(m.found, first || REDUCED()); S.sync = true;
+    S.missAt = REDUCED() ? 0 : Math.max(performance.now() + 380, S.openUntil - 300);
     S.rings = RING_IDS.filter(r => m.found.has(r)).map(r => ({ r, tc: Math.max(0, ...RINGS[r].filter(t => m.F.has(t.id)).map(t => t.t)) })).sort((a, b) => a.tc - b.tc);
     S.st = {}; S.rings.forEach(x => S.st[x.r] = { start: null, card: null });
     buildRed(); renderResult(); pick.value = m.id + '|' + m.version; setHover(null); applyScrub();
@@ -410,7 +431,7 @@ function init(sample) {
       if (due && st.start == null && !S.queue.includes(x.r)) S.queue.push(x.r);
       if (!due) { const qi = S.queue.indexOf(x.r); if (qi >= 0) S.queue.splice(qi, 1); if (st.start != null) uncatch(x.r); }
     });
-    if (now < S.openUntil - 300) return;
+    if (now < S.missAt + 380) return;   /* catches start one beat after the misses */
     while (S.queue.length && (REDUCED() || now >= S.nextCatch)) { catchRing(S.queue.shift(), now, !REDUCED()); S.nextCatch = now + CATCH_GAP; }
   }
 
@@ -420,7 +441,13 @@ function init(sample) {
   function setHover(h, rect, mx, my) {
     S.hover = h; if (!h) { hc.hidden = true; return; }
     const m = S.m; let html;
-    if (h.r != null) {
+    if (h.singles) {
+      const names = {}; singles.forEach(g => { const n = ibmName(g.r); names[n] = (names[n] || 0) + 1; });
+      const k2 = singles.filter(g => S.st[g.r] && S.st[g.r].start != null).length;
+      html = '<div class="hc-k"><b class="' + (k2 ? 's-ok' : 's-miss') + '">caught ' + k2 + ' of ' + singles.length + '</b></div><div class="hc-t">' + singles.length + ' single transfers</div>' +
+        '<div class="hc-s">Each is one labeled transfer between two accounts. IBM\'s names: ' + Object.keys(names).map(n => esc(n) + (names[n] > 1 ? ' (' + names[n] + ')' : '')).join(', ') + '.</div>' +
+        '<div class="hc-ids" style="margin-top:8px">' + idsHtml(singles.map(g => RINGS[g.r][0]), t => m.F.has(t.id) ? 'i-ok' : 'i-miss') + '</div>';
+    } else if (h.r != null) {
       const r = h.r, ids = RINGS[r], accts = new Set(); ids.forEach(t => { accts.add(t.from); accts.add(t.to); });
       const [cls, text] = statusOf(r); const run = runFor(m, r); const others = famCaught(r).filter(f => f !== m.family).map(famName);
       html = '<div class="hc-k"><b class="' + (cls === 'caught' ? 's-ok' : cls ? 's-miss' : '') + '">' + esc(text) + '</b></div>' +
@@ -441,9 +468,9 @@ function init(sample) {
   const ray = new THREE.Raycaster(); const ndc = new THREE.Vector2(); let mouse = null, mouseMoved = false;
   function pickAt(mx, my) {
     const r = cv.getBoundingClientRect(); ndc.set((mx - r.left) / r.width * 2 - 1, -(my - r.top) / r.height * 2 + 1); ray.setFromCamera(ndc, camera);
-    const h = ray.intersectObjects([gSph, tube, cone], false)[0];
-    if (h) { if (h.object === gSph) return { r: GN[h.instanceId].g.r }; return { r: GE[h.instanceId].g.r }; }
-    if (S.crowdOn && crowd && crowd.red) { ray.params.Line.threshold = cam.radius * 0.006; const l = ray.intersectObject(crowd.red, false)[0]; if (l) { const t = crowd.red.userData.list[Math.floor(l.index / 2)]; const run = t && S.m.flagRun[t.id]; if (run) return { run }; } }
+    const h = ray.intersectObject(HIT, false)[0];
+    if (h) return { r: GROUPS[h.instanceId].r };
+    if (S.crowdOn && crowd && crowd.red) { ray.params.Line.threshold = cam.radius * 0.014; const l = ray.intersectObject(crowd.red, false)[0]; if (l) { const t = crowd.red.userData.list[Math.floor(l.index / 2)]; const run = t && S.m.flagRun[t.id]; if (run) return { run }; } }
     return null;
   }
 

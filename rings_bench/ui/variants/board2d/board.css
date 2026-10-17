@@ -55,14 +55,22 @@ h2 { font-family: var(--serif); font-weight: 600; margin: 0; }
 
 /* ring tiles: one shape each, drawn large */
 .ringgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.rt svg { height: 150px; }
+.ringgrid .rt svg { height: 128px; }
+.swept .e-ok { opacity: .38; }
+.gsw { font: 400 13px var(--sans); color: var(--muted); }
+@media (max-height: 860px) and (min-width: 761px) {
+  .ringgrid .rt svg { height: 100px; }
+  .marks .mark svg { height: 34px; }
+  .lead { margin-top: 2px; }
+  .big .num { font-size: 52px; }
+}
 .gt { grid-column: 1 / -1; cursor: default; }
 .gt .st { color: var(--ink); }
 .gt .gk { font: 500 15px var(--mono); color: var(--ok); }
 .gt.lit.none .gk { color: var(--miss); }
 .marks { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; padding: 6px 10px 10px; }
 .mark { border: 1px solid var(--rule); border-radius: 4px; cursor: pointer; transition: border-color 180ms ease-out; }
-.mark svg { height: 44px; }
+.marks .mark svg { height: 44px; }
 .mark.lit.caught { border: 2px solid var(--ok); }
 .mark.lit.missed { border: 2px dotted var(--miss); }
 .mark:not(.lit) { border-width: 2px; }
@@ -182,7 +190,7 @@ h2 { font-family: var(--serif); font-weight: 600; margin: 0; }
   .bar, .lead { flex-direction: column; align-items: flex-start; }
   #pick { min-width: 0; max-width: 100%; }
   .ringgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .rt svg { height: 110px; }
+  .ringgrid .rt svg { height: 110px; }
   .ordgrid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .dbody { grid-template-columns: 1fr; }
   .tray { padding: 0 16px; }
