@@ -482,7 +482,7 @@ function renderHeadline() {
   vs = '';
   if (m.precision == null) vs = 'It flagged nothing.';
   /* compare with the adjacent version of the same model: v1 with v2, v2 with v3 (or v1 when no v3), v3 with v2 */
-  const sibs = MODELS.filter(x => x.id === m.id && x.version !== m.version && x.runs).sort((x, y) => x.version < y.version ? -1 : 1);
+  const sibs = MODELS.filter(x => x.id === m.id && x.version !== m.version && x.runs && (EXPERIMENTS.includes(m.version) || !EXPERIMENTS.includes(x.version))).sort((x, y) => x.version < y.version ? -1 : 1);
   const twin = sibs.find(x => x.version > m.version) || sibs.slice().reverse().find(x => x.version < m.version);
   const VW = { v2: 'code computes the facts first', v2x: 'the same, with the payment format hidden from the model', v3: 'facts plus a knowledge-base lookup' };
   if (twin) { const a = m.version < twin.version ? m : twin, b = a === m ? twin : m; const w = VW[b.version] || (BENCH.versions || {})[b.version]; vs += ' ' + a.version + ' to ' + b.version + (w ? ' (' + w + ')' : '') + ': alarms ' + num(a.alarms) + ' to ' + num(b.alarms) + ', rings caught ' + a.rings_found + ' to ' + b.rings_found + (b.runs < (UNITS || b.runs) ? ' so far' : '') + '.'; }
@@ -555,9 +555,11 @@ function renderBoard() {
 
 /* ---------- failures by shape ---------- */
 let GRID_ALL = false;
+/* versions that are dials or probes, not the improved version: never "latest", never the first-screen pick, never the improvement sentence (engine thread, 13:32) */
+const EXPERIMENTS = ['v2x', 'v5'];
 function gridModels() {
   if (GRID_ALL) return MODELS;
-  const vnum = v => { const m = /^v(\d+)$/.exec(v || ''); return m ? +m[1] : -1; };  /* numbered versions only; v2x (a variant) is not "latest" */
+  const vnum = v => { if (EXPERIMENTS.includes(v)) return -1; const m = /^v(\d+)$/.exec(v || ''); return m ? +m[1] : -1; };  /* numbered versions only; experiments never count as latest */
   const latest = {}; MODELS.forEach(m => { if (m.panel) return; const n = vnum(m.version); if (n > (latest[m.id] == null ? -1 : latest[m.id])) latest[m.id] = n; });
   return MODELS.filter(m => !m.panel && (m.version === 'v1' || vnum(m.version) === latest[m.id]));
 }
@@ -853,7 +855,7 @@ function build(got) {
 }
 function pickDefault(replay) {
   const strength = m => (m.rings_found || 0) + (m.precision || 0) * NRINGS;
-  const top = MODELS.slice().sort((a, b) => strength(b) - strength(a) || (b.recall || 0) - (a.recall || 0))[0];
+  const pool = MODELS.filter(m => !EXPERIMENTS.includes(m.version)); const top = (pool.length ? pool : MODELS).slice().sort((a, b) => strength(b) - strength(a) || (b.recall || 0) - (a.recall || 0))[0];
   if (top) selectModel(top, { replay });
   else { $('#headline').textContent = 'No models in the bench output yet.'; $('#headline').classList.remove('pending'); }
 }
