@@ -510,7 +510,11 @@ def cmd_results(a):
                                  "Slice laundering rate 4.0 percent vs 0.10 percent in the file; labels are IBM's generator's; shape names are ours.",
                                  "Every one of the 40 ordinary neighborhoods contains an account that sits in one of IBM's rings (the slice was cut around the rings), so a 'false ring' at the transfer level usually points at a real laundering account's unlabeled traffic; account_level reports that view."]},
            "versions": {"v1": "model reads the raw transfers of a neighborhood",
-                        "v2": "code computes the neighborhood's facts (degrees, loops, bursts, pass-through chains, formats) and the model names the outcome"},
+                        "v2": "code computes the neighborhood's facts (degrees, loops, bursts, pass-through chains, formats) and the model names the outcome",
+                        "v3": "v2 plus a real knowledge-base lookup of the pattern reference, logged as the retrieval step",
+                        "v4": "v3 plus one rule: a ring call is kept only when the model's own confidence is not low (found on the main slice, confirmed on three held-out slices)",
+                        "v5": "v3 with a framing that states the base rate, describes ordinary business, requires a cited fact and allows cannot tell",
+                        "v2x": "v2 with the payment format hidden from the model, to measure reliance on the ACH tell"},
            "written": time.strftime("%Y-%m-%d %H:%M"), "models": models, "runs": all_runs, "failures_by_shape": fails}
     if SLICE:
         out["dataset"]["name"] += f" (held-out slice {SLICE})"

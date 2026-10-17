@@ -17,9 +17,13 @@ window.BENCH = {
  },
  "versions": {
   "v1": "model reads the raw transfers of a neighborhood",
-  "v2": "code computes the neighborhood's facts (degrees, loops, bursts, pass-through chains, formats) and the model names the outcome"
+  "v2": "code computes the neighborhood's facts (degrees, loops, bursts, pass-through chains, formats) and the model names the outcome",
+  "v3": "v2 plus a real knowledge-base lookup of the pattern reference, logged as the retrieval step",
+  "v4": "v3 plus one rule: a ring call is kept only when the model's own confidence is not low (found on the main slice, confirmed on three held-out slices)",
+  "v5": "v3 with a framing that states the base rate, describes ordinary business, requires a cited fact and allows cannot tell",
+  "v2x": "v2 with the payment format hidden from the model, to measure reliance on the ACH tell"
  },
- "written": "2026-10-17 12:54",
+ "written": "2026-10-17 13:08",
  "models": [
   {
    "id": "anthropic/claude-sonnet-5-5",

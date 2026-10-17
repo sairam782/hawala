@@ -285,20 +285,22 @@ function deriveModel(m0, Rgiven) {
     return { r, es, ns: [...ns], hit, n, ok: n ? hit / n >= 0.5 : false };
   });
   const ringsFound = S => { let k = 0; RING_IDS.forEach(r => { let h = 0; RINGS[r].forEach(id => { if (S.has(id)) h++; }); if (h / RINGS[r].length >= 0.5) k++; }); return k; };
-  const steps = [{ n: 0, tp: 0, fp: 0, prec: null, rec: 0, found: 0 }]; const S = new Set();
-  G.forEach(g => { g.r.flagged_transfer_ids.forEach(id => { if (BYID[id]) S.add(id); }); let tp = 0; S.forEach(id => { if (TRUTH.has(id)) tp++; }); steps.push({ n: S.size, tp, fp: S.size - tp, prec: S.size ? tp / S.size : null, rec: TRUTH.size ? tp / TRUTH.size : 0, found: ringsFound(S) }); });
+  const steps = [{ n: 0, tp: 0, fp: 0, prec: null, rec: 0, found: 0, alarms: 0 }]; const S = new Set(); let alarms = 0;
+  G.forEach(g => { g.r.flagged_transfer_ids.forEach(id => { if (BYID[id]) S.add(id); }); if (g.r.expected !== 'ring') alarms++; let tp = 0; S.forEach(id => { if (TRUTH.has(id)) tp++; }); steps.push({ n: S.size, tp, fp: S.size - tp, prec: S.size ? tp / S.size : null, rec: TRUTH.size ? tp / TRUTH.size : 0, found: ringsFound(S), alarms }); });
   const litEdge = new Map(); G.forEach((g, gi) => g.es.forEach(e => { if (!litEdge.has(e)) litEdge.set(e, { gi, ok: edges[e].tr.label === 1 }); }));
   const missed = []; TR.forEach(t => { if (t.label && !F.has(t.id) && t.e >= 0) missed.push(t.e); });
   /* the engine sums flags per run, so a transfer flagged in two candidate groups counts twice; the recount does the same. The network draws the union. */
   let tp = 0, flags = 0; R.forEach(r => (r.flagged_transfer_ids || []).forEach(id => { const t = BYID[id]; if (!t) return; flags++; if (t.label) tp++; }));
   const denom = typeof m.fn === 'number' ? tp + m.fn : TRUTH.size;  /* recall over the labeled transfers in the groups this model has run so far */
-  const recount = { flagged: flags, tp, prec: flags ? tp / flags : null, rec: denom ? tp / denom : 0, found: ringsFound(F), union: F.size };
+  let tpU = 0; F.forEach(id => { if (TRUTH.has(id)) tpU++; });
+  const recount = { flagged: flags, tp, prec: flags ? tp / flags : null, rec: denom ? tp / denom : 0, found: ringsFound(F), union: F.size, traced: tpU, fpU: F.size - tpU };
+  const alarmRuns = R.filter(r => r.expected !== 'ring' && r.verdict === 'ring'); const alarmsOnRing = alarmRuns.filter(r => (r.ring_accounts_flagged || []).length).length;
   if (m.precision === 0 && (m.tp || 0) + (m.fp || 0) === 0) m = Object.assign({}, m, { precision: null });
   const hasIds = F.size > 0;
   const near = (a, b) => a == null && b == null ? true : a == null || b == null ? false : Math.abs(a - b) < 0.006;
   const checked = hasIds && near(recount.prec, m.precision) && near(recount.rec, m.recall) && recount.found === m.rings_found;
   const perRing = RING_IDS.map(r => { const ids = RINGS[r]; const hit = ids.filter(id => F.has(id)).length; const run = R.find(x => x.expected === 'ring' && ids.some(id => (x.flagged_transfer_ids || []).includes(id))) || R.find(x => x.expected === 'ring' && x.shape === ringShape(r) && x.verdict !== 'ring'); return { r, shape: ringShape(r), n: ids.length, hit, found: hit / ids.length >= 0.5, run }; });
-  return Object.assign({}, m, { version: m.version || 'v1', short: shortName(m.id), R, F, G, steps, litEdge, missed, recount, hasIds, checked, flagRun, perRing, ringsTotal: m.rings_total || NRINGS });
+  return Object.assign({}, m, { version: m.version || 'v1', short: shortName(m.id), R, F, G, steps, litEdge, missed, recount, hasIds, checked, flagRun, perRing, ringsTotal: m.rings_total || NRINGS, alarms: alarmRuns.length, alarmsOnRing, hasAcct: R.some(r => r.ring_accounts_flagged != null) });
 }
 function orderModels(list) {
   const fam = {}, mid = {}; list.forEach(m => { const r = m.recall == null ? -1 : m.recall; fam[m.family] = Math.max(fam[m.family] == null ? -1 : fam[m.family], r); mid[m.id] = Math.max(mid[m.id] == null ? -1 : mid[m.id], r); });
@@ -309,10 +311,11 @@ function orderModels(list) {
 const TA = 3, TB = 7, TC = 1.5, TOTAL = TA + TB + TC;
 let T = TOTAL, playing = false, last = 0, showTruth = false;
 const PH = T => T < TA ? 0 : T < TA + TB ? 1 : 2;
-const P = { cam: { x: 0, y: 0, s: 1 }, tgt: null, shown: 0, parts: [], spawned: 0, W: 0, H: 0, dpr: 1, landed: true };
+const P = { cam: { x: 0, y: 0, s: 1 }, tgt: null, shown: 0, parts: [], spawned: 0, W: 0, H: 0, dpr: 1, landed: true, litAt: {} };
 /* the one reveal: the result resolving into place (600 ms, eased; instant under reduced motion) */
 function land() { const h = $('#headline'); h.classList.remove('land'); void h.offsetWidth; h.classList.add('land'); }
 const HL = { es: [], until: 0, node: -1 };
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const stage = $('#stage'), cv = $('#cv'), ctx = cv.getContext('2d');
 function resize() { const w = stage.clientWidth || 600, h = stage.clientHeight || 400; const dpr = Math.min(window.devicePixelRatio || 1, 2); cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); P.W = w; P.H = h; P.dpr = dpr; }
 function fitCam() { const w = P.W || 600, h = P.H || 400; const bw = WB.maxx - WB.minx + 40, bh = WB.maxy - WB.miny + 40; return { x: (WB.minx + WB.maxx) / 2, y: (WB.miny + WB.maxy) / 2, s: Math.min(w / bw, h / bh) }; }
@@ -346,9 +349,12 @@ function draw(T) {
   for (let i = 0; i < nodes.length; i++) { const n = nodes[i]; const X = sx(n.x), Y = sy(n.y); if (X < -5 || Y < -5 || X > P.W + 5 || Y > P.H + 5) continue; c.beginPath(); c.arc(X, Y, r0, 0, 6.3); c.fill(); }
   if (a) {
     for (let gi = 0; gi < P.shown && gi < a.G.length; gi++) {
-      const G = a.G[gi]; const age = P.shown - gi; c.fillStyle = G.ok ? ok : bad;
-      G.ns.forEach(v => { const n = nodes[v]; const X = sx(n.x), Y = sy(n.y); c.beginPath(); c.arc(X, Y, r0 + 2.2, 0, 6.3); c.fill();
-        if (age <= 1 && !done) { c.globalAlpha = 0.25; c.beginPath(); c.arc(X, Y, r0 + 9 + 3 * Math.sin(T * 6), 0, 6.3); c.fill(); c.globalAlpha = 1; } });
+      const G = a.G[gi]; c.fillStyle = G.ok ? ok : bad;
+      G.ns.forEach(v => { const n = nodes[v]; const X = sx(n.x), Y = sy(n.y); c.beginPath(); c.arc(X, Y, r0 + 2.2, 0, 6.3); c.fill(); });
+      /* the catch moment: a caught ring resolves on screen over 450 ms (a thick stroke that settles into the green line); misses and false alarms stay quiet */
+      const lit = P.litAt[gi]; if (G.ok && !REDUCED && lit != null && !done) { const k = Math.min(1, (performance.now() - lit) / 450); if (k < 1) { const e1 = 1 - Math.pow(1 - k, 3);
+        c.strokeStyle = ok; c.lineWidth = 2.4 + 7 * (1 - e1); c.globalAlpha = 0.95 * (1 - e1) + 0.05; c.beginPath(); G.es.forEach(ei => { const e = edges[ei]; c.moveTo(sx(nodes[e.u].x), sy(nodes[e.u].y)); c.lineTo(sx(nodes[e.v].x), sy(nodes[e.v].y)); }); c.stroke();
+        c.fillStyle = ok; G.ns.forEach(v => { const n = nodes[v]; c.beginPath(); c.arc(sx(n.x), sy(n.y), r0 + 2.2 + 10 * (1 - e1), 0, 6.3); c.fill(); }); c.globalAlpha = 1; } }
     }
   }
   if (ph === 0 || T < TA + 1) {
@@ -374,7 +380,7 @@ function update(T, dt) {
   const tb = ph === 0 ? 0 : Math.min(1, (T - TA) / TB);
   const want = ph === 0 ? 0 : Math.round(tb * a.G.length);
   /* two zooms, named in advance: (1) into the first pattern the model flags, (2) the pull back to the whole for the result */
-  if (want > P.shown) { const first = P.shown === 0; P.shown = want; const G = a.G[0]; if (first && G && G.ns.length >= 3) P.tgt = camFor(G.ns); }
+  if (want > P.shown) { const first = P.shown === 0; for (let gi = P.shown; gi < want; gi++) { P.litAt[gi] = performance.now(); if (a.G[gi] && a.G[gi].ok) rosterCatch(a.G[gi], true); } P.shown = want; const G = a.G[0]; if (first && G && G.ns.length >= 3) P.tgt = camFor(G.ns); }
   else if (want < P.shown) P.shown = want;
   if (T >= TA + TB * 0.45) P.tgt = fitCam();
   if (ph === 0 && P.shown === 0) P.tgt = fitCam();
@@ -382,8 +388,8 @@ function update(T, dt) {
   /* values are final before they light: the tiles show the real cumulative count after each flagged group, never a tween */
   const st = a.steps[Math.min(P.shown, a.steps.length - 1)];
   const done = T >= TOTAL - 0.01;
-  renderTiles(done ? null : { prec: st.prec, rec: st.rec, fp: st.fp, found: st.found, hasPrec: st.prec != null }, done);
-  if (done && !P.landed) { P.landed = true; land(); }
+  renderTiles(done ? null : { prec: st.prec, rec: st.rec, fp: st.fp, found: st.found, tp: st.tp, alarms: st.alarms, hasPrec: st.prec != null }, done);
+  if (done && !P.landed) { P.landed = true; land(); rosterFinish(); }
   const G = P.shown ? a.G[P.shown - 1] : null;
   const phaseEl = $('#phase');
   if (done) phaseEl.innerHTML = glyph('ordinary') + '<span>Result: ' + esc(a.short) + ' ' + esc(a.version) + '. Amber dotted = IBM\'s laundering it missed.</span>';
@@ -394,7 +400,7 @@ function update(T, dt) {
   const sim = new Date((T0 + (T1 - T0) * Math.min(1, T / TA)) * 60000);
   $('#clock').textContent = done ? num(a.F.size) + ' transfers flagged' : ph === 0 ? sim.toISOString().slice(0, 16).replace('T', ' ') : 'replay ' + Math.round(T) + ' s of ' + Math.round(TOTAL);
   $('#bar').style.width = (T / TOTAL * 100) + '%';
-  $('#headline').classList.toggle('pending', !done); $('#ringList').hidden = !done;
+  $('#headline').classList.toggle('pending', !done);
 }
 
 function loop(ts) {
@@ -404,8 +410,8 @@ function loop(ts) {
   if (CUR_M) { update(T, dt); if (T >= TOTAL) P.shown = CUR_M.G.length; draw(T); }
   requestAnimationFrame(loop);
 }
-function restart() { T = 0; P.spawned = 0; P.parts = []; P.shown = 0; P.landed = false; P.cam = fitCam(); P.tgt = null; playing = true; $('#play').textContent = 'Pause'; }
-function skip() { T = TOTAL; playing = false; P.parts = []; P.cam = fitCam(); P.tgt = null; P.landed = true; if (CUR_M) P.shown = CUR_M.G.length; $('#play').textContent = 'Replay the hunt'; }
+function restart() { T = 0; P.spawned = 0; P.parts = []; P.shown = 0; P.landed = false; P.litAt = {}; rosterReset(); P.cam = fitCam(); P.tgt = null; playing = true; $('#play').textContent = 'Pause'; }
+function skip() { T = TOTAL; playing = false; P.parts = []; P.cam = fitCam(); P.tgt = null; P.litAt = {}; if (CUR_M) P.shown = CUR_M.G.length; $('#play').textContent = 'Replay the hunt'; rosterReset(); rosterFinish(); P.landed = true; }
 
 /* ---------- hover on the network ---------- */
 function nearestEdge(ev) {
@@ -431,36 +437,42 @@ function selectModel(m, opts) {
   document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.id === m.id + '|' + m.version));
   const sel = $('#modelPick'); if (sel && !m.panel) sel.value = m.id + '|' + m.version;
   document.querySelectorAll('.board tbody tr').forEach(c => c.classList.toggle('on', c.dataset.id === m.id + '|' + m.version));
-  renderHeadline(); renderRingList(); renderHeldout(); if (opts.replay) restart(); else skip(); if (DESK.acct) renderAccount();
+  renderHeadline(); renderHeldout(); if (opts.replay) restart(); else skip(); if (DESK.acct) renderAccount();
 }
 function renderHeadline() {
   const m = CUR_M;
   if (m.panel) {
     const V = PANEL.versions[m.version]; const S = V.summary; const t = V.vote_table || []; const first = t[0], last = t[t.length - 1];
-    $('#headline').innerHTML = 'A panel of <b>' + m.n + ' families</b>, <b>' + m.k + '</b> required to agree, found <b>' + m.rings_found + ' of ' + m.ringsTotal + '</b> of IBM\'s laundering groups and was <span class="wrongN">' + esc(wrongText(m.precision)) + '</span>.';
+    $('#headline').innerHTML = 'A panel of <b>' + m.n + ' families</b>, <b>' + m.k + '</b> required to agree, caught <b>' + m.rings_found + ' of IBM\'s ' + m.ringsTotal + ' laundering rings</b> and traced <b>' + num(m.recount.traced) + ' of ' + num(TRUTH.size) + '</b> laundering transfers; it raised <b>' + num(m.alarms) + '</b> alarms on ordinary neighborhoods.';
+    $('#strong').hidden = true;
     let vs = 'On the ' + NRINGS + ' IBM laundering groups the families agree (' + S.ring_units_all_agree_ring + ' unanimous, ' + S.ring_units_none_say_ring + ' missed by all); on the ' + ((UNITS || 60) - NRINGS) + ' ordinary neighborhoods they split (' + S.ordinary_units_split + ' of ' + ((UNITS || 60) - NRINGS) + '). Disagreement is the signal for a false alarm.';
     if (first && last && first !== last) vs += ' Requiring all ' + m.n + ' instead of 1 drops false alarms from ' + first.false_rings + ' to ' + last.false_rings + ' and patterns found from ' + first.rings_found + ' to ' + last.rings_found + '.';
     $('#versus').textContent = vs + ' ' + m.version + ' panel: ' + m.fams.map(shortName).join(', ') + '.';
     $('#basis').textContent = 'basis: ' + m.n + ' families x ' + (UNITS || 60) + ' groups, ' + m.version + ' · vote table from panel.json · labels: IBM · scorer: ours · source: ' + (IS_SAMPLE ? 'SAMPLE' : SRC.replace(DATA, ''));
     return;
   }
-  const w = wrongN(m.precision); const rw = wrongN(RULE.precision);
-  $('#headline').innerHTML = '<b>' + esc(m.short) + ' ' + esc(m.version) + '</b> found <b>' + m.rings_found + ' of ' + m.ringsTotal + '</b> of IBM\'s laundering groups and was <span class="wrongN">' + esc(wrongText(m.precision)) + '</span>.';
+  const traced = m.recount.traced;
+  $('#headline').innerHTML = '<b>' + esc(m.short) + ' ' + esc(m.version) + '</b> caught <b>' + m.rings_found + ' of IBM\'s ' + m.ringsTotal + ' laundering rings</b> and traced <b>' + num(traced) + ' of ' + num(TRUTH.size) + '</b> laundering transfers; it raised <b>' + num(m.alarms) + '</b> alarm' + (m.alarms === 1 ? '' : 's') + ' on ordinary neighborhoods' + (m.hasAcct ? ', <b>' + num(m.alarmsOnRing) + '</b> of them on accounts that sit inside a ring' : '') + '.';
   let vs;
-  if (m.precision == null) vs = 'It flagged nothing, so there is nothing to be wrong about, and nothing found.';
-  else { const rule = 'A plain rule a bank could run (any account dealing with ' + BURST_K + ' or more different accounts in a day) finds ' + BURST.found + ' of ' + NRINGS + ' and is ' + wrongText(BURST.precision) + '. ';
-    const thorough = m.rings_found > BURST.found ? 'finds more' : m.rings_found === BURST.found ? 'finds as many' : 'finds fewer';
-    const dw = wrongN(m.precision) - wrongN(BURST.precision);
-    const wrong = dw < 0 ? 'is wrong less often (' + wrongText(m.precision) + ')' : dw > 0 ? 'is wrong more often (' + wrongText(m.precision) + ')' : 'is wrong about as often (' + pct(m.precision) + ' of its flags are real, the rule\'s ' + pct(BURST.precision) + ')';
-    vs = rule + 'This model ' + thorough + ' and ' + wrong + '.'; }
+  vs = '';
+  if (m.precision == null) vs = 'It flagged nothing.';
   /* compare with the adjacent version of the same model: v1 with v2, v2 with v3 (or v1 when no v3), v3 with v2 */
   const sibs = MODELS.filter(x => x.id === m.id && x.version !== m.version && x.runs).sort((x, y) => x.version < y.version ? -1 : 1);
   const twin = sibs.find(x => x.version > m.version) || sibs.slice().reverse().find(x => x.version < m.version);
   const VW = { v2: 'code computes the facts first', v2x: 'the same, with the payment format hidden from the model', v3: 'facts plus a knowledge-base lookup' };
-  if (twin) { const a = m.version < twin.version ? m : twin, b = a === m ? twin : m; vs += ' ' + a.version + ' to ' + b.version + ' (' + (VW[b.version] || (BENCH.versions || {})[b.version] || b.version) + '): false alarms ' + num(a.false_rings) + ' to ' + num(b.false_rings) + ', patterns found ' + a.rings_found + ' to ' + b.rings_found + (b.runs < (UNITS || b.runs) ? ' so far' : '') + '.'; }
+  if (twin) { const a = m.version < twin.version ? m : twin, b = a === m ? twin : m; const w = VW[b.version] || (BENCH.versions || {})[b.version]; vs += ' ' + a.version + ' to ' + b.version + (w ? ' (' + w + ')' : '') + ': alarms ' + num(a.alarms) + ' to ' + num(b.alarms) + ', rings caught ' + a.rings_found + ' to ' + b.rings_found + (b.runs < (UNITS || b.runs) ? ' so far' : '') + '.'; }
+  /* the limit, in one line */
+  const missedShapes = m.perRing.filter(p => !p.found).map(p => p.shape); const ms = {}; missedShapes.forEach(x => ms[x] = (ms[x] || 0) + 1);
+  const plural = { lone: ['single transfer', 'single transfers'], other: ['group of another shape', 'groups of other shapes'], mesh: ['mesh', 'meshes'], chain: ['chain', 'chains'], cycle: ['cycle', 'cycles'], 'fan-in': ['fan-in', 'fan-ins'], 'fan-out': ['fan-out', 'fan-outs'], 'scatter-gather': ['scatter-gather', 'scatter-gathers'] };
+  const missedTxt = missedShapes.length ? 'Missed ' + missedShapes.length + ': ' + Object.keys(ms).map(k => ms[k] + ' ' + (plural[k] || [k, k + 's'])[ms[k] > 1 ? 1 : 0]).join(', ') + '.' : 'Missed none.';
+  vs += ' ' + missedTxt + ' The rule a bank could run catches ' + BURST.found + ' of ' + NRINGS + ' but flags ' + num(BURST.flagged - BURST.tp) + ' ordinary transfers to do it; this model flagged ' + num(m.recount.fpU) + '.';
   if (m.technical_failures) vs += ' ' + m.technical_failures + ' of ' + m.runs + ' runs failed technically (no usable answer came back).';
   if (UNITS && m.runs < UNITS) vs += ' So far: ' + m.runs + ' of ' + UNITS + ' candidate groups run.';
-  $('#versus').textContent = vs + (IS_SAMPLE ? ' SAMPLE numbers: made up by this page to show the layout.' : '');
+  $('#versus').textContent = vs.trim() + (IS_SAMPLE ? ' SAMPLE numbers: made up by this page to show the layout.' : '');
+  /* end on the strongest true number */
+  const full = SHAPES_HERE.filter(sh => { const b = (m.by_shape || {})[sh]; return b && b.rings >= 1 && b.found === b.rings && sh !== 'lone' && sh !== 'other'; });
+  const strong = full.length >= 2 ? 'Every ' + full.map(x => x === 'mesh' ? 'mesh' : x).join(', every ') + ' in the slice: caught.' : traced ? num(traced) + ' of ' + num(TRUTH.size) + ' laundering transfers traced, ' + pct(traced / TRUTH.size) + '.' : '';
+  $('#strong').textContent = strong; $('#strong').hidden = !strong;
   $('#basis').textContent = 'basis: ' + num(m.R.length) + ' runs, one per candidate group · ' + num(TR.length) + ' transfers, ' + num(TRUTH.size) + ' labeled laundering · labels: IBM · scorer: ours · source: ' + (IS_SAMPLE ? 'SAMPLE' : SRC.replace(DATA, ''));
 }
 function renderChips() {
@@ -472,16 +484,17 @@ function renderChips() {
 }
 function renderTiles(live, done) {
   const m = CUR_M; if (!m) return; const box = $('#tiles');
-  const v = live ? { found: Math.round(live.found), rec: live.rec, prec: live.hasPrec ? live.prec : null, fp: Math.round(live.fp) } : { found: m.rings_found, rec: m.recall, prec: m.precision, fp: m.false_rings };
+  const v = live ? { found: Math.round(live.found), traced: live.tp, alarms: live.alarms, rec: live.rec, prec: live.hasPrec ? live.prec : null } : { found: m.rings_found, traced: m.recount.traced, alarms: m.alarms, rec: m.recall, prec: m.precision };
   const tiles = [
-    { cls: 'ok', b: v.found + ' <span style="display:inline;font-size:14px;color:var(--muted-fg)">of ' + m.ringsTotal + '</span>', s: 'of IBM\'s laundering groups found', t: 'One of IBM\'s laundering groups counts as found when at least half of its transfers are flagged (page recount: ' + m.recount.found + ' of ' + NRINGS + '; engine: ' + m.rings_found + '). Click for every IBM group and what this model said about it.', d: 'rings' },
-    { cls: '', b: pct(v.rec), s: 'recall: laundering found', t: 'Share of IBM-labeled laundering transfers this model flagged. Engine: ' + pct(m.recall) + '; page recount from the flagged ids: ' + pct(m.recount.rec) + '.', d: 'rings' },
-    { cls: 'bad', b: pct(v.prec), e: wrongText(v.prec), s: 'precision: flags that were real', t: 'Share of flagged transfers IBM labels laundering. "Wrong N in ten" is (1 minus precision) times ten, rounded. Engine: ' + pct(m.precision) + '; page recount: ' + pct(m.recount.prec) + '.', d: 'false' },
-    { cls: 'bad', b: String(v.fp === undefined ? '–' : (live ? v.fp : m.false_rings)), s: live ? 'false-alarm transfers so far' : 'ordinary groups called a pattern', t: 'Candidate groups IBM labels ordinary that this model called a laundering pattern. During the replay the tile counts false-alarm transfers as they light. Click for each one and the model\'s own why.', d: 'false' },
+    { cls: 'ok', b: v.found + ' <span style="display:inline;font-size:14px;color:var(--muted-fg)">of ' + m.ringsTotal + '</span>', s: 'of IBM\'s laundering rings caught', t: 'One of IBM\'s rings counts as caught when at least half of its transfers are flagged (page recount: ' + m.recount.found + ' of ' + NRINGS + '; engine: ' + m.rings_found + '). Click for every ring and what this model said about it.', d: 'rings' },
+    { cls: 'ok', b: num(v.traced) + ' <span style="display:inline;font-size:14px;color:var(--muted-fg)">of ' + num(TRUTH.size) + '</span>', s: 'laundering transfers traced', t: 'Distinct IBM-labeled laundering transfers this model flagged, counted by the page from the flagged ids. Recall as the engine counts it: ' + pct(m.recall) + '.', d: 'rings' },
+    { cls: 'quiet', b: num(v.alarms), e: m.hasAcct && !live ? num(m.alarmsOnRing) + ' on accounts inside a ring' : null, s: 'alarms on ordinary neighborhoods', t: 'Ordinary neighborhoods this model called a laundering pattern. Every ordinary neighborhood in this slice holds an account that sits in one of IBM\'s rings, so such an alarm usually points at a real laundering account\'s unlabeled traffic. Click for each one and the model\'s own why.', d: 'false' },
+    { cls: '', b: pct(v.prec), e: wrongText(v.prec), s: 'precision: flags that were real', t: 'Share of flagged transfers IBM labels laundering. "Wrong N in ten" is (1 minus precision) times ten, rounded. Engine: ' + pct(m.precision) + '; page recount: ' + pct(m.recount.prec) + '.', d: 'false' },
+    { cls: '', b: pct(v.rec), s: 'recall: laundering found', t: 'Share of IBM-labeled laundering transfers this model flagged, as the engine counts it. Page recount: ' + pct(m.recount.rec) + '.', d: 'rings' },
     { cls: '', b: Money.html(m.cost_usd, 'USD'), s: m.panel ? 'cost of the ' + m.n + ' families\' runs' : 'cost of all ' + num(m.runs) + ' runs', t: 'US dollars for every run of this model, as reported by the engine (Nicrron pricing). Per run: ' + Money.fmt(m.runs ? m.cost_usd / m.runs : null, 'USD', { decimals: 4 }) + '. Click for the runs.', d: 'cost' },
     { cls: '', b: m.panel ? '–' : secs(m.latency_ms_median), s: m.panel ? 'time: the slowest family per group' : 'median time per run', t: 'Median wall-clock time of one run (one candidate group). Click for the slowest runs.', d: 'latency' }
   ];
-  const more = $('#tilesMore'); const main = [0, 2, 3], rest = [1, 4, 5];
+  const more = $('#tilesMore'); const main = [0, 1, 2], rest = [3, 4, 5, 6];
   if (box.children.length !== main.length) { box.innerHTML = ''; main.forEach(i => { const b = el('button', 'tile'); b.type = 'button'; b.dataset.i = i; box.append(b); }); }
   if (more.children.length !== rest.length) { more.innerHTML = ''; rest.forEach(i => { const b = el('button', 'tile'); b.type = 'button'; b.dataset.i = i; more.append(b); }); }
   [...box.children, ...more.children].forEach(b => { const t = tiles[+b.dataset.i]; b.className = 'tile ' + t.cls; b.title = t.t; b.onclick = () => openDrawer(t.d, m); b.innerHTML = '<b class="fig">' + t.b + '</b>' + (t.e ? '<em>' + esc(t.e) + '</em>' : '') + '<span>' + esc(t.s) + '</span>'; });
@@ -585,7 +598,7 @@ function renderHonest() {
     ['Numbers read from ' + (IS_SAMPLE ? 'a SAMPLE this page made up.' : esc(SRC) + '.'), IS_SAMPLE ? 'Nothing on this page is a measurement until the engine writes bench_results.json beside the slice.' : 'Precision, recall, patterns found, cost and latency are the engine\'s; the Check column is this page\'s recount from the flagged transfer ids.', 'Slice: ' + SLICE_SRC + '. Bench: ' + SRC + '.']
   ];
   $('#honestList').innerHTML = L.map(x => '<li><b>' + esc(x[0]) + '</b> ' + esc(x[1]) + ' <span class="muted">' + esc(x[2]) + '</span></li>').join('');
-  $('#honestStrip').innerHTML = '<span><b>Synthetic IBM data, labels are IBM\'s.</b> One run per model per group. A plain rule finds ' + BURST.found + ' of ' + NRINGS + ' and is ' + wrongText(BURST.precision) + '; the slice also has a tell (every laundering transfer is ACH).</span>';
+  $('#honestStrip').innerHTML = '<span><b>Synthetic IBM data, labels are IBM\'s.</b> One run per model per group. A plain rule a bank could run catches ' + BURST.found + ' of ' + NRINGS + ' but flags ' + num(BURST.flagged - BURST.tp) + ' ordinary transfers; the slice also has a tell (every laundering transfer is ACH).</span>';
   const b = el('button', 'btn sm', 'What this is not'); b.type = 'button'; b.onclick = () => showScreen(5); $('#honestStrip').append(b);
 }
 function renderBadges() {
@@ -733,6 +746,32 @@ function ringWords(shape, f) {
     case 'lone': return 'A single transfer with no pattern around it: ' + money + '. The hardest kind to tell from ordinary traffic.';
     default: return f.accounts + ' accounts, ' + f.n + ' transfers ' + inWin + ': ' + money + '.';
   }
+}
+/* ---------- the caught roster: one card per ring as it is caught; the misses stay quiet below ---------- */
+const ROSTER = { rings: new Set(), n: 0 };
+function ringOfGroup(G) { let best = null, bs = 0; RING_IDS.forEach(r => { const ids = RINGS[r]; let h = 0; ids.forEach(id => { if (G.r.flagged_transfer_ids.includes(id)) h++; }); const sh = h / ids.length; if (sh >= 0.5 && sh > bs) { bs = sh; best = r; } }); return best; }
+function rosterReset() { ROSTER.rings = new Set(); ROSTER.n = 0; const box = $('#ringList'); box.innerHTML = '<h3>Caught, ring by ring</h3><p class="note">Each card drops in as the model catches one of IBM\'s rings. Click a card to light that ring on the network.</p><div id="rosterCards"></div><div id="rosterMissed"></div>'; box.hidden = true; }
+function rosterCard(r, why, animate, delay) {
+  const m = CUR_M; const f = ringFacts(r); const shape = ringShape(r); const p = m.perRing.find(x => x.r === r) || {};
+  const others = []; MODELS.forEach(x => { if (x.panel || x.id === m.id) return; const pr = x.perRing.find(y => y.r === r); if (pr && pr.found && !others.includes(x.short)) others.push(x.short); });
+  const money = f.curs.length ? Money.fmt(f.byCur[f.curs[0]], f.curs[0]) + (f.curs.length > 1 ? ' +' + (f.curs.length - 1) : '') : '';
+  const d = el('div', 'ringrow caught' + (animate ? ' pop' : ''), glyph(shape) + '<div class="t"><b>' + esc(shape) + '</b>, ' + esc(f.when) + ' · ' + f.accounts + ' accounts, ' + f.n + ' transfers · ' + esc(money) + (others.length ? ' · also caught by ' + esc(others.slice(0, 5).join(', ')) + (others.length > 5 ? ' and ' + (others.length - 5) + ' more' : '') : ' · no other model caught it') + '<span class="muted">' + esc(ringWords(shape, f)) + (why ? ' The model: ' + esc(why.length > 170 ? why.slice(0, 167) + '...' : why) : '') + '</span></div><span class="tag ok">caught, ' + (p.hit || 0) + ' of ' + (p.n || f.n) + ' flagged</span>');
+  d.dataset.ring = r; d.title = SHAPE_WORDS[shape] || ''; if (delay) d.style.animationDelay = delay + 'ms';
+  d.onclick = () => { const es = RINGS[r].map(id => BYID[id]).filter(t => t && t.e >= 0).map(t => t.e); HL.es = es; HL.until = performance.now() + 4000; HL.node = -1; const ns = new Set(); es.forEach(ei => { ns.add(edges[ei].u); ns.add(edges[ei].v); }); if (ns.size) P.tgt = camFor([...ns]); };
+  return d;
+}
+function rosterCatch(G, animate, delay) {
+  const r = ringOfGroup(G); if (r == null || ROSTER.rings.has(r)) return; ROSTER.rings.add(r); ROSTER.n++;
+  const box = $('#ringList'); box.hidden = false; $('#rosterCards').append(rosterCard(r, G.r.why, animate, delay));
+}
+function rosterFinish() {
+  const m = CUR_M; if (!m) return; let k = 0;
+  m.perRing.forEach(p => { if (p.found && !ROSTER.rings.has(p.r)) { ROSTER.rings.add(p.r); ROSTER.n++; $('#ringList').hidden = false; $('#rosterCards').append(rosterCard(p.r, p.run && p.run.why, true, k * 70)); k++; } });
+  const missed = m.perRing.filter(p => !p.found);
+  $('#rosterMissed').innerHTML = missed.length ? '<details class="more quiet"><summary>Missed ' + missed.length + ' of ' + NRINGS + '</summary>' + missed.map(p => { const f = ringFacts(p.r); return '<div class="ringrow off" data-ring="' + esc(p.r) + '">' + glyph(p.shape) + '<div class="t"><b>' + esc(p.shape) + '</b>, ' + esc(f.when) + '. ' + esc(ringWords(p.shape, f)) + '<span class="muted">' + f.accounts + ' accounts, ' + f.n + ' transfers' + (p.run && p.run.why ? '. The model: ' + esc(p.run.why.length > 160 ? p.run.why.slice(0, 157) + '...' : p.run.why) : '') + '</span></div><span class="tag miss">' + (p.hit ? 'missed, only ' + p.hit + ' of ' + p.n : 'missed') + '</span></div>'; }).join('') + '</details>' : '';
+  if (!ROSTER.n && missed.length) $('#ringList').hidden = false;
+  $('#rosterMissed').querySelectorAll('.ringrow').forEach(d => d.onclick = () => { const r = d.dataset.ring; const es = RINGS[r].map(id => BYID[id]).filter(t => t && t.e >= 0).map(t => t.e); HL.es = es; HL.until = performance.now() + 4000; HL.node = -1; const ns = new Set(); es.forEach(ei => { ns.add(edges[ei].u); ns.add(edges[ei].v); }); if (ns.size) P.tgt = camFor([...ns]); });
+  const h = $('#ringList h3'); if (h) h.textContent = 'Caught, ring by ring: ' + ROSTER.n + ' of ' + NRINGS;
 }
 function renderRingList() {
   const m = CUR_M; const box = $('#ringList'); if (!m) return;
