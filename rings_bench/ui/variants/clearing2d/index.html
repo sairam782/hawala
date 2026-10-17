@@ -22,15 +22,20 @@
 
 <div class="wall">
   <section class="stagecol">
-    <div class="stage" id="stage">
-      <ol class="stages" id="stages" aria-label="Stages">
-        <li tabindex="0">Search</li><li tabindex="0">Ambiguous</li><li tabindex="0">Look closer</li><li tabindex="0">Settled</li>
+    <div class="flow">
+      <ol class="funnel" id="funnel" aria-label="The four steps">
+        <li class="fbox" tabindex="0"><span class="ft"><b class="mono">1</b> Search</span><span class="fc" id="fc1"></span></li>
+        <li class="fbox" tabindex="0"><span class="ft"><b class="mono">2</b> Ambiguous</span><span class="fc" id="fc2"></span></li>
+        <li class="fbox" tabindex="0"><span class="ft"><b class="mono">3</b> Look closer</span><span class="fc" id="fc3"></span></li>
+        <li class="fbox" tabindex="0"><span class="ft"><b class="mono">4</b> Settled</span><span class="fc" id="fc4"></span></li>
       </ol>
+      <div class="act"><p class="cap" id="caption" aria-live="polite"></p><button class="btn cta" id="play" type="button">Start the search</button></div>
+    </div>
+    <div class="stage" id="stage">
       <canvas id="cv" role="img" aria-label="Network of accounts and transfers; neighborhoods the model rules ordinary fade, and its catches, alarms and misses stay lit"></canvas>
       <div class="hovercard" id="hover" hidden></div>
     </div>
     <div class="scrub">
-      <button class="btn primary" id="play" type="button">Start the search</button>
       <input type="range" id="time" min="0" max="1000" step="1" value="0" aria-label="Scrub through the pass">
       <div class="clock mono" id="clock" aria-live="polite"></div>
       <label class="tog"><input type="checkbox" id="all"> Show everything again</label>

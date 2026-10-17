@@ -6,6 +6,12 @@ To open it, double-click `index.html`. It reads `../../../data/` (slice, units, 
 
 The whole slice starts lit, the real graph, and the first pass reads the 60 neighborhoods one by one: each one it rules ordinary fades, and each ring it catches traces green in place. The neighborhoods it could not settle stay lit and drop into a "Needs a look" tray, and a stronger model looks closer at them one card at a time, so each one either fades as cleared or closes green as a ring. What remains is what is worth a look: the rings caught, the two alarms, and, on request, the rings both passes missed in amber dotted.
 
+## The action flow
+
+A plain load opens at the beginning: step 1, before the search, with the graph fully lit and the tray empty. Above the graph is a four-box funnel (Search, Ambiguous, Look closer, Settled), joined by arrows. Each box carries a live count computed from the data and is blank until that step is reached. The current box is lit, finished boxes are dim green and future boxes are grey; clicking a box jumps to the end of that step. Under the funnel, one caption says what is happening now and what the button does next. The one primary button (44 px, accent fill, one pulse on load) always names the next action: Start the search, Look closer at all 30, Show what was missed, Start over. The model picker and the families dial stay in the side rail as secondary controls.
+
+Funnel counts for Claude Sonnet 5.5 v4: Search "9 rings caught · 2 alarms · 16 cleared · 30 unsettled" (cleared means ruled ordinary outside the tray); Ambiguous "30 the first pass could not settle"; Look closer "investigated 30 of 30 · 23 cleared · 2 rings found"; Settled "11 rings for a human · 2 alarms · 9 missed".
+
 ## Four stages (a strip at the top of the graph; the button always names the next stage)
 
 | Stage | Button that starts it | What it shows | Timing |

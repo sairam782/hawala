@@ -319,12 +319,13 @@ function setT(t, fromPlay) {
 function pulseLoop() { pulseRaf = 0; if ((ST.stage !== 2 && !ST.before) || reduced()) return; draw(); pulseRaf = requestAnimationFrame(pulseLoop); }
 function setStage(n) {
   ST.stage = n; timeEl.style.visibility = n >= 2 ? 'hidden' : '';
-  document.querySelectorAll('#stages li').forEach((li, i) => { li.classList.toggle('on', i + 1 === n); li.classList.toggle('done', i + 1 < n); });
+  const box = Math.max(1, n); document.querySelectorAll('#funnel .fbox').forEach((li, i) => { li.classList.toggle('on', i + 1 === box); li.classList.toggle('done', i + 1 < box); li.setAttribute('aria-current', i + 1 === box ? 'step' : 'false'); });
   if (n === 2 && !pulseRaf) pulseRaf = requestAnimationFrame(pulseLoop);
   renderButton(); renderClock(); draw();
 }
 function renderButton() {
   const n = ST.stage; playBtn.disabled = false;
+  renderFunnel();
   if (n === 0) playBtn.textContent = 'Start the search';
   else if (n === 1) playBtn.textContent = ST.playing ? 'Skip to the end of the search' : 'Continue the search';
   else if (n === 2) { playBtn.textContent = 'Look closer at all ' + CARDS.size; playBtn.disabled = !trayApplies(ST.sel) || !CARDS.size; }
@@ -361,7 +362,7 @@ function jumpTo(n) {
   ST.missedAt = n >= 4 ? past : null; CARDS.forEach((el, k) => cardState(el, k)); renderTrayHead();
   setStage(n >= 4 ? 4 : 3); if (n === 3) { ST.stage = 3; renderButton(); } renderTrayHead();
 }
-document.querySelectorAll('#stages li').forEach((li, i) => { li.addEventListener('click', () => jumpTo(i + 1)); li.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jumpTo(i + 1); } }); });
+document.querySelectorAll('#funnel .fbox').forEach((li, i) => { li.addEventListener('click', () => jumpTo(i + 1)); li.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jumpTo(i + 1); } }); });
 timeEl.addEventListener('input', () => { stopPlay(); if (ST.stage !== 1) { resetLater(); setStage(1); } setT(+timeEl.value / 1000 * ST.END); if (ST.t >= ST.END) setStage(2); });
 $('#all').addEventListener('change', e => { ST.showAll = e.target.checked; draw(); });
 function renderClock() {
@@ -376,6 +377,32 @@ function renderClock() {
   else if (ST.stage === 3) html = 'Investigated <b>' + inv + ' of ' + lookN + '</b>';
   else html = closingLine();
   $('#clock').innerHTML = html;
+  renderFunnel();
+}
+/* the funnel: each step's live count, from the data; blank until the step is reached */
+function renderFunnel() {
+  const T = TL, s = ST.sel; if (!T || !s) return; const now = performance.now(); const tray = trayApplies(s);
+  const box = Math.max(1, ST.stage);
+  let caught = 0, alarms = 0, cleared = 0, unsettled = 0;
+  T.read.forEach((r, k) => { if (ST.t < r) return; const st = T.status[k]; if (st === 'caught') caught++; else if (st === 'alarm') alarms++; else if (st === 'clear') cleared++; else if (st === 'look') unsettled++; });
+  const lookN = T.status.filter(x => x === 'look').length;
+  $('#fc1').textContent = ST.stage === 0 || (ST.stage === 1 && ST.t < HOLD + FADE) ? UNITS.length + ' to read' : caught + ' rings caught · ' + alarms + (alarms === 1 ? ' alarm' : ' alarms') + ' · ' + cleared + ' cleared' + (tray ? ' · ' + unsettled + ' unsettled' : '');
+  $('#fc2').textContent = box >= 2 ? (tray ? lookN + ' the first pass could not settle' : 'no tray for this model') : '';
+  let inv = 0, icl = 0, ifound = 0; Object.keys(INV).forEach(id => { if (!landed(id, now)) return; inv++; const r = invRes(id); if (!r) return; if (truthy(r.ring_found)) ifound++; else if (r.verdict !== 'ring' && (UNITS.find(u => u.id === id) || {}).expected !== 'ring') icl++; });
+  $('#fc3').textContent = box >= 3 && tray ? 'investigated ' + inv + ' of ' + lookN + ' · ' + icl + ' cleared · ' + ifound + (ifound === 1 ? ' ring' : ' rings') + ' found' : '';
+  const human = s.k + (tray && INVD ? TRAY.filter(x => INVD.results && INVD.results[x.unit] && truthy(INVD.results[x.unit].ring_found)).length : 0);
+  $('#fc4').textContent = box >= 4 ? human + ' rings for a human · ' + s.f + (s.f === 1 ? ' alarm' : ' alarms') + ' · ' + (NR - human) + ' missed' : '';
+  $('#caption').textContent = captionText(lookN, human);
+}
+function captionText(lookN, human) {
+  const s = ST.sel; const tray = trayApplies(s);
+  if (ST.stage === 0) return UNITS.length + ' neighborhoods, ' + num(TR.length) + ' transfers. Step 1 of 4: the first pass reads every neighborhood.';
+  if (ST.stage === 1) return 'Step 1 of 4: ' + s.name + ' ' + s.ver + ' reads each neighborhood. Ordinary ones fade, rings it catches turn green, the ones it is unsure about stay lit.';
+  if (ST.before) return 'Before the closer look: ' + lookN + ' neighborhoods the first pass could not settle. Switch to After to see them settled.';
+  if (ST.stage === 2) return tray ? 'Step 2 of 4: these ' + lookN + ' pulsing neighborhoods are the ones the first pass was unsure about. Next: a stronger model looks closer at each one.' : 'Step 2 of 4: the closer look is recorded for Claude Sonnet 5.5 v4 only; pick it in the side panel to continue.';
+  if (ST.stage === 3) return 'Step 3 of 4: ' + INV_MODEL + ' looks closer at each unsure neighborhood. Cleared ones fade; rings close in green.';
+  if (ST.missedAt == null) return 'Step 4 of 4: what is left lit is what a human should look at. Next: show what both passes missed.';
+  return 'Amber dotted: the ' + (NR - human) + ' rings both passes missed. Next: start over from the beginning.';
 }
 function closingLine() {
   const s = ST.sel; let out = 'First pass <b>' + s.k + ' of ' + NR + '</b> rings, <b>' + s.f + '</b> ' + (s.f === 1 ? 'alarm' : 'alarms');
