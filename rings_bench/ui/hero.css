@@ -76,3 +76,16 @@ html.introOn { overflow: hidden; }
 .introBar i { display: block; height: 100%; width: 0; background: var(--h-indigo-hi); }
 button.hlink { font: inherit; font-size: 15px; background: none; border: 0; padding: 0; cursor: pointer; }
 .htitle .hsub { font-size: .52em; color: var(--h-dim); margin-top: .25em; letter-spacing: -.005em; }
+
+/* ---------- the builders, at the foot of the page ---------- */
+.builders { font-family: var(--font-hero); max-width: 1600px; margin: 24px auto 0; padding: 56px 18px 40px; border-top: 1px solid var(--hairline); text-align: center; }
+.builders h2 { font-family: var(--font-hero); font-weight: 400; color: var(--fg); font-size: clamp(32px, 4vw, 56px); letter-spacing: -.015em; margin: 0 0 32px; }
+.builderRow { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; max-width: 1180px; margin: 0 auto; }
+.builder { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 16px; border: 1px solid var(--hairline); background: var(--surface);
+  color: var(--fg); text-decoration: none; text-align: left; transition: border-color var(--dur-2), transform var(--dur-2); }
+.builder:hover { border-color: var(--accent); transform: translateY(-2px); }
+.builder i { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; font-style: normal; font-weight: 600; font-size: 15px;
+  color: #fff; background: linear-gradient(135deg, #4f3df5, #8a7dff); }
+.builder b { display: block; font-weight: 500; font-size: 16px; }
+.builder small { display: block; margin-top: 2px; font-size: 13px; color: var(--muted-fg); }
+.buildersNote { margin: 32px 0 0; font-size: 13px; color: var(--muted-fg); }
