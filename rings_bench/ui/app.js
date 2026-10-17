@@ -554,23 +554,33 @@ function renderBoard() {
 }
 
 /* ---------- failures by shape ---------- */
+let GRID_ALL = false;
+function gridModels() {
+  if (GRID_ALL) return MODELS;
+  const vnum = v => { const m = /^v(\d+)$/.exec(v || ''); return m ? +m[1] : -1; };  /* numbered versions only; v2x (a variant) is not "latest" */
+  const latest = {}; MODELS.forEach(m => { if (m.panel) return; const n = vnum(m.version); if (n > (latest[m.id] == null ? -1 : latest[m.id])) latest[m.id] = n; });
+  return MODELS.filter(m => !m.panel && (m.version === 'v1' || vnum(m.version) === latest[m.id]));
+}
 function renderGrid() {
-  let h = '<thead><tr><th class="l">Shape</th>' + MODELS.map(m => '<th title="' + esc(m.id + ' ' + m.version) + '"><span class="rot">' + esc(m.short) + ' <b>' + esc(m.version) + '</b></span></th>').join('') + '</tr></thead><tbody>';
+  const GM = gridModels();
+  let h = '<thead><tr><th class="l">Shape</th>' + GM.map(m => '<th title="' + esc(m.id + ' ' + m.version) + '"><span class="rot">' + esc(m.short) + ' <b>' + esc(m.version) + '</b></span></th>').join('') + '</tr></thead><tbody>';
   const names = [...new Set(RING_IDS.map(ibmBase))].sort((a, b) => (IBM_ORDER.indexOf(a) + 1 || 99) - (IBM_ORDER.indexOf(b) + 1 || 99));
   names.forEach(s => {
     const rows = RING_IDS.filter(r => ibmBase(r) === s); const ours = {}; rows.forEach(r => ours[ringShape(r)] = (ours[ringShape(r)] || 0) + 1); const ourList = Object.keys(ours).sort((a, b) => ours[b] - ours[a]);
     const edgesN = rows.reduce((a, r) => a + RINGS[r].length, 0);
     h += '<tr><th class="l sh" title="' + esc('IBM\'s name: ' + s + ', ' + (SHAPE_WORDS[s] || '') + '. Our reading: ' + ourList.join(', ') + '. ' + rows.length + ' rings, ' + edgesN + ' transfers.') + '">' + glyph(ourList[0]) + '<span><b>' + esc(s) + '</b><small>' + (ourList.length === 1 && ourList[0] === s ? rows.length + ' rings' : 'ours: ' + ourList.map(x => x === 'lone' ? 'single transfer' : x).join(', ') + ', ' + rows.length) + '</small></span></th>';
-    MODELS.forEach(m => {
+    GM.forEach(m => {
       const rings = rows.length; const ran = m.R.filter(r => r.expected === 'ring' && ibmBase(unitRing(r)) === s).length; const found = ran ? m.perRing.filter(p => rows.includes(p.r) && p.found).length : null;
       const frac = found == null || !rings ? null : found / rings; const cls = frac == null ? 'na' : frac === 0 ? 'c0' : frac < 0.5 ? 'c1' : frac < 1 ? 'c2' : 'c3';
       h += '<td><button type="button" class="' + cls + '" data-s="' + esc(s) + '" data-id="' + esc(m.id + '|' + m.version) + '" title="' + esc(m.short + ' ' + m.version + ': ' + (found == null ? 'has not run a ' + s + ' group yet' : found + ' of ' + rings + ' ' + s + ' patterns found (' + ran + ' of ' + rings + ' run)') + '. Click for the runs and the model\'s why.') + '">' + (found == null ? '–' : found + '/' + rings + (ran < rings ? '<small>' + ran + ' run</small>' : '')) + '</button></td>';
     });
     h += '</tr>';
   });
-  const maxF = Math.max(1, ...MODELS.map(m => m.false_rings || 0));
-  h += '<tr><th class="l sh" title="Candidate groups IBM labels ordinary that the model called a pattern">' + glyph('ordinary') + '<span><b>false alarms</b><small>ordinary, called a pattern</small></span></th>' + MODELS.map(m => '<td><button type="button" class="fr ' + ((m.false_rings || 0) / maxF > 0.6 ? 'hot' : '') + '" data-s="false" data-id="' + esc(m.id + '|' + m.version) + '" title="' + esc(m.short + ' ' + m.version + ': ' + num(m.false_rings) + ' false alarms. Click for each one.') + '">' + num(m.false_rings) + '</button></td>').join('') + '</tr>';
+  const maxF = Math.max(1, ...GM.map(m => m.false_rings || 0));
+  h += '<tr><th class="l sh" title="Candidate groups IBM labels ordinary that the model called a pattern">' + glyph('ordinary') + '<span><b>false alarms</b><small>ordinary, called a pattern</small></span></th>' + GM.map(m => '<td><button type="button" class="fr ' + ((m.false_rings || 0) / maxF > 0.6 ? 'hot' : '') + '" data-s="false" data-id="' + esc(m.id + '|' + m.version) + '" title="' + esc(m.short + ' ' + m.version + ': ' + num(m.false_rings) + ' false alarms. Click for each one.') + '">' + num(m.false_rings) + '</button></td>').join('') + '</tr>';
   $('#gridTable').innerHTML = h + '</tbody>';
+  const tg = $('#gridAll'); if (tg) { tg.checked = GRID_ALL; tg.onchange = e => { GRID_ALL = e.target.checked; renderGrid(); }; }
+  const gn = $('#gridNote'); if (gn) gn.textContent = GRID_ALL ? MODELS.length + ' columns: every version' : GM.length + ' columns: v1 and each model\'s latest numbered version (' + MODELS.filter(m => !m.panel).length + ' in all)';
   $('#gridKey').innerHTML = '<span><i style="background:var(--cell-0)"></i>caught none</span><span><i style="background:var(--cell-1)"></i>under half</span><span><i style="background:var(--cell-2)"></i>most</span><span><i style="background:var(--cell-3)"></i>all</span><span>Rows are IBM\'s own pattern names; our reading is the small line and the glyph. Hover a row for what it is.</span>';
   document.querySelectorAll('.grid button[data-id]').forEach(b => { b.onclick = () => { const [id, ver] = b.dataset.id.split('|'); const m = MODELS.find(x => x.id === id && x.version === ver); document.querySelectorAll('.grid button.on').forEach(x => x.classList.remove('on')); b.classList.add('on'); if (m) openDrawer(b.dataset.s === 'false' ? 'false' : 'cell', m, b.dataset.s); }; });
 }
