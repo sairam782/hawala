@@ -66,6 +66,29 @@
     ks.forEach(a => { o[a] = { x: ox + (pos[a].x - x0) * sx, y: oy + (pos[a].y - y0) * s }; }); return o;
   }
 
+
+  /* ---------- PRISM traces (window.TRACES from traces_demo.js): one row of step pills per recorded run ---------- */
+  const SHORT = { load_rows: 'rows', pass_through_chains: 'chains', parse_answer: 'parse', kb_search: 'KB search', 'final answer': 'answer', 'run failed': 'failed' };
+  const cut = (v, n) => { v = clean(v == null ? '' : typeof v === 'string' ? v : JSON.stringify(v)); return v.length > n ? v.slice(0, n) + '...' : v; };
+  function traceRows(unitId) {
+    const T = window.TRACES && window.TRACES.by_unit ? window.TRACES.by_unit[unitId] : null; if (!T) return '';
+    const row = (run, title) => {
+      if (!run || !run.steps || !run.steps.length) return '';
+      const pills = run.steps.map(st => {
+        const kind = st.type === 'llm_call' ? 'llm' : st.type === 'final_answer' ? 'final' : st.label === 'kb_search' || st.type === 'retrieval' ? 'kb' : 'tool';
+        const icon = kind === 'llm' ? '◆' : kind === 'final' ? '✓' : kind === 'kb' ? '▤' : '⚙';
+        const bad = st.status && st.status !== 'success';
+        const t = '<b>' + esc(st.label) + '</b> <span class="muted">' + esc(st.type) + (st.ms != null ? ', ' + st.ms + ' ms' : '') + (bad ? ', ' + esc(st.status) : '') + '</span>' +
+          (st.in ? '<br><span class="muted">in</span> <span class="mono">' + esc(cut(st.in, 180)) + '</span>' : '') +
+          (st.out ? '<br><span class="muted">out</span> <span class="mono">' + esc(cut(st.out, 220)) + '</span>' : '');
+        return '<span class="zm-step zm-st-' + kind + (bad ? ' zm-st-bad' : '') + '" tabindex="0" data-tip="' + esc(t) + '"><i aria-hidden="true">' + (bad ? '✕' : icon) + '</i>' + esc(SHORT[st.label] || st.label) + '</span>';
+      }).join('<span class="zm-link" aria-hidden="true"></span>');
+      return '<div class="zm-trace" title="' + esc(clean(window.TRACES.note || '')) + '"><span class="zm-trtitle">' + title + '</span><span class="zm-steps">' + pills + '</span>' +
+        '<span class="zm-trmeta mono" title="' + esc((run.agent || '') + ', trace ' + (run.trace_id || '') + ', trajectory ' + (run.trajectory_id || '')) + '">' + esc(run.agent || '') + ' · trace ' + esc(String(run.trace_id || '').slice(0, 8)) + '</span><span class="zm-prism">recorded in PRISM</span></div>';
+    };
+    return row(T.first_pass, 'PRISM trace, first pass') + row(T.investigator, 'PRISM trace, investigator');
+  }
+
   function el(tag, attrs, parent) { const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
 
   function close(instant) {
@@ -128,8 +151,18 @@
       '<span class="zm-count mono">' + esc(unitId) + ' · ' + plural(accts.length, 'account') + ' · ' + plural(rows.length, 'transfer') + '</span>' + lead +
       '<button type="button" class="zm-follow" aria-pressed="false" title="Pick one account, then a second, to trace money between them">Follow the money</button>' +
       '<button type="button" class="zm-close" aria-label="Close the close-up">Close <span aria-hidden="true">✕</span></button></div>' +
-      '<p class="zm-pathline" hidden></p>' + fp + inv;
+      '<p class="zm-pathline" hidden></p>' + fp + inv + traceRows(unitId);
     panel.appendChild(head);
+    const tip = document.createElement('div'); tip.className = 'zm-tip'; tip.hidden = true; panel.appendChild(tip);
+    head.querySelectorAll('.zm-step').forEach(st => {
+      st.addEventListener('mouseenter', () => {
+        tip.innerHTML = st.getAttribute('data-tip'); tip.hidden = false;
+        const pb = panel.getBoundingClientRect(), sb = st.getBoundingClientRect();
+        let x = sb.left - pb.left; const w = tip.offsetWidth; if (x + w > pb.width - 8) x = pb.width - w - 8;
+        tip.style.left = Math.max(8, x) + 'px'; tip.style.top = (sb.bottom - pb.top + 4) + 'px';
+      });
+      st.addEventListener('mouseleave', () => { tip.hidden = true; });
+    });
 
     const legend = document.createElement('div'); legend.className = 'zm-legend';
     const sw = (c, extra) => '<svg width="26" height="10" aria-hidden="true">' + (extra || '') + '<line x1="2" y1="5" x2="24" y2="5" stroke="' + c + '" stroke-width="2"/></svg>';
