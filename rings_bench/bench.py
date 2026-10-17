@@ -90,6 +90,8 @@ def norm_pattern(s):
 
 def norm_verdict(v):
     v = (v or "").strip().lower()
+    if v.startswith("cannot") or v.startswith("can't") or v in ("unsure", "unknown", "abstain"):
+        return "ordinary"  # an abstention is not an accusation; verdict_raw keeps the word
     return "ring" if v.startswith("ring") or v in ("yes", "scheme", "suspicious", "laundering") else "ordinary"
 
 
@@ -170,7 +172,7 @@ def make_agent(model, version, kb=False):
                            "expected": unit["expected"], "family": family(model)})
         r.step("load_rows", input={"unit": unit["id"]}, output={"rows": unit["n_rows"], "accounts": len(unit["accounts"])}, kind="tool")
         f, reference = None, None
-        if version in ("v2", "v3", "v2x"):
+        if version in ("v2", "v3", "v2x", "v5"):
             d = facts.degrees(unit)
             r.step("degrees", input={"accounts": len(d["accounts"])}, output=d["degrees"][:5], kind="tool")
             lp = facts.loops(unit)
@@ -182,10 +184,10 @@ def make_agent(model, version, kb=False):
             f = facts.summary(unit)
             f.update({"n_accounts": len(d["accounts"]), "degrees": d["degrees"][:12], "loops": lp, "bursts": b,
                       "pass_through_chains": ch})
-            if kb or version == "v3":  # v3 = v2 plus a real Knowledge Base lookup, logged as a retrieval step
+            if kb or version in ("v3", "v5"):  # v3 = v2 plus a real Knowledge Base lookup, logged as a retrieval step
                 res = trace.kb_search("laundering patterns fan-out fan-in cycle chain scatter-gather mesh lone", limit=3, run=r)
                 reference = "\n".join(x.get("content", "") for x in res if isinstance(x, dict)) or None
-                if version == "v3" and not reference:
+                if version in ("v3", "v5") and not reference:
                     raise RuntimeError("v3 needs the Knowledge Base: kb_search returned nothing for this agent (upload first: bench.py kb-upload --model M --version v3)")
         prompt = build(unit, "v2" if version == "v2x" else version, facts=f, reference=reference)
         messages = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": prompt}]
@@ -216,7 +218,7 @@ def make_agent(model, version, kb=False):
                 cost = llm._estimate(res["model"], tin, tout, llm._key())
             except Exception:  # noqa: BLE001
                 cost = None
-        return {"verdict": norm_verdict(parsed.get("verdict")), "pattern": norm_pattern(parsed.get("pattern")),
+        return {"verdict": norm_verdict(parsed.get("verdict")), "verdict_raw": str(parsed.get("verdict", ""))[:20], "pattern": norm_pattern(parsed.get("pattern")),
                 "pattern_raw": str(parsed.get("pattern", ""))[:60], "flagged": flagged,
                 "flagged_in_unit": [t for t in flagged if t in row_ids],
                 "accounts": [a for a in (parsed.get("accounts") or []) if isinstance(a, str)][:30],
@@ -280,7 +282,7 @@ def cmd_kb_upload(a):
 
 def context_for(unit, version):
     txt = rows_text(unit)
-    if version in ("v2", "v3"):
+    if version in ("v2", "v3", "v5"):
         txt += "\n\nFacts computed by code:\n" + facts.facts_text(facts.compute_facts(unit))
     return txt
 
@@ -391,8 +393,22 @@ def traces_all():
     return out
 
 
+def ring_accounts():
+    """Accounts that appear in any labeled transfer of this slice (IBM's ring accounts)."""
+    t = (DATA_DIR / "slice.js").read_text(encoding="utf-8")
+    S = json.loads(t[t.index("{"):].rstrip().rstrip(";"))
+    byid = {r[0]: r for r in S["transfers"]}
+    acc = set()
+    for tid, (lab, ring) in S["key"].items():
+        if lab == 1:
+            acc.update((byid[tid][2], byid[tid][3]))
+    return acc
+
+
 def score_batch(model, version, recs, units):
     byid = {u["id"]: u for u in units}
+    racc = ring_accounts()
+    acc_flagged, acc_in_ring, ring_calls, ring_calls_hit = 0, 0, 0, 0
     tp = fp = fn = 0
     rings_total = sum(1 for u in units if u["expected"] == "ring")
     by_shape = {s: {"rings": 0, "found": 0, "verdict_right": 0} for s in SHAPES}
@@ -430,7 +446,14 @@ def score_batch(model, version, recs, units):
             lats.append(o["latency_ms"])
         rows_by_id = {x[0]: x for x in u["rows"]}
         tail_truth = sum(1 for t in u["truth_ids"] if rows_by_id[t][1] > "2022/09/10 23:59")
+        rows_map = {x[0]: x for x in u["rows"]}
+        flagged_accounts = {a for t in flagged if t in rows_map for a in (rows_map[t][2], rows_map[t][3])}
+        ring_hit_accounts = sorted(a for a in flagged_accounts if a in racc)
+        if verdict == "ring":
+            ring_calls += 1; ring_calls_hit += bool(ring_hit_accounts)
+            acc_flagged += len(flagged_accounts); acc_in_ring += len(ring_hit_accounts)
         runs.append({"run_id": f"{batch_name(model, version)}:{u['id']}", "model": model, "family": family(model),
+                     "flagged_accounts": sorted(flagged_accounts), "ring_accounts_flagged": ring_hit_accounts,
                      "tail_truth_rows": tail_truth, "ibm_shape": IBM_SHAPE.get(u.get("ring_id")) if u["expected"] == "ring" else None,
                      "version": version, "unit": u["id"], "shape": u["shape"] or "none", "expected": u["expected"],
                      "verdict": verdict, "pattern": o.get("pattern"), "flagged_transfer_ids": sorted(flagged),
@@ -444,6 +467,9 @@ def score_batch(model, version, recs, units):
             "verdict_right": sum(1 for x in runs if x["correct"]), "precision": round(prec, 4), "recall": round(rec, 4),
             "tp": tp, "fp": fp, "fn": fn, "rings_found": rings_found, "rings_total": rings_total,
             "pattern_named_ok": named_ok, "false_rings": false_rings, "technical_failures": tech,
+            "account_level": {"ring_calls": ring_calls, "ring_calls_touching_a_ring_account": ring_calls_hit,
+                              "flagged_accounts": acc_flagged, "flagged_accounts_in_a_ring": acc_in_ring,
+                              "account_precision": round(acc_in_ring / acc_flagged, 4) if acc_flagged else None},
             "by_shape": by_shape, "cost_usd": round(sum(costs), 4),
             "latency_ms_median": int(statistics.median(lats)) if lats else None,
             "prism_agent_name": agent_name(model, version)}, runs
@@ -481,7 +507,8 @@ def cmd_results(a):
                        "units": len(units), "ring_units": sum(shapes.values()), "ordinary_units": len(units) - sum(shapes.values()),
                        "notes": ["Four ring units (u15 mesh, u26 scatter-gather, u49 cycle, u50 fan-in) have most of their labeled rows after 2022-09-10, in the file's tail where 59 percent of rows are labeled; a late timestamp is a tell there (R155).",
                                  "Every laundering transfer in this slice is ACH; in the whole file it is 87 percent (R155).",
-                                 "Slice laundering rate 4.0 percent vs 0.10 percent in the file; labels are IBM's generator's; shape names are ours."]},
+                                 "Slice laundering rate 4.0 percent vs 0.10 percent in the file; labels are IBM's generator's; shape names are ours.",
+                                 "Every one of the 40 ordinary neighborhoods contains an account that sits in one of IBM's rings (the slice was cut around the rings), so a 'false ring' at the transfer level usually points at a real laundering account's unlabeled traffic; account_level reports that view."]},
            "versions": {"v1": "model reads the raw transfers of a neighborhood",
                         "v2": "code computes the neighborhood's facts (degrees, loops, bursts, pass-through chains, formats) and the model names the outcome"},
            "written": time.strftime("%Y-%m-%d %H:%M"), "models": models, "runs": all_runs, "failures_by_shape": fails}

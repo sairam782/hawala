@@ -141,3 +141,16 @@ python -I make_readme.py              # writes this file
 The first command I actually ran was `cut_slices.py --name heldout_a --seed 20261017 --prior $B/data/slice.js`, which overwrote the engine thread's heldout_a (see the top). The cutter now refuses to write into a folder that already has a `slice.js`.
 
 `units.py` needed no change and `slice.js` needed no fix; it ran clean on all three.
+
+## random_clean (control: ordinary traffic only)
+
+Cut 2026-10-17, seed 20261020, by `cut_random_clean.py` (graph work on R155's compact copy `size\arrays.npz`; each pulled row is checked against it and the zip). 1,971 rows, 0 labeled, 463 accounts, last row 09/10 23:56. ACH is 15.9 percent of rows (314); the rest is Cheque 763, Credit Card 555, Cash 196, Wire 72, Bitcoin 71.
+
+Rule: a seed account is eligible when it and every counterparty are "clean": in no labeled row, no row touching it labeled or after 09/10 23:59, and no row touching it with an endpoint in a labeled row (6,357 accounts are in labeled rows; 451,013 accounts are clean; 172,190 of those have 4 to 60 non-self transfers). 40 seeds drawn at random from those; each neighborhood keeps every row touching the seed plus a random sample of the rows touching its counterparties, up to 60. Self-transfers are left out. No account is shared with any other slice or between neighborhoods. `seeds.json` lists the 40 seeds. Transfers touching each seed: 4 (six seeds), 6, 6, 7, 8, 10, 10, 10, 14, 16 (four), 17, 18, 19, 21, 22 (four), 23, 24, 32 (three), 33, 34 (three), 44, 46, 51, 56, 58.
+
+`units.py --dir` ran fine on zero rings: 40 units, 0 ring, 40 ordinary, rows per unit 8 to 60 (median 36), 39 with 10 or more rows. It chooses its own seed accounts from everything in the slice (counterparties included), so only 5 of its 40 seeds are the 40 in `seeds.json`; all 40 neighborhoods are still clean, but they are not the same 40. If you want units built from `seeds.json` exactly, that needs a small separate unit builder (not done).
+
+```
+python -I cut_random_clean.py
+python -I $B/units.py --dir $B/slices/random_clean
+```

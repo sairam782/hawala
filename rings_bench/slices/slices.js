@@ -1,1 +1,1 @@
-window.SLICES = [{"name":"heldout_a","label":"held-out A (seed 20261017)"},{"name":"heldout_b","label":"held-out B (seed 20261018)"},{"name":"heldout_c","label":"held-out C (seed 20261019)"}];
+window.SLICES = [{"name":"heldout_a","label":"held-out A (seed 20261017)"},{"name":"heldout_b","label":"held-out B (seed 20261018)"},{"name":"heldout_c","label":"held-out C (seed 20261019)"},{"name":"random_clean","label":"random clean (40 ordinary neighborhoods, no laundering in reach)"}];

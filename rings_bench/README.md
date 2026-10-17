@@ -20,6 +20,7 @@ computes the neighborhood's facts (degrees, loops, bursts, pass-through chains, 
 | `data/bench_results.json` (+ `.js` twin) | the output contract the UI reads (models, runs with `ibm_shape` and `tail_truth_rows`, failures_by_shape) |
 | `panel.py` -> `data/panel.json` (+ `.js`) | cross-family agreement per unit and the vote dial (k of n families must say ring) |
 | `PITCH_DRAFT.md` | the three-minute story on the numbers so far, for the team to rewrite |
+| `jev_options/` | five designed, dry-runnable ways to use Jev (TypeSafe's fast calibrated classifier): first pass, gate, Root Cause by cause class, tenth voter, per-transfer flags; see its README |
 
 ## Run
 Python: `C:\Projects\Verticals\Hackathons\kit\mt2_kit\.venv\Scripts\python.exe` (has the PRISM SDK). Keys: `C:\Projects\nicrron.txt`,
