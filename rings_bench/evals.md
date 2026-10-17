@@ -1,6 +1,45 @@
 # Model screen: every Nicrron chat model on the Rings bench
 
-**Round one done.** 66 chat models in the catalog, 2,077 model calls so far, $28.26 spent. Written 2026-10-17 15:06 by `screen.py report`; every number below is read from the scored files it names, so rerun it rather than editing this file.
+**Finalists done.** 66 chat models in the catalog, 2,401 model calls so far, $34.85 spent. Written 2026-10-17 15:23 by `screen.py report`; every number below is read from the scored files it names, so rerun it rather than editing this file.
+
+## Top 3
+
+Ranked by F1 on all 60 neighborhoods (20 hold one of IBM's laundering groups, 40 are ordinary).
+
+| Rank | Model | F1 | 95% range | In the top 3 | Rings caught | False alarms | Cost of 60 runs | Held-out C F1 |
+|---:|---|---:|---|---:|---:|---:|---:|---:|
+| 1 | **openai/gpt-6-astra** | 0.800 | 0.61 to 0.90 | 100% of resamples | 12 of 20 | 3 of 40 | $2.02 | not run |
+| 2 | **anthropic/claude-fable-5-1** | 0.767 | 0.56 to 0.88 | 96% of resamples | 11 of 20 | 4 of 40 | $4.36 | not run |
+| 3 | **anthropic/claude-opus-5-5** | 0.763 | 0.54 to 0.90 | 79% of resamples | 12 of 20 | 0 of 40 | $1.32 | not run |
+
+- openai/gpt-6-astra beats anthropic/claude-fable-5-1 in 80% of resamples.
+- anthropic/claude-fable-5-1 beats anthropic/claude-opus-5-5 in 51% of resamples.
+- openai/gpt-6-astra beats openai/gpt-6.1-sol in 99% of resamples.
+- anthropic/claude-fable-5-1 beats openai/gpt-6.1-sol in 94% of resamples.
+- anthropic/claude-opus-5-5 beats openai/gpt-6.1-sol in 82% of resamples.
+
+## Finalists on all 60 neighborhoods
+
+| # | Model | Run | F1 | 95% range | P(top 3) | Precision | Recall | Rings caught | False alarms | Errors | Cost | $ per ring | Median |
+|---:|---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | **openai/gpt-6-astra** | 60/60 | 0.800 | 0.61 to 0.90 | 100% | 72% | 90% | 12 of 20 | 3 of 40 |  | $2.02 | $0.168 | 4.8 s |
+| 2 | **anthropic/claude-fable-5-1** | 60/60 | 0.767 | 0.56 to 0.88 | 96% | 67% | 90% | 11 of 20 | 4 of 40 |  | $4.36 | $0.396 | 11.9 s |
+| 3 | **anthropic/claude-opus-5-5** | 60/60 | 0.763 | 0.54 to 0.90 | 79% | 73% | 80% | 12 of 20 | 0 of 40 |  | $1.32 | $0.110 | 6.1 s |
+| 4 | openai/gpt-6.1-sol | 60/60 | 0.678 | 0.45 to 0.83 | 18% | 54% | 91% | 11 of 20 | 6 of 40 |  | $0.42 | $0.038 | 6.7 s |
+| 5 | anthropic/claude-sonnet-5-5 † | 60/60 | 0.608 | 0.36 to 0.78 | 2% | 46% | 88% | 9 of 20 | 7 of 40 |  | $0.86 | $0.096 | 7.4 s |
+| 6 | openai/gpt-6-sol † | 60/60 | 0.604 | 0.38 to 0.77 | 2% | 46% | 88% | 10 of 20 | 12 of 40 |  | $0.56 | $0.056 | 5.8 s |
+| 7 | openai/gpt-5.5 | 60/60 | 0.589 | 0.36 to 0.75 | 1% | 45% | 87% | 9 of 20 | 10 of 40 |  | $2.46 | $0.273 | 8.3 s |
+| 8 | openai/gpt-5.6-sol | 60/60 | 0.569 | 0.35 to 0.74 | 1% | 42% | 88% | 12 of 20 | 11 of 40 |  | $1.68 | $0.140 | 6.6 s |
+| 9 | openai/gpt-5.6-terra | 60/60 | 0.562 | 0.32 to 0.74 | 2% | 46% | 73% | 8 of 20 | 8 of 40 |  | $0.65 | $0.082 | 5.1 s |
+| 10 | xai/grok-4.6 | 60/60 | 0.554 | 0.33 to 0.72 | 0% | 41% | 84% | 9 of 20 | 7 of 40 | 1 | $1.67 | $0.185 | 51.3 s |
+| 11 | xai/grok-4.7 † | 60/60 | 0.413 | 0.13 to 0.64 | 0% | 43% | 40% | 4 of 20 | 2 of 40 | 1 | $1.90 | $0.476 | 42.8 s |
+| 12 | openai/gpt-6-luna † | 60/60 | 0.407 | 0.19 to 0.59 | 0% | 29% | 67% | 7 of 20 | 10 of 40 |  | $0.05 | $0.007 | 11.4 s |
+| 13 | openai/gpt-5 | 60/60 | 0.392 | 0.16 to 0.60 | 0% | 32% | 50% | 5 of 20 | 10 of 40 | 3 | $1.99 | $0.398 | 21.1 s |
+| 14 | anthropic/claude-haiku-5-5 † | 60/60 | 0.306 | 0.15 to 0.45 | 0% | 19% | 79% | 8 of 20 | 24 of 40 | 1 | $0.06 | $0.007 | 6.8 s |
+| 15 | z-ai/glm-5.3 † | 60/60 | 0.258 | 0.13 to 0.38 | 0% | 15% | 79% | 7 of 20 | 24 of 40 |  | $0.30 | $0.042 | 5.6 s |
+| 16 | moonshot/kimi-k3 † | 60/60 | 0.236 | 0.12 to 0.36 | 0% | 13% | 95% | 9 of 20 | 35 of 40 | 1 | $0.86 | $0.095 | 13.7 s |
+| 17 | deepseek/deepseek-v4-pro † | 60/60 | 0.194 | 0.06 to 0.33 | 0% | 12% | 45% | 5 of 20 | 21 of 40 | 14 | $1.51 | $0.302 | 92.3 s |
+| 18 | mistral/mistral-large-4 † | 60/60 | 0.184 | 0.09 to 0.28 | 0% | 11% | 69% | 6 of 20 | 26 of 40 |  | $0.26 | $0.043 | 5.0 s |
 
 ## System prompt search
 
@@ -100,27 +139,27 @@ You are an analyst on a bank's financial-crime desk reviewing a small neighborho
 
 ## Round one: every chat model on 20 neighborhoods
 
-A stratified 20 of the 60: 7 laundering groups across shapes and 13 ordinary neighborhoods. It only decides who gets the full run, so the ranges are wide by design.
+A stratified 20 of the 60: 7 laundering groups across shapes and 13 ordinary neighborhoods. It only decides who gets the full run, so the ranges are wide by design. Bold models went on to all 60.
 
 | # | Model | Run | F1 | 95% range | P(top 3) | Precision | Recall | Rings caught | False alarms | Errors | Cost | $ per ring | Median |
 |---:|---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 1 | openai/gpt-5.6-terra | 20/20 | 0.774 | 0.38 to 0.94 | 72% | 66% | 93% | 4 of 7 | 1 of 13 |  | $0.25 | $0.061 | 6.1 s |
-| 2 | openai/gpt-6-astra | 20/20 | 0.772 | 0.42 to 0.95 | 74% | 63% | 100% | 6 of 7 | 1 of 13 |  | $0.74 | $0.123 | 5.3 s |
-| 3 | anthropic/claude-fable-5-1 | 20/20 | 0.757 | 0.38 to 0.92 | 57% | 63% | 95% | 5 of 7 | 2 of 13 |  | $1.53 | $0.306 | 12.7 s |
-| 4 | openai/gpt-5.6-sol | 20/20 | 0.724 | 0.34 to 0.92 | 28% | 58% | 95% | 5 of 7 | 3 of 13 |  | $0.57 | $0.114 | 7.1 s |
-| 5 | anthropic/claude-opus-5-5 | 20/20 | 0.719 | 0.28 to 1.00 | 44% | 71% | 73% | 5 of 7 | 0 of 13 |  | $0.49 | $0.097 | 6.5 s |
-| 6 | openai/gpt-6.1-sol | 20/20 | 0.636 | 0.24 to 0.87 | 3% | 48% | 95% | 5 of 7 | 3 of 13 |  | $0.15 | $0.031 | 8.5 s |
-| 7 | openai/gpt-6-sol † | 20/20 | 0.603 | 0.19 to 0.83 | 1% | 45% | 93% | 4 of 7 | 4 of 13 |  | $0.21 | $0.051 | 5.9 s |
-| 8 | openai/gpt-5.5 | 20/20 | 0.594 | 0.18 to 0.83 | 3% | 44% | 93% | 4 of 7 | 4 of 13 |  | $0.87 | $0.218 | 11.4 s |
-| 9 | xai/grok-4.6 | 20/20 | 0.562 | 0.18 to 0.82 | 0% | 40% | 93% | 4 of 7 | 4 of 13 |  | $0.63 | $0.159 | 71.5 s |
-| 10 | anthropic/claude-sonnet-5-5 † | 20/20 | 0.547 | 0.17 to 0.81 | 0% | 39% | 93% | 4 of 7 | 4 of 13 |  | $0.30 | $0.075 | 7.7 s |
-| 11 | openai/gpt-5 | 20/20 | 0.527 | 0.03 to 0.78 | 1% | 40% | 77% | 3 of 7 | 4 of 13 | 1 | $0.72 | $0.239 | 22.2 s |
-| 12 | openai/gpt-6-luna † | 20/20 | 0.522 | 0.04 to 0.81 | 2% | 42% | 68% | 3 of 7 | 2 of 13 |  | $0.02 | $0.006 | 11.0 s |
-| 13 | anthropic/claude-haiku-5-5 † | 20/20 | 0.420 | 0.11 to 0.65 | 0% | 27% | 93% | 4 of 7 | 8 of 13 |  | $0.02 | $0.005 | 7.3 s |
+| 1 | **openai/gpt-5.6-terra** | 20/20 | 0.774 | 0.38 to 0.94 | 72% | 66% | 93% | 4 of 7 | 1 of 13 |  | $0.25 | $0.061 | 6.1 s |
+| 2 | **openai/gpt-6-astra** | 20/20 | 0.772 | 0.42 to 0.95 | 74% | 63% | 100% | 6 of 7 | 1 of 13 |  | $0.74 | $0.123 | 5.3 s |
+| 3 | **anthropic/claude-fable-5-1** | 20/20 | 0.757 | 0.38 to 0.92 | 57% | 63% | 95% | 5 of 7 | 2 of 13 |  | $1.53 | $0.306 | 12.7 s |
+| 4 | **openai/gpt-5.6-sol** | 20/20 | 0.724 | 0.34 to 0.92 | 28% | 58% | 95% | 5 of 7 | 3 of 13 |  | $0.57 | $0.114 | 7.1 s |
+| 5 | **anthropic/claude-opus-5-5** | 20/20 | 0.719 | 0.28 to 1.00 | 44% | 71% | 73% | 5 of 7 | 0 of 13 |  | $0.49 | $0.097 | 6.5 s |
+| 6 | **openai/gpt-6.1-sol** | 20/20 | 0.636 | 0.24 to 0.87 | 3% | 48% | 95% | 5 of 7 | 3 of 13 |  | $0.15 | $0.031 | 8.5 s |
+| 7 | **openai/gpt-6-sol †** | 20/20 | 0.603 | 0.19 to 0.83 | 1% | 45% | 93% | 4 of 7 | 4 of 13 |  | $0.21 | $0.051 | 5.9 s |
+| 8 | **openai/gpt-5.5** | 20/20 | 0.594 | 0.18 to 0.83 | 3% | 44% | 93% | 4 of 7 | 4 of 13 |  | $0.87 | $0.218 | 11.4 s |
+| 9 | **xai/grok-4.6** | 20/20 | 0.562 | 0.18 to 0.82 | 0% | 40% | 93% | 4 of 7 | 4 of 13 |  | $0.63 | $0.159 | 71.5 s |
+| 10 | **anthropic/claude-sonnet-5-5 †** | 20/20 | 0.547 | 0.17 to 0.81 | 0% | 39% | 93% | 4 of 7 | 4 of 13 |  | $0.30 | $0.075 | 7.7 s |
+| 11 | **openai/gpt-5** | 20/20 | 0.527 | 0.03 to 0.78 | 1% | 40% | 77% | 3 of 7 | 4 of 13 | 1 | $0.72 | $0.239 | 22.2 s |
+| 12 | **openai/gpt-6-luna †** | 20/20 | 0.522 | 0.04 to 0.81 | 2% | 42% | 68% | 3 of 7 | 2 of 13 |  | $0.02 | $0.006 | 11.0 s |
+| 13 | **anthropic/claude-haiku-5-5 †** | 20/20 | 0.420 | 0.11 to 0.65 | 0% | 27% | 93% | 4 of 7 | 8 of 13 |  | $0.02 | $0.005 | 7.3 s |
 | 14 | anthropic/claude-opus-4-5 | 20/20 | 0.417 | 0.02 to 0.70 | 0% | 29% | 77% | 3 of 7 | 7 of 13 |  | $0.35 | $0.117 | 4.9 s |
 | 15 | openai/gpt-4o | 20/20 | 0.390 | 0.03 to 0.68 | 0% | 31% | 52% | 2 of 7 | 4 of 13 |  | $0.14 | $0.070 | 1.3 s |
 | 16 | anthropic/claude-opus-5 | 20/20 | 0.387 | 0.10 to 0.62 | 0% | 24% | 95% | 5 of 7 | 11 of 13 |  | $0.84 | $0.167 | 14.4 s |
-| 17 | xai/grok-4.7 † | 20/20 | 0.385 | 0.00 to 0.75 | 1% | 44% | 34% | 1 of 7 | 1 of 13 |  | $0.70 | $0.701 | 53.9 s |
+| 17 | **xai/grok-4.7 †** | 20/20 | 0.385 | 0.00 to 0.75 | 1% | 44% | 34% | 1 of 7 | 1 of 13 |  | $0.70 | $0.701 | 53.9 s |
 | 18 | anthropic/claude-fable-5 | 20/20 | 0.360 | 0.10 to 0.60 | 0% | 22% | 98% | 5 of 7 | 11 of 13 |  | $1.59 | $0.318 | 14.6 s |
 | 19 | xai/grok-4.20 | 20/20 | 0.347 | 0.06 to 0.61 | 0% | 22% | 84% | 3 of 7 | 6 of 13 |  | $0.31 | $0.103 | 49.5 s |
 | 20 | xai/grok-code-fast-1 | 20/20 | 0.344 | 0.03 to 0.68 | 0% | 27% | 48% | 2 of 7 | 2 of 13 |  | $0.31 | $0.155 | 34.3 s |
@@ -128,8 +167,8 @@ A stratified 20 of the 60: 7 laundering groups across shapes and 13 ordinary nei
 | 22 | openai/gpt-5.1 | 20/20 | 0.333 | 0.14 to 0.57 | 0% | 22% | 66% | 2 of 7 | 2 of 13 |  | $0.09 | $0.047 | 1.7 s |
 | 23 | openai/o3 | 20/20 | 0.326 | 0.09 to 0.55 | 0% | 20% | 98% | 4 of 7 | 12 of 13 |  | $0.42 | $0.104 | 9.5 s |
 | 24 | deepseek/deepseek-flash | 20/20 | 0.300 | 0.04 to 0.54 | 0% | 18% | 82% | 4 of 7 | 11 of 13 |  | $0.14 | $0.035 | 19.4 s |
-| 25 | z-ai/glm-5.3 † | 20/20 | 0.293 | 0.09 to 0.49 | 0% | 18% | 82% | 3 of 7 | 8 of 13 |  | $0.11 | $0.035 | 5.7 s |
-| 26 | moonshot/kimi-k3 † | 20/20 | 0.291 | 0.07 to 0.51 | 0% | 17% | 95% | 4 of 7 | 12 of 13 |  | $0.31 | $0.077 | 13.1 s |
+| 25 | **z-ai/glm-5.3 †** | 20/20 | 0.293 | 0.09 to 0.49 | 0% | 18% | 82% | 3 of 7 | 8 of 13 |  | $0.11 | $0.035 | 5.7 s |
+| 26 | **moonshot/kimi-k3 †** | 20/20 | 0.291 | 0.07 to 0.51 | 0% | 17% | 95% | 4 of 7 | 12 of 13 |  | $0.31 | $0.077 | 13.1 s |
 | 27 | openai/gpt-5.4-mini | 20/20 | 0.291 | 0.09 to 0.45 | 0% | 18% | 77% | 3 of 7 | 9 of 13 |  | $0.05 | $0.018 | 1.4 s |
 | 28 | anthropic/claude-opus-4-8 | 20/20 | 0.290 | 0.07 to 0.49 | 0% | 17% | 95% | 4 of 7 | 12 of 13 |  | $0.45 | $0.113 | 4.5 s |
 | 29 | xai/grok-4.3 | 20/20 | 0.288 | 0.00 to 0.61 | 0% | 21% | 45% | 2 of 7 | 5 of 13 |  | $0.11 | $0.053 | 8.2 s |
@@ -144,7 +183,7 @@ A stratified 20 of the 60: 7 laundering groups across shapes and 13 ordinary nei
 | 38 | xai/grok-4.20-non-reasoning | 20/20 | 0.246 | 0.00 to 0.61 | 0% | 38% | 18% | 1 of 7 | 0 of 13 |  | $0.07 | $0.069 | 2.0 s |
 | 39 | anthropic/claude-sonnet-4-6 | 20/20 | 0.242 | 0.04 to 0.41 | 0% | 14% | 84% | 2 of 7 | 11 of 13 |  | $0.26 | $0.131 | 6.7 s |
 | 40 | anthropic/claude-opus-4-7 | 20/20 | 0.240 | 0.04 to 0.42 | 0% | 14% | 84% | 1 of 7 | 13 of 13 |  | $0.44 | $0.444 | 5.1 s |
-| 41 | deepseek/deepseek-v4-pro † | 20/20 | 0.236 | 0.03 to 0.48 | 0% | 15% | 57% | 3 of 7 | 11 of 13 | 4 | $0.63 | $0.211 | 102.6 s |
+| 41 | **deepseek/deepseek-v4-pro †** | 20/20 | 0.236 | 0.03 to 0.48 | 0% | 15% | 57% | 3 of 7 | 11 of 13 | 4 | $0.63 | $0.211 | 102.6 s |
 | 42 | z-ai/glm-5.2 | 20/20 | 0.233 | 0.02 to 0.41 | 0% | 14% | 75% | 2 of 7 | 11 of 13 |  | $0.26 | $0.128 | 15.7 s |
 | 43 | mistral/mistral-large-3 | 20/20 | 0.231 | 0.02 to 0.43 | 0% | 14% | 64% | 3 of 7 | 10 of 13 |  | $0.04 | $0.013 | 3.1 s |
 | 44 | moonshot/kimi-k2.7-code-highspeed | 20/20 | 0.229 | 0.00 to 0.48 | 0% | 15% | 50% | 2 of 7 | 8 of 13 | 3 | $1.30 | $0.648 | 41.9 s |
@@ -157,7 +196,7 @@ A stratified 20 of the 60: 7 laundering groups across shapes and 13 ordinary nei
 | 51 | mistral/codestral | 20/20 | 0.195 | 0.01 to 0.31 | 0% | 11% | 77% | 1 of 7 | 10 of 13 |  | $0.02 | $0.024 | 2.3 s |
 | 52 | openai/gpt-5-mini | 20/20 | 0.190 | 0.04 to 0.37 | 0% | 11% | 70% | 3 of 7 | 13 of 13 |  | $0.10 | $0.032 | 20.6 s |
 | 53 | z-ai/glm-4.5 | 20/20 | 0.180 | 0.01 to 0.39 | 0% | 11% | 52% | 2 of 7 | 12 of 13 | 3 | $0.12 | $0.062 | 64.4 s |
-| 54 | mistral/mistral-large-4 † | 20/20 | 0.163 | 0.03 to 0.33 | 0% | 10% | 55% | 2 of 7 | 10 of 13 |  | $0.09 | $0.047 | 4.9 s |
+| 54 | **mistral/mistral-large-4 †** | 20/20 | 0.163 | 0.03 to 0.33 | 0% | 10% | 55% | 2 of 7 | 10 of 13 |  | $0.09 | $0.047 | 4.9 s |
 | 55 | z-ai/glm-5.1 | 20/20 | 0.158 | 0.01 to 0.35 | 0% | 9% | 52% | 2 of 7 | 13 of 13 | 3 | $0.28 | $0.138 | 77.7 s |
 | 56 | openai/gpt-4.1 | 20/20 | 0.142 | 0.00 to 0.34 | 0% | 11% | 20% | 1 of 7 | 4 of 13 |  | $0.12 | $0.119 | 1.7 s |
 | 57 | anthropic/claude-haiku-4-5 | 20/20 | 0.134 | 0.00 to 0.34 | 0% | 10% | 20% | 1 of 7 | 5 of 13 |  | $0.07 | $0.074 | 3.2 s |
