@@ -1,0 +1,48 @@
+Facts computed by code from the transfers below (facts, not a verdict):
+Rows: 19 (19 between different accounts, 0 an account moving its own money); 8 accounts; from 2022/09/01 00:22 to 2022/09/10 19:40 (235.3 hours).
+Payment formats: Cheque 10, Credit Card 9.
+Currencies: Swiss Franc 19.
+Amounts between accounts: median 103.88, max 1935.0.
+Busiest accounts (sent / to how many distinct, received / from how many distinct, pass-through):
+  80F181A50: sent 5 to 1, received 11 from 3, pass-through
+  100428978: sent 9 to 1, received 0 from 0
+  80FA97F90: sent 0 to 0, received 5 from 1
+  80F742460: sent 3 to 3, received 1 from 1, pass-through
+  80E613530: sent 1 to 1, received 0 from 0
+  80E679B90: sent 0 to 0, received 1 from 1
+  80F173860: sent 0 to 0, received 1 from 1
+  80F698730: sent 1 to 1, received 0 from 0
+Directed loops that return money to a starting account: 0.
+Bursts (3 or more transfers in or out of one account within 60 minutes): 0.
+Pass-through pairs (money arrives at an account and leaves it within 48 hours): 9:
+  80F698730 -> 80F742460 -> 80E679B90 (23.7 h apart; amounts 1935.0 then 141.13); transfers T0136, T0619
+  100428978 -> 80F181A50 -> 80FA97F90 (19.2 h apart; amounts 148.63 then 103.88); transfers T1425, T1637
+  100428978 -> 80F181A50 -> 80FA97F90 (16.3 h apart; amounts 103.17 then 103.88); transfers T2042, T2206
+  100428978 -> 80F181A50 -> 80FA97F90 (29.4 h apart; amounts 103.17 then 103.88); transfers T2042, T2373
+  100428978 -> 80F181A50 -> 80FA97F90 (16.0 h apart; amounts 148.63 then 103.88); transfers T2045, T2206
+  100428978 -> 80F181A50 -> 80FA97F90 (29.1 h apart; amounts 148.63 then 103.88); transfers T2045, T2373
+  100428978 -> 80F181A50 -> 80FA97F90 (9.8 h apart; amounts 148.63 then 103.88); transfers T2117, T2206
+  100428978 -> 80F181A50 -> 80FA97F90 (22.9 h apart; amounts 148.63 then 103.88); transfers T2117, T2373
+  80F742460 -> 80F181A50 -> 80FA97F90 (4.6 h apart; amounts 0.01 then 103.88); transfers T2299, T2373
+
+The 19 transfers (a transfer whose from_account equals its to_account is an account moving its own money):
+transfer_id,timestamp,from_account,to_account,amount_paid,payment_currency,payment_format,from_bank,to_bank
+T0136,2022/09/01 00:22,80F698730,80F742460,1935.0,Swiss Franc,Cheque,0041578,0116
+T0619,2022/09/02 00:05,80F742460,80E679B90,141.13,Swiss Franc,Credit Card,0116,0117
+T0858,2022/09/02 13:13,80F181A50,80FA97F90,464.92,Swiss Franc,Credit Card,0138335,0039668
+T0862,2022/09/02 13:26,80F181A50,80FA97F90,103.88,Swiss Franc,Cheque,0138335,0039668
+T0888,2022/09/02 14:41,80E613530,80F181A50,706.27,Swiss Franc,Credit Card,0238190,0138335
+T0909,2022/09/02 15:54,100428978,80F181A50,103.17,Swiss Franc,Credit Card,070,0138335
+T1425,2022/09/05 12:50,100428978,80F181A50,148.63,Swiss Franc,Cheque,070,0138335
+T1557,2022/09/06 00:23,80F742460,80F173860,39.39,Swiss Franc,Credit Card,0116,0239692
+T1637,2022/09/06 08:00,80F181A50,80FA97F90,103.88,Swiss Franc,Cheque,0138335,0039668
+T1682,2022/09/06 13:00,100428978,80F181A50,103.17,Swiss Franc,Credit Card,070,0138335
+T1688,2022/09/06 13:27,100428978,80F181A50,148.63,Swiss Franc,Cheque,070,0138335
+T2042,2022/09/07 23:34,100428978,80F181A50,103.17,Swiss Franc,Credit Card,070,0138335
+T2045,2022/09/07 23:52,100428978,80F181A50,148.63,Swiss Franc,Cheque,070,0138335
+T2117,2022/09/08 06:04,100428978,80F181A50,148.63,Swiss Franc,Cheque,070,0138335
+T2206,2022/09/08 15:53,80F181A50,80FA97F90,103.88,Swiss Franc,Cheque,0138335,0039668
+T2299,2022/09/09 00:26,80F742460,80F181A50,0.01,Swiss Franc,Credit Card,0116,0138335
+T2373,2022/09/09 05:00,80F181A50,80FA97F90,103.88,Swiss Franc,Cheque,0138335,0039668
+T2416,2022/09/09 07:50,100428978,80F181A50,103.17,Swiss Franc,Credit Card,070,0138335
+T2736,2022/09/10 19:40,100428978,80F181A50,148.63,Swiss Franc,Cheque,070,0138335

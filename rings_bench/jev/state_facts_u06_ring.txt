@@ -1,0 +1,31 @@
+Facts computed by code from a neighborhood of transfers (facts, not a verdict):
+Rows: 60 (60 between different accounts, 0 an account moving its own money); 32 accounts; from 2022/09/01 00:26 to 2022/09/10 15:36 (231.2 hours).
+Payment formats: Cheque 30, ACH 17, Credit Card 11, Cash 2.
+Currencies: US Dollar 19, Euro 12, Australian Dollar 10, Saudi Riyal 10, UK Pound 7, Yen 1, Shekel 1.
+Amounts between accounts: median 1521.0, max 4214936.72.
+Busiest accounts (sent / to how many distinct, received / from how many distinct, pass-through):
+  80F1AF380: sent 12 to 12, received 0 from 0
+  803158350: sent 0 to 0, received 10 from 3
+  80A817660: sent 6 to 2, received 4 from 2, pass-through
+  81203F670: sent 1 to 1, received 9 from 4, pass-through
+  8023ED8B0: sent 1 to 1, received 6 from 2, pass-through
+  805F9C820: sent 4 to 1, received 3 from 3, pass-through
+  808CE0050: sent 0 to 0, received 7 from 3
+  800DA42F0: sent 6 to 1, received 0 from 0
+  811FD5180: sent 6 to 1, received 0 from 0
+  8008A3EF0: sent 5 to 1, received 0 from 0
+  808BE73E0: sent 5 to 1, received 0 from 0
+  806D28C60: sent 0 to 0, received 4 from 1
+Directed loops that return money to a starting account: 0.
+Bursts (3 or more transfers in or out of one account within 60 minutes): 0.
+Pass-through pairs (money arrives at an account and leaves it within 48 hours): 11:
+  80F1AF380 -> 80A817660 -> 80AF80930 (10.1 h apart; amounts 16502.02 then 4340.06); transfers T0204, T0390
+  80F1AF380 -> 80A817660 -> 80AF80930 (26.0 h apart; amounts 16502.02 then 20400.53); transfers T0204, T0678
+  811FD5180 -> 81203F670 -> 81203F8A0 (2.6 h apart; amounts 973.55 then 4214936.72); transfers T0298, T0338
+  805F9CB40 -> 805F9C820 -> 806D28C60 (47.7 h apart; amounts 233.86 then 203.41); transfers T1028, T1266
+  80F1AF380 -> 805F9C820 -> 806D28C60 (26.4 h apart; amounts 6986.5 then 203.41); transfers T1158, T1266
+  80A5D58A0 -> 80A817660 -> 80A985FF0 (10.4 h apart; amounts 71020.5 then 13706.74); transfers T1192, T1226
+  80F1AF380 -> 8023ED8B0 -> 804243320 (43.4 h apart; amounts 19725.23 then 91.66); transfers T1242, T1673
+  8008A3EF0 -> 8023ED8B0 -> 804243320 (23.2 h apart; amounts 1521.0 then 91.66); transfers T1421, T1673
+  80A5D58A0 -> 80A817660 -> 80A985FF0 (31.7 h apart; amounts 71020.5 then 1401.97); transfers T1430, T1763
+  8008A3EF0 -> 8023ED8B0 -> 804243320 (5.4 h apart; amounts 701.67 then 91.66); transfers T1620, T1673

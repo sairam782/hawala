@@ -1,0 +1,36 @@
+{
+ "scheme": {
+  "type": "choice",
+  "instructions": "Judging only from the transfers and the code-computed facts, is there a money-laundering scheme among these transfers, or is this ordinary traffic?",
+  "criteria": {
+   "ring": "A laundering scheme is present: the facts show a structure that moves money through accounts on purpose, such as a loop that returns money to where it started, one account bursting money out to many accounts or gathering it in from many within a short time, money arriving at an account and leaving again soon after in a chain, or a tight group of accounts trading among themselves.",
+   "ordinary": "Ordinary traffic: recurring payments of similar amounts between the same accounts over many days, a busy account with many counterparties but no burst within an hour, no loop that returns money, and no chain where money arrives and leaves again soon after. A busy account is not by itself suspicious, and a single large or odd transfer with no structure around it reads as ordinary here."
+  }
+ },
+ "pattern": {
+  "type": "choice",
+  "instructions": "Which pattern best describes the money movement among these transfers?",
+  "criteria": {
+   "fan-out": "Fan-out: one account sends money to many different accounts within a short time. The facts list a burst OUT of one account to many distinct accounts, or one account that sent to many distinct accounts.",
+   "fan-in": "Fan-in: many different accounts send money to one account within a short time. The facts list a burst INTO one account from many distinct accounts, or one account that received from many distinct accounts.",
+   "cycle": "Cycle: money leaves an account, passes through two or more other accounts, and returns to where it started. The facts list a directed loop that returns money to a starting account.",
+   "chain": "Chain: money is passed along, account to account, each one forwarding soon after receiving, with similar amounts. The facts list pass-through pairs whose amounts in and out are close.",
+   "scatter-gather": "Scatter-gather: one account splits money out to several middle accounts, and those middle accounts send it on to one collecting account. The facts list a burst out of one account and a burst into another through the same middle accounts.",
+   "mesh": "Mesh: a group of accounts trades among themselves, many transfers in several directions within the group, more than ordinary customers would, with no single hub and no loop.",
+   "lone": "Lone: one suspicious transfer on its own, an unusual amount or a one-off between two accounts that otherwise never deal, with no loop, burst or chain around it.",
+   "other": "Other: a laundering structure that is none of fan-out, fan-in, cycle, chain, scatter-gather, mesh or lone, such as a mix of two of them.",
+   "none": "None: ordinary traffic with no laundering structure, such as recurring payments between the same accounts, a busy merchant or payroll account, or scattered unrelated transfers."
+  }
+ },
+ "evidence": {
+  "type": "score",
+  "instructions": "How strong is the structural evidence of a laundering scheme in these transfers?",
+  "criteria": [
+   "No structure at all: no loop, no burst, no pass-through chain; the transfers look like unrelated everyday payments.",
+   "Weak: one busy account or one pass-through pair, which ordinary business also produces.",
+   "Moderate: a partial structure, such as several pass-through pairs with mismatched amounts, or a small burst.",
+   "Strong: a clear structure, such as a directed loop, a burst to or from many distinct accounts, or a chain with matching amounts.",
+   "Overwhelming: more than one clear structure, or one structure that involves most of the transfers in the neighborhood."
+  ]
+ }
+}

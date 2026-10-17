@@ -1,0 +1,10 @@
+A neighborhood of eight accounts and 19 transfers between them over about ten days.
+Most transfers are Cheque, with other formats mixed in.
+Account 80F181A50 sends repeatedly to one account and receives repeatedly from three accounts and both receives and sends.
+Account 100428978 sends repeatedly to one account.
+Account 80FA97F90 receives repeatedly from one account.
+Account 80F742460 sends repeatedly to three accounts and both receives and sends.
+No transfer path returns money to where it started.
+No account sends to or receives from three or more different accounts within an hour.
+Money arrives at an account and leaves it within two days in nine cases, seven of them with similar amounts in and out.
+Those pass-through pairs link into a line of four accounts (three distinct three-account paths).

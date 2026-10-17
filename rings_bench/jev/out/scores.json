@@ -1,0 +1,3873 @@
+{
+ "jev_main": {
+  "rows_facts": {
+   "verdict_right": 30,
+   "rings_called": 18,
+   "false_rings": 28,
+   "pattern_named": 6,
+   "auc_p_ring": 0.59,
+   "auc_evidence": 0.617
+  },
+  "facts": {
+   "verdict_right": 29,
+   "rings_called": 18,
+   "false_rings": 29,
+   "pattern_named": 4,
+   "auc_p_ring": 0.613,
+   "auc_evidence": 0.621
+  },
+  "sentences": {
+   "verdict_right": 31,
+   "rings_called": 19,
+   "false_rings": 28,
+   "pattern_named": 3,
+   "auc_p_ring": 0.65,
+   "auc_evidence": 0.827
+  }
+ },
+ "jev_heldout_a": {
+  "rows_facts": {
+   "verdict_right": 28,
+   "rings_called": 18,
+   "false_rings": 30,
+   "pattern_named": 4,
+   "auc_p_ring": 0.77,
+   "auc_evidence": 0.772
+  },
+  "facts": {
+   "verdict_right": 28,
+   "rings_called": 18,
+   "false_rings": 30,
+   "pattern_named": 3,
+   "auc_p_ring": 0.752,
+   "auc_evidence": 0.737
+  },
+  "sentences": {
+   "verdict_right": 29,
+   "rings_called": 18,
+   "false_rings": 29,
+   "pattern_named": 5,
+   "auc_p_ring": 0.723,
+   "auc_evidence": 0.869
+  }
+ },
+ "calibration_main": {
+  "confidence_bins": {
+   "rows_facts": [
+    {
+     "bin": "0.2 to 0.4",
+     "n": 2,
+     "right": 2,
+     "rate": 1.0
+    },
+    {
+     "bin": "0.4 to 0.6",
+     "n": 2,
+     "right": 1,
+     "rate": 0.5
+    },
+    {
+     "bin": "0.6 to 0.8",
+     "n": 15,
+     "right": 6,
+     "rate": 0.4
+    },
+    {
+     "bin": "0.8 to 1.0",
+     "n": 41,
+     "right": 21,
+     "rate": 0.51
+    }
+   ],
+   "facts": [
+    {
+     "bin": "0.0 to 0.2",
+     "n": 3,
+     "right": 1,
+     "rate": 0.33
+    },
+    {
+     "bin": "0.2 to 0.4",
+     "n": 1,
+     "right": 0,
+     "rate": 0.0
+    },
+    {
+     "bin": "0.4 to 0.6",
+     "n": 3,
+     "right": 2,
+     "rate": 0.67
+    },
+    {
+     "bin": "0.6 to 0.8",
+     "n": 6,
+     "right": 3,
+     "rate": 0.5
+    },
+    {
+     "bin": "0.8 to 1.0",
+     "n": 47,
+     "right": 23,
+     "rate": 0.49
+    }
+   ],
+   "sentences": [
+    {
+     "bin": "0.0 to 0.2",
+     "n": 1,
+     "right": 1,
+     "rate": 1.0
+    },
+    {
+     "bin": "0.4 to 0.6",
+     "n": 1,
+     "right": 1,
+     "rate": 1.0
+    },
+    {
+     "bin": "0.6 to 0.8",
+     "n": 28,
+     "right": 8,
+     "rate": 0.29
+    },
+    {
+     "bin": "0.8 to 1.0",
+     "n": 30,
+     "right": 21,
+     "rate": 0.7
+    }
+   ]
+  },
+  "p_ring_bins": {
+   "rows_facts": [
+    {
+     "bin": "0.0 to 0.5",
+     "n": 14,
+     "rings": 2,
+     "share": 0.14
+    },
+    {
+     "bin": "0.7 to 0.8",
+     "n": 2,
+     "rings": 1,
+     "share": 0.5
+    },
+    {
+     "bin": "0.8 to 0.9",
+     "n": 13,
+     "rings": 6,
+     "share": 0.46
+    },
+    {
+     "bin": "0.9 to 1.0",
+     "n": 31,
+     "rings": 11,
+     "share": 0.35
+    }
+   ],
+   "facts": [
+    {
+     "bin": "0.0 to 0.5",
+     "n": 13,
+     "rings": 2,
+     "share": 0.15
+    },
+    {
+     "bin": "0.5 to 0.7",
+     "n": 2,
+     "rings": 0,
+     "share": 0.0
+    },
+    {
+     "bin": "0.7 to 0.8",
+     "n": 2,
+     "rings": 2,
+     "share": 1.0
+    },
+    {
+     "bin": "0.8 to 0.9",
+     "n": 5,
+     "rings": 2,
+     "share": 0.4
+    },
+    {
+     "bin": "0.9 to 1.0",
+     "n": 38,
+     "rings": 14,
+     "share": 0.37
+    }
+   ],
+   "sentences": [
+    {
+     "bin": "0.0 to 0.5",
+     "n": 13,
+     "rings": 1,
+     "share": 0.08
+    },
+    {
+     "bin": "0.5 to 0.7",
+     "n": 1,
+     "rings": 1,
+     "share": 1.0
+    },
+    {
+     "bin": "0.7 to 0.8",
+     "n": 1,
+     "rings": 1,
+     "share": 1.0
+    },
+    {
+     "bin": "0.8 to 0.9",
+     "n": 28,
+     "rings": 8,
+     "share": 0.29
+    },
+    {
+     "bin": "0.9 to 1.0",
+     "n": 17,
+     "rings": 9,
+     "share": 0.53
+    }
+   ]
+  }
+ },
+ "calibration_heldout_a": {
+  "confidence_bins": {
+   "rows_facts": [
+    {
+     "bin": "0.0 to 0.2",
+     "n": 4,
+     "right": 2,
+     "rate": 0.5
+    },
+    {
+     "bin": "0.2 to 0.4",
+     "n": 5,
+     "right": 1,
+     "rate": 0.2
+    },
+    {
+     "bin": "0.4 to 0.6",
+     "n": 3,
+     "right": 1,
+     "rate": 0.33
+    },
+    {
+     "bin": "0.6 to 0.8",
+     "n": 10,
+     "right": 4,
+     "rate": 0.4
+    },
+    {
+     "bin": "0.8 to 1.0",
+     "n": 38,
+     "right": 20,
+     "rate": 0.53
+    }
+   ],
+   "facts": [
+    {
+     "bin": "0.0 to 0.2",
+     "n": 4,
+     "right": 1,
+     "rate": 0.25
+    },
+    {
+     "bin": "0.2 to 0.4",
+     "n": 6,
+     "right": 4,
+     "rate": 0.67
+    },
+    {
+     "bin": "0.4 to 0.6",
+     "n": 4,
+     "right": 0,
+     "rate": 0.0
+    },
+    {
+     "bin": "0.6 to 0.8",
+     "n": 5,
+     "right": 2,
+     "rate": 0.4
+    },
+    {
+     "bin": "0.8 to 1.0",
+     "n": 41,
+     "right": 21,
+     "rate": 0.51
+    }
+   ],
+   "sentences": [
+    {
+     "bin": "0.0 to 0.2",
+     "n": 1,
+     "right": 0,
+     "rate": 0.0
+    },
+    {
+     "bin": "0.2 to 0.4",
+     "n": 1,
+     "right": 0,
+     "rate": 0.0
+    },
+    {
+     "bin": "0.4 to 0.6",
+     "n": 2,
+     "right": 1,
+     "rate": 0.5
+    },
+    {
+     "bin": "0.6 to 0.8",
+     "n": 23,
+     "right": 6,
+     "rate": 0.26
+    },
+    {
+     "bin": "0.8 to 1.0",
+     "n": 33,
+     "right": 22,
+     "rate": 0.67
+    }
+   ]
+  },
+  "p_ring_bins": {
+   "rows_facts": [
+    {
+     "bin": "0.0 to 0.5",
+     "n": 12,
+     "rings": 2,
+     "share": 0.17
+    },
+    {
+     "bin": "0.5 to 0.7",
+     "n": 5,
+     "rings": 0,
+     "share": 0.0
+    },
+    {
+     "bin": "0.7 to 0.8",
+     "n": 1,
+     "rings": 0,
+     "share": 0.0
+    },
+    {
+     "bin": "0.8 to 0.9",
+     "n": 9,
+     "rings": 3,
+     "share": 0.33
+    },
+    {
+     "bin": "0.9 to 1.0",
+     "n": 33,
+     "rings": 15,
+     "share": 0.45
+    }
+   ],
+   "facts": [
+    {
+     "bin": "0.0 to 0.5",
+     "n": 12,
+     "rings": 2,
+     "share": 0.17
+    },
+    {
+     "bin": "0.5 to 0.7",
+     "n": 3,
+     "rings": 0,
+     "share": 0.0
+    },
+    {
+     "bin": "0.7 to 0.8",
+     "n": 4,
+     "rings": 0,
+     "share": 0.0
+    },
+    {
+     "bin": "0.8 to 0.9",
+     "n": 5,
+     "rings": 2,
+     "share": 0.4
+    },
+    {
+     "bin": "0.9 to 1.0",
+     "n": 36,
+     "rings": 16,
+     "share": 0.44
+    }
+   ],
+   "sentences": [
+    {
+     "bin": "0.0 to 0.5",
+     "n": 13,
+     "rings": 2,
+     "share": 0.15
+    },
+    {
+     "bin": "0.5 to 0.7",
+     "n": 1,
+     "rings": 0,
+     "share": 0.0
+    },
+    {
+     "bin": "0.7 to 0.8",
+     "n": 2,
+     "rings": 1,
+     "share": 0.5
+    },
+    {
+     "bin": "0.8 to 0.9",
+     "n": 23,
+     "rings": 6,
+     "share": 0.26
+    },
+    {
+     "bin": "0.9 to 1.0",
+     "n": 21,
+     "rings": 11,
+     "share": 0.52
+    }
+   ]
+  }
+ },
+ "sonnet_v3_main": [
+  {
+   "verdict": "ring",
+   "confidence": "low",
+   "n": 4,
+   "right": 1
+  },
+  {
+   "verdict": "ring",
+   "confidence": "medium",
+   "n": 13,
+   "right": 11
+  },
+  {
+   "verdict": "ring",
+   "confidence": "high",
+   "n": 1,
+   "right": 1
+  },
+  {
+   "verdict": "ordinary",
+   "confidence": "low",
+   "n": 16,
+   "right": 12
+  },
+  {
+   "verdict": "ordinary",
+   "confidence": "medium",
+   "n": 26,
+   "right": 23
+  }
+ ],
+ "sonnet_v2_main": [
+  {
+   "verdict": "ring",
+   "confidence": "low",
+   "n": 5,
+   "right": 2
+  },
+  {
+   "verdict": "ring",
+   "confidence": "medium",
+   "n": 15,
+   "right": 11
+  },
+  {
+   "verdict": "ordinary",
+   "confidence": "low",
+   "n": 24,
+   "right": 19
+  },
+  {
+   "verdict": "ordinary",
+   "confidence": "medium",
+   "n": 16,
+   "right": 14
+  }
+ ],
+ "sonnet_v2_heldout_a": [
+  {
+   "verdict": "ring",
+   "confidence": "low",
+   "n": 14,
+   "right": 4
+  },
+  {
+   "verdict": "ring",
+   "confidence": "medium",
+   "n": 9,
+   "right": 8
+  },
+  {
+   "verdict": "ordinary",
+   "confidence": "low",
+   "n": 24,
+   "right": 19
+  },
+  {
+   "verdict": "ordinary",
+   "confidence": "medium",
+   "n": 13,
+   "right": 10
+  }
+ ],
+ "gate_applied": [
+  {
+   "variant": "rows_facts",
+   "signal": "p_ring",
+   "threshold": 0.87,
+   "slice": "main",
+   "sonnet_version": "v3",
+   "before": {
+    "threshold": null,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   "after": {
+    "threshold": 0.87,
+    "precision": 0.685,
+    "recall": 0.867,
+    "rings_found": 10,
+    "false_rings": 5,
+    "ring_calls": 15,
+    "tp": 98,
+    "fp": 45,
+    "fn": 15
+   }
+  },
+  {
+   "variant": "rows_facts",
+   "signal": "p_ring",
+   "threshold": 0.87,
+   "slice": "main",
+   "sonnet_version": "v2",
+   "before": {
+    "threshold": null,
+    "precision": 0.463,
+    "recall": 0.885,
+    "rings_found": 12,
+    "false_rings": 7,
+    "ring_calls": 20,
+    "tp": 100,
+    "fp": 116,
+    "fn": 13
+   },
+   "after": {
+    "threshold": 0.87,
+    "precision": 0.533,
+    "recall": 0.858,
+    "rings_found": 9,
+    "false_rings": 6,
+    "ring_calls": 16,
+    "tp": 97,
+    "fp": 85,
+    "fn": 16
+   }
+  },
+  {
+   "variant": "rows_facts",
+   "signal": "p_ring",
+   "threshold": 0.87,
+   "slice": "heldout_a",
+   "sonnet_version": "v2",
+   "before": {
+    "threshold": null,
+    "precision": 0.298,
+    "recall": 0.661,
+    "rings_found": 10,
+    "false_rings": 11,
+    "ring_calls": 23,
+    "tp": 72,
+    "fp": 170,
+    "fn": 37
+   },
+   "after": {
+    "threshold": 0.87,
+    "precision": 0.346,
+    "recall": 0.661,
+    "rings_found": 10,
+    "false_rings": 8,
+    "ring_calls": 20,
+    "tp": 72,
+    "fp": 136,
+    "fn": 37
+   }
+  },
+  {
+   "variant": "rows_facts",
+   "signal": "evidence_0_100",
+   "threshold": 64.5,
+   "slice": "main",
+   "sonnet_version": "v3",
+   "before": {
+    "threshold": null,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   "after": {
+    "threshold": 64.5,
+    "precision": 0.594,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 4,
+    "ring_calls": 17,
+    "tp": 101,
+    "fp": 69,
+    "fn": 12
+   }
+  },
+  {
+   "variant": "rows_facts",
+   "signal": "evidence_0_100",
+   "threshold": 64.5,
+   "slice": "main",
+   "sonnet_version": "v2",
+   "before": {
+    "threshold": null,
+    "precision": 0.463,
+    "recall": 0.885,
+    "rings_found": 12,
+    "false_rings": 7,
+    "ring_calls": 20,
+    "tp": 100,
+    "fp": 116,
+    "fn": 13
+   },
+   "after": {
+    "threshold": 64.5,
+    "precision": 0.463,
+    "recall": 0.885,
+    "rings_found": 12,
+    "false_rings": 7,
+    "ring_calls": 20,
+    "tp": 100,
+    "fp": 116,
+    "fn": 13
+   }
+  },
+  {
+   "variant": "rows_facts",
+   "signal": "evidence_0_100",
+   "threshold": 64.5,
+   "slice": "heldout_a",
+   "sonnet_version": "v2",
+   "before": {
+    "threshold": null,
+    "precision": 0.298,
+    "recall": 0.661,
+    "rings_found": 10,
+    "false_rings": 11,
+    "ring_calls": 23,
+    "tp": 72,
+    "fp": 170,
+    "fn": 37
+   },
+   "after": {
+    "threshold": 64.5,
+    "precision": 0.298,
+    "recall": 0.661,
+    "rings_found": 10,
+    "false_rings": 11,
+    "ring_calls": 23,
+    "tp": 72,
+    "fp": 170,
+    "fn": 37
+   }
+  },
+  {
+   "variant": "facts",
+   "signal": "p_ring",
+   "threshold": 0.9,
+   "slice": "main",
+   "sonnet_version": "v3",
+   "before": {
+    "threshold": null,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   "after": {
+    "threshold": 0.9,
+    "precision": 0.685,
+    "recall": 0.867,
+    "rings_found": 10,
+    "false_rings": 5,
+    "ring_calls": 15,
+    "tp": 98,
+    "fp": 45,
+    "fn": 15
+   }
+  },
+  {
+   "variant": "facts",
+   "signal": "p_ring",
+   "threshold": 0.9,
+   "slice": "main",
+   "sonnet_version": "v2",
+   "before": {
+    "threshold": null,
+    "precision": 0.463,
+    "recall": 0.885,
+    "rings_found": 12,
+    "false_rings": 7,
+    "ring_calls": 20,
+    "tp": 100,
+    "fp": 116,
+    "fn": 13
+   },
+   "after": {
+    "threshold": 0.9,
+    "precision": 0.533,
+    "recall": 0.858,
+    "rings_found": 9,
+    "false_rings": 6,
+    "ring_calls": 16,
+    "tp": 97,
+    "fp": 85,
+    "fn": 16
+   }
+  },
+  {
+   "variant": "facts",
+   "signal": "p_ring",
+   "threshold": 0.9,
+   "slice": "heldout_a",
+   "sonnet_version": "v2",
+   "before": {
+    "threshold": null,
+    "precision": 0.298,
+    "recall": 0.661,
+    "rings_found": 10,
+    "false_rings": 11,
+    "ring_calls": 23,
+    "tp": 72,
+    "fp": 170,
+    "fn": 37
+   },
+   "after": {
+    "threshold": 0.9,
+    "precision": 0.376,
+    "recall": 0.651,
+    "rings_found": 9,
+    "false_rings": 8,
+    "ring_calls": 19,
+    "tp": 71,
+    "fp": 118,
+    "fn": 38
+   }
+  },
+  {
+   "variant": "facts",
+   "signal": "evidence_0_100",
+   "threshold": 59.0,
+   "slice": "main",
+   "sonnet_version": "v3",
+   "before": {
+    "threshold": null,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   "after": {
+    "threshold": 59.0,
+    "precision": 0.594,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 4,
+    "ring_calls": 17,
+    "tp": 101,
+    "fp": 69,
+    "fn": 12
+   }
+  },
+  {
+   "variant": "facts",
+   "signal": "evidence_0_100",
+   "threshold": 59.0,
+   "slice": "main",
+   "sonnet_version": "v2",
+   "before": {
+    "threshold": null,
+    "precision": 0.463,
+    "recall": 0.885,
+    "rings_found": 12,
+    "false_rings": 7,
+    "ring_calls": 20,
+    "tp": 100,
+    "fp": 116,
+    "fn": 13
+   },
+   "after": {
+    "threshold": 59.0,
+    "precision": 0.463,
+    "recall": 0.885,
+    "rings_found": 12,
+    "false_rings": 7,
+    "ring_calls": 20,
+    "tp": 100,
+    "fp": 116,
+    "fn": 13
+   }
+  },
+  {
+   "variant": "facts",
+   "signal": "evidence_0_100",
+   "threshold": 59.0,
+   "slice": "heldout_a",
+   "sonnet_version": "v2",
+   "before": {
+    "threshold": null,
+    "precision": 0.298,
+    "recall": 0.661,
+    "rings_found": 10,
+    "false_rings": 11,
+    "ring_calls": 23,
+    "tp": 72,
+    "fp": 170,
+    "fn": 37
+   },
+   "after": {
+    "threshold": 59.0,
+    "precision": 0.305,
+    "recall": 0.569,
+    "rings_found": 9,
+    "false_rings": 10,
+    "ring_calls": 21,
+    "tp": 62,
+    "fp": 141,
+    "fn": 47
+   }
+  },
+  {
+   "variant": "sentences",
+   "signal": "p_ring",
+   "threshold": 0.82,
+   "slice": "main",
+   "sonnet_version": "v3",
+   "before": {
+    "threshold": null,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   "after": {
+    "threshold": 0.82,
+    "precision": 0.613,
+    "recall": 0.885,
+    "rings_found": 12,
+    "false_rings": 4,
+    "ring_calls": 16,
+    "tp": 100,
+    "fp": 63,
+    "fn": 13
+   }
+  },
+  {
+   "variant": "sentences",
+   "signal": "p_ring",
+   "threshold": 0.82,
+   "slice": "main",
+   "sonnet_version": "v2",
+   "before": {
+    "threshold": null,
+    "precision": 0.463,
+    "recall": 0.885,
+    "rings_found": 12,
+    "false_rings": 7,
+    "ring_calls": 20,
+    "tp": 100,
+    "fp": 116,
+    "fn": 13
+   },
+   "after": {
+    "threshold": 0.82,
+    "precision": 0.483,
+    "recall": 0.876,
+    "rings_found": 11,
+    "false_rings": 6,
+    "ring_calls": 18,
+    "tp": 99,
+    "fp": 106,
+    "fn": 14
+   }
+  },
+  {
+   "variant": "sentences",
+   "signal": "p_ring",
+   "threshold": 0.82,
+   "slice": "heldout_a",
+   "sonnet_version": "v2",
+   "before": {
+    "threshold": null,
+    "precision": 0.298,
+    "recall": 0.661,
+    "rings_found": 10,
+    "false_rings": 11,
+    "ring_calls": 23,
+    "tp": 72,
+    "fp": 170,
+    "fn": 37
+   },
+   "after": {
+    "threshold": 0.82,
+    "precision": 0.379,
+    "recall": 0.661,
+    "rings_found": 10,
+    "false_rings": 7,
+    "ring_calls": 19,
+    "tp": 72,
+    "fp": 118,
+    "fn": 37
+   }
+  },
+  {
+   "variant": "sentences",
+   "signal": "evidence_0_100",
+   "threshold": 70.5,
+   "slice": "main",
+   "sonnet_version": "v3",
+   "before": {
+    "threshold": null,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   "after": {
+    "threshold": 70.5,
+    "precision": 0.737,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 0,
+    "ring_calls": 13,
+    "tp": 101,
+    "fp": 36,
+    "fn": 12
+   }
+  },
+  {
+   "variant": "sentences",
+   "signal": "evidence_0_100",
+   "threshold": 70.5,
+   "slice": "main",
+   "sonnet_version": "v2",
+   "before": {
+    "threshold": null,
+    "precision": 0.463,
+    "recall": 0.885,
+    "rings_found": 12,
+    "false_rings": 7,
+    "ring_calls": 20,
+    "tp": 100,
+    "fp": 116,
+    "fn": 13
+   },
+   "after": {
+    "threshold": 70.5,
+    "precision": 0.746,
+    "recall": 0.885,
+    "rings_found": 12,
+    "false_rings": 0,
+    "ring_calls": 12,
+    "tp": 100,
+    "fp": 34,
+    "fn": 13
+   }
+  },
+  {
+   "variant": "sentences",
+   "signal": "evidence_0_100",
+   "threshold": 70.5,
+   "slice": "heldout_a",
+   "sonnet_version": "v2",
+   "before": {
+    "threshold": null,
+    "precision": 0.298,
+    "recall": 0.661,
+    "rings_found": 10,
+    "false_rings": 11,
+    "ring_calls": 23,
+    "tp": 72,
+    "fp": 170,
+    "fn": 37
+   },
+   "after": {
+    "threshold": 70.5,
+    "precision": 0.5,
+    "recall": 0.55,
+    "rings_found": 8,
+    "false_rings": 2,
+    "ring_calls": 12,
+    "tp": 60,
+    "fp": 60,
+    "fn": 49
+   }
+  }
+ ],
+ "gate_sweeps_main_v3": {
+  "main_v3_rows_facts_p_ring": [
+   {
+    "threshold": null,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.01,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.02,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.03,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.04,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.14,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.17,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.38,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.39,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.71,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.76,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.81,
+    "precision": 0.602,
+    "recall": 0.885,
+    "rings_found": 12,
+    "false_rings": 5,
+    "ring_calls": 17,
+    "tp": 100,
+    "fp": 66,
+    "fn": 13
+   },
+   {
+    "threshold": 0.84,
+    "precision": 0.602,
+    "recall": 0.885,
+    "rings_found": 12,
+    "false_rings": 5,
+    "ring_calls": 17,
+    "tp": 100,
+    "fp": 66,
+    "fn": 13
+   },
+   {
+    "threshold": 0.85,
+    "precision": 0.602,
+    "recall": 0.885,
+    "rings_found": 12,
+    "false_rings": 5,
+    "ring_calls": 17,
+    "tp": 100,
+    "fp": 66,
+    "fn": 13
+   },
+   {
+    "threshold": 0.86,
+    "precision": 0.639,
+    "recall": 0.876,
+    "rings_found": 11,
+    "false_rings": 5,
+    "ring_calls": 16,
+    "tp": 99,
+    "fp": 56,
+    "fn": 14
+   },
+   {
+    "threshold": 0.87,
+    "precision": 0.685,
+    "recall": 0.867,
+    "rings_found": 10,
+    "false_rings": 5,
+    "ring_calls": 15,
+    "tp": 98,
+    "fp": 45,
+    "fn": 15
+   },
+   {
+    "threshold": 0.88,
+    "precision": 0.656,
+    "recall": 0.761,
+    "rings_found": 9,
+    "false_rings": 5,
+    "ring_calls": 14,
+    "tp": 86,
+    "fp": 45,
+    "fn": 27
+   },
+   {
+    "threshold": 0.89,
+    "precision": 0.622,
+    "recall": 0.655,
+    "rings_found": 8,
+    "false_rings": 5,
+    "ring_calls": 13,
+    "tp": 74,
+    "fp": 45,
+    "fn": 39
+   },
+   {
+    "threshold": 0.9,
+    "precision": 0.622,
+    "recall": 0.655,
+    "rings_found": 8,
+    "false_rings": 5,
+    "ring_calls": 13,
+    "tp": 74,
+    "fp": 45,
+    "fn": 39
+   },
+   {
+    "threshold": 0.91,
+    "precision": 0.646,
+    "recall": 0.646,
+    "rings_found": 7,
+    "false_rings": 4,
+    "ring_calls": 11,
+    "tp": 73,
+    "fp": 40,
+    "fn": 40
+   },
+   {
+    "threshold": 0.92,
+    "precision": 0.646,
+    "recall": 0.646,
+    "rings_found": 7,
+    "false_rings": 4,
+    "ring_calls": 11,
+    "tp": 73,
+    "fp": 40,
+    "fn": 40
+   },
+   {
+    "threshold": 0.93,
+    "precision": 0.646,
+    "recall": 0.646,
+    "rings_found": 7,
+    "false_rings": 4,
+    "ring_calls": 11,
+    "tp": 73,
+    "fp": 40,
+    "fn": 40
+   },
+   {
+    "threshold": 0.94,
+    "precision": 0.646,
+    "recall": 0.646,
+    "rings_found": 7,
+    "false_rings": 4,
+    "ring_calls": 11,
+    "tp": 73,
+    "fp": 40,
+    "fn": 40
+   },
+   {
+    "threshold": 0.95,
+    "precision": 0.604,
+    "recall": 0.54,
+    "rings_found": 6,
+    "false_rings": 4,
+    "ring_calls": 10,
+    "tp": 61,
+    "fp": 40,
+    "fn": 52
+   },
+   {
+    "threshold": 0.96,
+    "precision": 0.553,
+    "recall": 0.416,
+    "rings_found": 5,
+    "false_rings": 4,
+    "ring_calls": 9,
+    "tp": 47,
+    "fp": 38,
+    "fn": 66
+   },
+   {
+    "threshold": 0.98,
+    "precision": 0.465,
+    "recall": 0.292,
+    "rings_found": 4,
+    "false_rings": 4,
+    "ring_calls": 8,
+    "tp": 33,
+    "fp": 38,
+    "fn": 80
+   },
+   {
+    "threshold": 0.99,
+    "precision": 0.5,
+    "recall": 0.133,
+    "rings_found": 2,
+    "false_rings": 2,
+    "ring_calls": 4,
+    "tp": 15,
+    "fp": 15,
+    "fn": 98
+   },
+   {
+    "threshold": 1.0,
+    "precision": 0.882,
+    "recall": 0.133,
+    "rings_found": 2,
+    "false_rings": 0,
+    "ring_calls": 2,
+    "tp": 15,
+    "fp": 2,
+    "fn": 98
+   }
+  ],
+  "main_v3_rows_facts_evidence_0_100": [
+   {
+    "threshold": null,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 25.8,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 28.0,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 32.0,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 33.0,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 34.2,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 34.5,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 34.8,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 35.8,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 37.8,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 48.5,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 52.0,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 52.5,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 54.8,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 57.8,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 59.8,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 60.5,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 62.5,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 64.5,
+    "precision": 0.594,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 4,
+    "ring_calls": 17,
+    "tp": 101,
+    "fp": 69,
+    "fn": 12
+   },
+   {
+    "threshold": 66.2,
+    "precision": 0.594,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 4,
+    "ring_calls": 17,
+    "tp": 101,
+    "fp": 69,
+    "fn": 12
+   },
+   {
+    "threshold": 69.0,
+    "precision": 0.594,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 4,
+    "ring_calls": 17,
+    "tp": 101,
+    "fp": 69,
+    "fn": 12
+   },
+   {
+    "threshold": 71.2,
+    "precision": 0.594,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 4,
+    "ring_calls": 17,
+    "tp": 101,
+    "fp": 69,
+    "fn": 12
+   },
+   {
+    "threshold": 72.2,
+    "precision": 0.563,
+    "recall": 0.788,
+    "rings_found": 12,
+    "false_rings": 4,
+    "ring_calls": 16,
+    "tp": 89,
+    "fp": 69,
+    "fn": 24
+   },
+   {
+    "threshold": 72.5,
+    "precision": 0.563,
+    "recall": 0.788,
+    "rings_found": 12,
+    "false_rings": 4,
+    "ring_calls": 16,
+    "tp": 89,
+    "fp": 69,
+    "fn": 24
+   },
+   {
+    "threshold": 72.8,
+    "precision": 0.563,
+    "recall": 0.788,
+    "rings_found": 12,
+    "false_rings": 4,
+    "ring_calls": 16,
+    "tp": 89,
+    "fp": 69,
+    "fn": 24
+   },
+   {
+    "threshold": 73.8,
+    "precision": 0.527,
+    "recall": 0.681,
+    "rings_found": 11,
+    "false_rings": 4,
+    "ring_calls": 15,
+    "tp": 77,
+    "fp": 69,
+    "fn": 36
+   },
+   {
+    "threshold": 76.8,
+    "precision": 0.531,
+    "recall": 0.673,
+    "rings_found": 10,
+    "false_rings": 4,
+    "ring_calls": 14,
+    "tp": 76,
+    "fp": 67,
+    "fn": 37
+   },
+   {
+    "threshold": 77.8,
+    "precision": 0.488,
+    "recall": 0.549,
+    "rings_found": 9,
+    "false_rings": 4,
+    "ring_calls": 13,
+    "tp": 62,
+    "fp": 65,
+    "fn": 51
+   },
+   {
+    "threshold": 78.2,
+    "precision": 0.488,
+    "recall": 0.549,
+    "rings_found": 9,
+    "false_rings": 4,
+    "ring_calls": 13,
+    "tp": 62,
+    "fp": 65,
+    "fn": 51
+   },
+   {
+    "threshold": 80.0,
+    "precision": 0.488,
+    "recall": 0.549,
+    "rings_found": 9,
+    "false_rings": 4,
+    "ring_calls": 13,
+    "tp": 62,
+    "fp": 65,
+    "fn": 51
+   },
+   {
+    "threshold": 80.5,
+    "precision": 0.435,
+    "recall": 0.442,
+    "rings_found": 8,
+    "false_rings": 4,
+    "ring_calls": 12,
+    "tp": 50,
+    "fp": 65,
+    "fn": 63
+   },
+   {
+    "threshold": 80.8,
+    "precision": 0.435,
+    "recall": 0.442,
+    "rings_found": 8,
+    "false_rings": 4,
+    "ring_calls": 12,
+    "tp": 50,
+    "fp": 65,
+    "fn": 63
+   },
+   {
+    "threshold": 82.0,
+    "precision": 0.435,
+    "recall": 0.442,
+    "rings_found": 8,
+    "false_rings": 4,
+    "ring_calls": 12,
+    "tp": 50,
+    "fp": 65,
+    "fn": 63
+   },
+   {
+    "threshold": 84.0,
+    "precision": 0.435,
+    "recall": 0.442,
+    "rings_found": 8,
+    "false_rings": 4,
+    "ring_calls": 12,
+    "tp": 50,
+    "fp": 65,
+    "fn": 63
+   },
+   {
+    "threshold": 84.2,
+    "precision": 0.356,
+    "recall": 0.319,
+    "rings_found": 7,
+    "false_rings": 4,
+    "ring_calls": 11,
+    "tp": 36,
+    "fp": 65,
+    "fn": 77
+   },
+   {
+    "threshold": 85.2,
+    "precision": 0.356,
+    "recall": 0.319,
+    "rings_found": 7,
+    "false_rings": 4,
+    "ring_calls": 11,
+    "tp": 36,
+    "fp": 65,
+    "fn": 77
+   },
+   {
+    "threshold": 86.8,
+    "precision": 0.356,
+    "recall": 0.319,
+    "rings_found": 7,
+    "false_rings": 4,
+    "ring_calls": 11,
+    "tp": 36,
+    "fp": 65,
+    "fn": 77
+   },
+   {
+    "threshold": 88.0,
+    "precision": 0.304,
+    "recall": 0.212,
+    "rings_found": 5,
+    "false_rings": 4,
+    "ring_calls": 9,
+    "tp": 24,
+    "fp": 55,
+    "fn": 89
+   },
+   {
+    "threshold": 88.5,
+    "precision": 0.304,
+    "recall": 0.212,
+    "rings_found": 5,
+    "false_rings": 4,
+    "ring_calls": 9,
+    "tp": 24,
+    "fp": 55,
+    "fn": 89
+   },
+   {
+    "threshold": 88.8,
+    "precision": 0.316,
+    "recall": 0.212,
+    "rings_found": 5,
+    "false_rings": 3,
+    "ring_calls": 8,
+    "tp": 24,
+    "fp": 52,
+    "fn": 89
+   },
+   {
+    "threshold": 89.5,
+    "precision": 0.316,
+    "recall": 0.212,
+    "rings_found": 5,
+    "false_rings": 3,
+    "ring_calls": 8,
+    "tp": 24,
+    "fp": 52,
+    "fn": 89
+   },
+   {
+    "threshold": 89.8,
+    "precision": 0.316,
+    "recall": 0.212,
+    "rings_found": 5,
+    "false_rings": 3,
+    "ring_calls": 8,
+    "tp": 24,
+    "fp": 52,
+    "fn": 89
+   },
+   {
+    "threshold": 90.5,
+    "precision": 0.316,
+    "recall": 0.212,
+    "rings_found": 5,
+    "false_rings": 3,
+    "ring_calls": 8,
+    "tp": 24,
+    "fp": 52,
+    "fn": 89
+   },
+   {
+    "threshold": 92.5,
+    "precision": 0.316,
+    "recall": 0.212,
+    "rings_found": 5,
+    "false_rings": 3,
+    "ring_calls": 8,
+    "tp": 24,
+    "fp": 52,
+    "fn": 89
+   },
+   {
+    "threshold": 93.0,
+    "precision": 0.296,
+    "recall": 0.142,
+    "rings_found": 3,
+    "false_rings": 3,
+    "ring_calls": 6,
+    "tp": 16,
+    "fp": 38,
+    "fn": 97
+   },
+   {
+    "threshold": 93.2,
+    "precision": 0.319,
+    "recall": 0.133,
+    "rings_found": 2,
+    "false_rings": 3,
+    "ring_calls": 5,
+    "tp": 15,
+    "fp": 32,
+    "fn": 98
+   },
+   {
+    "threshold": 94.0,
+    "precision": 0.319,
+    "recall": 0.133,
+    "rings_found": 2,
+    "false_rings": 3,
+    "ring_calls": 5,
+    "tp": 15,
+    "fp": 32,
+    "fn": 98
+   },
+   {
+    "threshold": 94.5,
+    "precision": 0.319,
+    "recall": 0.133,
+    "rings_found": 2,
+    "false_rings": 3,
+    "ring_calls": 5,
+    "tp": 15,
+    "fp": 32,
+    "fn": 98
+   },
+   {
+    "threshold": 94.8,
+    "precision": 0.319,
+    "recall": 0.133,
+    "rings_found": 2,
+    "false_rings": 3,
+    "ring_calls": 5,
+    "tp": 15,
+    "fp": 32,
+    "fn": 98
+   },
+   {
+    "threshold": 95.0,
+    "precision": 0.5,
+    "recall": 0.133,
+    "rings_found": 2,
+    "false_rings": 2,
+    "ring_calls": 4,
+    "tp": 15,
+    "fp": 15,
+    "fn": 98
+   },
+   {
+    "threshold": 98.0,
+    "precision": 0.6,
+    "recall": 0.133,
+    "rings_found": 2,
+    "false_rings": 1,
+    "ring_calls": 3,
+    "tp": 15,
+    "fp": 10,
+    "fn": 98
+   },
+   {
+    "threshold": 98.2,
+    "precision": 0.5,
+    "recall": 0.071,
+    "rings_found": 1,
+    "false_rings": 1,
+    "ring_calls": 2,
+    "tp": 8,
+    "fp": 8,
+    "fn": 105
+   }
+  ],
+  "main_v3_facts_p_ring": [
+   {
+    "threshold": null,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.01,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.02,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.03,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.04,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.13,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.29,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.4,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.41,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.54,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.59,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.78,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.79,
+    "precision": 0.602,
+    "recall": 0.885,
+    "rings_found": 12,
+    "false_rings": 5,
+    "ring_calls": 17,
+    "tp": 100,
+    "fp": 66,
+    "fn": 13
+   },
+   {
+    "threshold": 0.84,
+    "precision": 0.602,
+    "recall": 0.885,
+    "rings_found": 12,
+    "false_rings": 5,
+    "ring_calls": 17,
+    "tp": 100,
+    "fp": 66,
+    "fn": 13
+   },
+   {
+    "threshold": 0.86,
+    "precision": 0.602,
+    "recall": 0.885,
+    "rings_found": 12,
+    "false_rings": 5,
+    "ring_calls": 17,
+    "tp": 100,
+    "fp": 66,
+    "fn": 13
+   },
+   {
+    "threshold": 0.87,
+    "precision": 0.639,
+    "recall": 0.876,
+    "rings_found": 11,
+    "false_rings": 5,
+    "ring_calls": 16,
+    "tp": 99,
+    "fp": 56,
+    "fn": 14
+   },
+   {
+    "threshold": 0.88,
+    "precision": 0.639,
+    "recall": 0.876,
+    "rings_found": 11,
+    "false_rings": 5,
+    "ring_calls": 16,
+    "tp": 99,
+    "fp": 56,
+    "fn": 14
+   },
+   {
+    "threshold": 0.9,
+    "precision": 0.685,
+    "recall": 0.867,
+    "rings_found": 10,
+    "false_rings": 5,
+    "ring_calls": 15,
+    "tp": 98,
+    "fp": 45,
+    "fn": 15
+   },
+   {
+    "threshold": 0.91,
+    "precision": 0.656,
+    "recall": 0.761,
+    "rings_found": 9,
+    "false_rings": 5,
+    "ring_calls": 14,
+    "tp": 86,
+    "fp": 45,
+    "fn": 27
+   },
+   {
+    "threshold": 0.92,
+    "precision": 0.656,
+    "recall": 0.761,
+    "rings_found": 9,
+    "false_rings": 5,
+    "ring_calls": 14,
+    "tp": 86,
+    "fp": 45,
+    "fn": 27
+   },
+   {
+    "threshold": 0.93,
+    "precision": 0.583,
+    "recall": 0.531,
+    "rings_found": 7,
+    "false_rings": 5,
+    "ring_calls": 12,
+    "tp": 60,
+    "fp": 43,
+    "fn": 53
+   },
+   {
+    "threshold": 0.94,
+    "precision": 0.6,
+    "recall": 0.531,
+    "rings_found": 7,
+    "false_rings": 4,
+    "ring_calls": 11,
+    "tp": 60,
+    "fp": 40,
+    "fn": 53
+   },
+   {
+    "threshold": 0.95,
+    "precision": 0.6,
+    "recall": 0.531,
+    "rings_found": 7,
+    "false_rings": 4,
+    "ring_calls": 11,
+    "tp": 60,
+    "fp": 40,
+    "fn": 53
+   },
+   {
+    "threshold": 0.96,
+    "precision": 0.545,
+    "recall": 0.425,
+    "rings_found": 6,
+    "false_rings": 4,
+    "ring_calls": 10,
+    "tp": 48,
+    "fp": 40,
+    "fn": 65
+   },
+   {
+    "threshold": 0.97,
+    "precision": 0.553,
+    "recall": 0.416,
+    "rings_found": 5,
+    "false_rings": 4,
+    "ring_calls": 9,
+    "tp": 47,
+    "fp": 38,
+    "fn": 66
+   },
+   {
+    "threshold": 0.98,
+    "precision": 0.465,
+    "recall": 0.292,
+    "rings_found": 4,
+    "false_rings": 4,
+    "ring_calls": 8,
+    "tp": 33,
+    "fp": 38,
+    "fn": 80
+   },
+   {
+    "threshold": 0.99,
+    "precision": 0.5,
+    "recall": 0.133,
+    "rings_found": 2,
+    "false_rings": 2,
+    "ring_calls": 4,
+    "tp": 15,
+    "fp": 15,
+    "fn": 98
+   },
+   {
+    "threshold": 1.0,
+    "precision": 0.882,
+    "recall": 0.133,
+    "rings_found": 2,
+    "false_rings": 0,
+    "ring_calls": 2,
+    "tp": 15,
+    "fp": 2,
+    "fn": 98
+   }
+  ],
+  "main_v3_facts_evidence_0_100": [
+   {
+    "threshold": null,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 13.0,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 13.2,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 14.5,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 14.8,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 15.0,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 15.5,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 16.5,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 19.2,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 26.0,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 26.5,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 29.2,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 49.0,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 49.5,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 52.2,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 54.2,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 56.8,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 58.5,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 59.0,
+    "precision": 0.594,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 4,
+    "ring_calls": 17,
+    "tp": 101,
+    "fp": 69,
+    "fn": 12
+   },
+   {
+    "threshold": 61.0,
+    "precision": 0.563,
+    "recall": 0.788,
+    "rings_found": 12,
+    "false_rings": 4,
+    "ring_calls": 16,
+    "tp": 89,
+    "fp": 69,
+    "fn": 24
+   },
+   {
+    "threshold": 61.5,
+    "precision": 0.563,
+    "recall": 0.788,
+    "rings_found": 12,
+    "false_rings": 4,
+    "ring_calls": 16,
+    "tp": 89,
+    "fp": 69,
+    "fn": 24
+   },
+   {
+    "threshold": 62.7,
+    "precision": 0.527,
+    "recall": 0.681,
+    "rings_found": 11,
+    "false_rings": 4,
+    "ring_calls": 15,
+    "tp": 77,
+    "fp": 69,
+    "fn": 36
+   },
+   {
+    "threshold": 63.5,
+    "precision": 0.485,
+    "recall": 0.575,
+    "rings_found": 10,
+    "false_rings": 4,
+    "ring_calls": 14,
+    "tp": 65,
+    "fp": 69,
+    "fn": 48
+   },
+   {
+    "threshold": 66.0,
+    "precision": 0.485,
+    "recall": 0.575,
+    "rings_found": 10,
+    "false_rings": 4,
+    "ring_calls": 14,
+    "tp": 65,
+    "fp": 69,
+    "fn": 48
+   },
+   {
+    "threshold": 68.8,
+    "precision": 0.496,
+    "recall": 0.575,
+    "rings_found": 10,
+    "false_rings": 3,
+    "ring_calls": 13,
+    "tp": 65,
+    "fp": 66,
+    "fn": 48
+   },
+   {
+    "threshold": 69.8,
+    "precision": 0.496,
+    "recall": 0.575,
+    "rings_found": 10,
+    "false_rings": 3,
+    "ring_calls": 13,
+    "tp": 65,
+    "fp": 66,
+    "fn": 48
+   },
+   {
+    "threshold": 70.2,
+    "precision": 0.496,
+    "recall": 0.575,
+    "rings_found": 10,
+    "false_rings": 3,
+    "ring_calls": 13,
+    "tp": 65,
+    "fp": 66,
+    "fn": 48
+   },
+   {
+    "threshold": 71.0,
+    "precision": 0.446,
+    "recall": 0.442,
+    "rings_found": 8,
+    "false_rings": 3,
+    "ring_calls": 11,
+    "tp": 50,
+    "fp": 62,
+    "fn": 63
+   },
+   {
+    "threshold": 72.0,
+    "precision": 0.446,
+    "recall": 0.442,
+    "rings_found": 8,
+    "false_rings": 3,
+    "ring_calls": 11,
+    "tp": 50,
+    "fp": 62,
+    "fn": 63
+   },
+   {
+    "threshold": 72.2,
+    "precision": 0.367,
+    "recall": 0.319,
+    "rings_found": 7,
+    "false_rings": 3,
+    "ring_calls": 10,
+    "tp": 36,
+    "fp": 62,
+    "fn": 77
+   },
+   {
+    "threshold": 73.0,
+    "precision": 0.367,
+    "recall": 0.319,
+    "rings_found": 7,
+    "false_rings": 3,
+    "ring_calls": 10,
+    "tp": 36,
+    "fp": 62,
+    "fn": 77
+   },
+   {
+    "threshold": 73.2,
+    "precision": 0.367,
+    "recall": 0.319,
+    "rings_found": 7,
+    "false_rings": 3,
+    "ring_calls": 10,
+    "tp": 36,
+    "fp": 62,
+    "fn": 77
+   },
+   {
+    "threshold": 75.2,
+    "precision": 0.367,
+    "recall": 0.319,
+    "rings_found": 7,
+    "false_rings": 3,
+    "ring_calls": 10,
+    "tp": 36,
+    "fp": 62,
+    "fn": 77
+   },
+   {
+    "threshold": 76.0,
+    "precision": 0.367,
+    "recall": 0.319,
+    "rings_found": 7,
+    "false_rings": 3,
+    "ring_calls": 10,
+    "tp": 36,
+    "fp": 62,
+    "fn": 77
+   },
+   {
+    "threshold": 76.2,
+    "precision": 0.33,
+    "recall": 0.257,
+    "rings_found": 6,
+    "false_rings": 3,
+    "ring_calls": 9,
+    "tp": 29,
+    "fp": 59,
+    "fn": 84
+   },
+   {
+    "threshold": 77.5,
+    "precision": 0.33,
+    "recall": 0.257,
+    "rings_found": 6,
+    "false_rings": 3,
+    "ring_calls": 9,
+    "tp": 29,
+    "fp": 59,
+    "fn": 84
+   },
+   {
+    "threshold": 80.8,
+    "precision": 0.33,
+    "recall": 0.257,
+    "rings_found": 6,
+    "false_rings": 3,
+    "ring_calls": 9,
+    "tp": 29,
+    "fp": 59,
+    "fn": 84
+   },
+   {
+    "threshold": 81.2,
+    "precision": 0.33,
+    "recall": 0.257,
+    "rings_found": 6,
+    "false_rings": 3,
+    "ring_calls": 9,
+    "tp": 29,
+    "fp": 59,
+    "fn": 84
+   },
+   {
+    "threshold": 81.5,
+    "precision": 0.234,
+    "recall": 0.159,
+    "rings_found": 5,
+    "false_rings": 3,
+    "ring_calls": 8,
+    "tp": 18,
+    "fp": 59,
+    "fn": 95
+   },
+   {
+    "threshold": 82.5,
+    "precision": 0.234,
+    "recall": 0.159,
+    "rings_found": 5,
+    "false_rings": 3,
+    "ring_calls": 8,
+    "tp": 18,
+    "fp": 59,
+    "fn": 95
+   },
+   {
+    "threshold": 83.8,
+    "precision": 0.243,
+    "recall": 0.15,
+    "rings_found": 4,
+    "false_rings": 3,
+    "ring_calls": 7,
+    "tp": 17,
+    "fp": 53,
+    "fn": 96
+   },
+   {
+    "threshold": 84.8,
+    "precision": 0.243,
+    "recall": 0.15,
+    "rings_found": 4,
+    "false_rings": 3,
+    "ring_calls": 7,
+    "tp": 17,
+    "fp": 53,
+    "fn": 96
+   },
+   {
+    "threshold": 85.5,
+    "precision": 0.243,
+    "recall": 0.15,
+    "rings_found": 4,
+    "false_rings": 3,
+    "ring_calls": 7,
+    "tp": 17,
+    "fp": 53,
+    "fn": 96
+   },
+   {
+    "threshold": 85.8,
+    "precision": 0.243,
+    "recall": 0.15,
+    "rings_found": 4,
+    "false_rings": 3,
+    "ring_calls": 7,
+    "tp": 17,
+    "fp": 53,
+    "fn": 96
+   },
+   {
+    "threshold": 88.8,
+    "precision": 0.243,
+    "recall": 0.15,
+    "rings_found": 4,
+    "false_rings": 3,
+    "ring_calls": 7,
+    "tp": 17,
+    "fp": 53,
+    "fn": 96
+   },
+   {
+    "threshold": 89.5,
+    "precision": 0.276,
+    "recall": 0.142,
+    "rings_found": 3,
+    "false_rings": 3,
+    "ring_calls": 6,
+    "tp": 16,
+    "fp": 42,
+    "fn": 97
+   },
+   {
+    "threshold": 91.8,
+    "precision": 0.276,
+    "recall": 0.142,
+    "rings_found": 3,
+    "false_rings": 3,
+    "ring_calls": 6,
+    "tp": 16,
+    "fp": 42,
+    "fn": 97
+   },
+   {
+    "threshold": 93.5,
+    "precision": 0.276,
+    "recall": 0.142,
+    "rings_found": 3,
+    "false_rings": 3,
+    "ring_calls": 6,
+    "tp": 16,
+    "fp": 42,
+    "fn": 97
+   },
+   {
+    "threshold": 94.0,
+    "precision": 0.302,
+    "recall": 0.142,
+    "rings_found": 3,
+    "false_rings": 2,
+    "ring_calls": 5,
+    "tp": 16,
+    "fp": 37,
+    "fn": 97
+   },
+   {
+    "threshold": 94.5,
+    "precision": 0.357,
+    "recall": 0.133,
+    "rings_found": 2,
+    "false_rings": 2,
+    "ring_calls": 4,
+    "tp": 15,
+    "fp": 27,
+    "fn": 98
+   },
+   {
+    "threshold": 94.8,
+    "precision": 0.6,
+    "recall": 0.133,
+    "rings_found": 2,
+    "false_rings": 1,
+    "ring_calls": 3,
+    "tp": 15,
+    "fp": 10,
+    "fn": 98
+   },
+   {
+    "threshold": 95.0,
+    "precision": 0.882,
+    "recall": 0.133,
+    "rings_found": 2,
+    "false_rings": 0,
+    "ring_calls": 2,
+    "tp": 15,
+    "fp": 2,
+    "fn": 98
+   },
+   {
+    "threshold": 96.5,
+    "precision": 0.778,
+    "recall": 0.062,
+    "rings_found": 1,
+    "false_rings": 0,
+    "ring_calls": 1,
+    "tp": 7,
+    "fp": 2,
+    "fn": 106
+   }
+  ],
+  "main_v3_sentences_p_ring": [
+   {
+    "threshold": null,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.01,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.02,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.54,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.79,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.8,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 0.81,
+    "precision": 0.594,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 4,
+    "ring_calls": 17,
+    "tp": 101,
+    "fp": 69,
+    "fn": 12
+   },
+   {
+    "threshold": 0.82,
+    "precision": 0.613,
+    "recall": 0.885,
+    "rings_found": 12,
+    "false_rings": 4,
+    "ring_calls": 16,
+    "tp": 100,
+    "fp": 63,
+    "fn": 13
+   },
+   {
+    "threshold": 0.83,
+    "precision": 0.585,
+    "recall": 0.761,
+    "rings_found": 11,
+    "false_rings": 4,
+    "ring_calls": 15,
+    "tp": 86,
+    "fp": 61,
+    "fn": 27
+   },
+   {
+    "threshold": 0.84,
+    "precision": 0.548,
+    "recall": 0.655,
+    "rings_found": 10,
+    "false_rings": 4,
+    "ring_calls": 14,
+    "tp": 74,
+    "fp": 61,
+    "fn": 39
+   },
+   {
+    "threshold": 0.85,
+    "precision": 0.504,
+    "recall": 0.549,
+    "rings_found": 9,
+    "false_rings": 4,
+    "ring_calls": 13,
+    "tp": 62,
+    "fp": 61,
+    "fn": 51
+   },
+   {
+    "threshold": 0.86,
+    "precision": 0.504,
+    "recall": 0.549,
+    "rings_found": 9,
+    "false_rings": 4,
+    "ring_calls": 13,
+    "tp": 62,
+    "fp": 61,
+    "fn": 51
+   },
+   {
+    "threshold": 0.87,
+    "precision": 0.585,
+    "recall": 0.549,
+    "rings_found": 9,
+    "false_rings": 3,
+    "ring_calls": 12,
+    "tp": 62,
+    "fp": 44,
+    "fn": 51
+   },
+   {
+    "threshold": 0.88,
+    "precision": 0.585,
+    "recall": 0.549,
+    "rings_found": 9,
+    "false_rings": 3,
+    "ring_calls": 12,
+    "tp": 62,
+    "fp": 44,
+    "fn": 51
+   },
+   {
+    "threshold": 0.89,
+    "precision": 0.549,
+    "recall": 0.442,
+    "rings_found": 8,
+    "false_rings": 2,
+    "ring_calls": 10,
+    "tp": 50,
+    "fp": 41,
+    "fn": 63
+   },
+   {
+    "threshold": 0.9,
+    "precision": 0.562,
+    "recall": 0.319,
+    "rings_found": 7,
+    "false_rings": 0,
+    "ring_calls": 7,
+    "tp": 36,
+    "fp": 28,
+    "fn": 77
+   },
+   {
+    "threshold": 0.91,
+    "precision": 0.562,
+    "recall": 0.319,
+    "rings_found": 7,
+    "false_rings": 0,
+    "ring_calls": 7,
+    "tp": 36,
+    "fp": 28,
+    "fn": 77
+   },
+   {
+    "threshold": 0.92,
+    "precision": 0.562,
+    "recall": 0.319,
+    "rings_found": 7,
+    "false_rings": 0,
+    "ring_calls": 7,
+    "tp": 36,
+    "fp": 28,
+    "fn": 77
+   },
+   {
+    "threshold": 0.93,
+    "precision": 0.562,
+    "recall": 0.319,
+    "rings_found": 7,
+    "false_rings": 0,
+    "ring_calls": 7,
+    "tp": 36,
+    "fp": 28,
+    "fn": 77
+   },
+   {
+    "threshold": 0.94,
+    "precision": 0.673,
+    "recall": 0.31,
+    "rings_found": 6,
+    "false_rings": 0,
+    "ring_calls": 6,
+    "tp": 35,
+    "fp": 17,
+    "fn": 78
+   },
+   {
+    "threshold": 0.96,
+    "precision": 0.829,
+    "recall": 0.301,
+    "rings_found": 5,
+    "false_rings": 0,
+    "ring_calls": 5,
+    "tp": 34,
+    "fp": 7,
+    "fn": 79
+   },
+   {
+    "threshold": 0.98,
+    "precision": 0.871,
+    "recall": 0.239,
+    "rings_found": 4,
+    "false_rings": 0,
+    "ring_calls": 4,
+    "tp": 27,
+    "fp": 4,
+    "fn": 86
+   },
+   {
+    "threshold": 0.99,
+    "precision": 0.929,
+    "recall": 0.23,
+    "rings_found": 3,
+    "false_rings": 0,
+    "ring_calls": 3,
+    "tp": 26,
+    "fp": 2,
+    "fn": 87
+   },
+   {
+    "threshold": 1.0,
+    "precision": 0.882,
+    "recall": 0.133,
+    "rings_found": 2,
+    "false_rings": 0,
+    "ring_calls": 2,
+    "tp": 15,
+    "fp": 2,
+    "fn": 98
+   }
+  ],
+  "main_v3_sentences_evidence_0_100": [
+   {
+    "threshold": null,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 35.0,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 35.8,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 36.0,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 37.5,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 39.5,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 43.5,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 45.0,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 46.0,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 46.8,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 52.0,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 53.5,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 54.5,
+    "precision": 0.584,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 5,
+    "ring_calls": 18,
+    "tp": 101,
+    "fp": 72,
+    "fn": 12
+   },
+   {
+    "threshold": 56.5,
+    "precision": 0.594,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 4,
+    "ring_calls": 17,
+    "tp": 101,
+    "fp": 69,
+    "fn": 12
+   },
+   {
+    "threshold": 57.2,
+    "precision": 0.623,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 3,
+    "ring_calls": 16,
+    "tp": 101,
+    "fp": 61,
+    "fn": 12
+   },
+   {
+    "threshold": 58.5,
+    "precision": 0.623,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 3,
+    "ring_calls": 16,
+    "tp": 101,
+    "fp": 61,
+    "fn": 12
+   },
+   {
+    "threshold": 58.8,
+    "precision": 0.623,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 3,
+    "ring_calls": 16,
+    "tp": 101,
+    "fp": 61,
+    "fn": 12
+   },
+   {
+    "threshold": 59.0,
+    "precision": 0.623,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 3,
+    "ring_calls": 16,
+    "tp": 101,
+    "fp": 61,
+    "fn": 12
+   },
+   {
+    "threshold": 59.5,
+    "precision": 0.623,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 3,
+    "ring_calls": 16,
+    "tp": 101,
+    "fp": 61,
+    "fn": 12
+   },
+   {
+    "threshold": 60.2,
+    "precision": 0.623,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 3,
+    "ring_calls": 16,
+    "tp": 101,
+    "fp": 61,
+    "fn": 12
+   },
+   {
+    "threshold": 60.5,
+    "precision": 0.623,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 3,
+    "ring_calls": 16,
+    "tp": 101,
+    "fp": 61,
+    "fn": 12
+   },
+   {
+    "threshold": 62.7,
+    "precision": 0.623,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 3,
+    "ring_calls": 16,
+    "tp": 101,
+    "fp": 61,
+    "fn": 12
+   },
+   {
+    "threshold": 64.0,
+    "precision": 0.623,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 3,
+    "ring_calls": 16,
+    "tp": 101,
+    "fp": 61,
+    "fn": 12
+   },
+   {
+    "threshold": 64.8,
+    "precision": 0.623,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 3,
+    "ring_calls": 16,
+    "tp": 101,
+    "fp": 61,
+    "fn": 12
+   },
+   {
+    "threshold": 65.0,
+    "precision": 0.623,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 3,
+    "ring_calls": 16,
+    "tp": 101,
+    "fp": 61,
+    "fn": 12
+   },
+   {
+    "threshold": 65.5,
+    "precision": 0.623,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 3,
+    "ring_calls": 16,
+    "tp": 101,
+    "fp": 61,
+    "fn": 12
+   },
+   {
+    "threshold": 66.8,
+    "precision": 0.623,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 3,
+    "ring_calls": 16,
+    "tp": 101,
+    "fp": 61,
+    "fn": 12
+   },
+   {
+    "threshold": 67.2,
+    "precision": 0.623,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 3,
+    "ring_calls": 16,
+    "tp": 101,
+    "fp": 61,
+    "fn": 12
+   },
+   {
+    "threshold": 68.2,
+    "precision": 0.643,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 2,
+    "ring_calls": 15,
+    "tp": 101,
+    "fp": 56,
+    "fn": 12
+   },
+   {
+    "threshold": 68.8,
+    "precision": 0.656,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 1,
+    "ring_calls": 14,
+    "tp": 101,
+    "fp": 53,
+    "fn": 12
+   },
+   {
+    "threshold": 69.5,
+    "precision": 0.656,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 1,
+    "ring_calls": 14,
+    "tp": 101,
+    "fp": 53,
+    "fn": 12
+   },
+   {
+    "threshold": 70.2,
+    "precision": 0.656,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 1,
+    "ring_calls": 14,
+    "tp": 101,
+    "fp": 53,
+    "fn": 12
+   },
+   {
+    "threshold": 70.5,
+    "precision": 0.737,
+    "recall": 0.894,
+    "rings_found": 13,
+    "false_rings": 0,
+    "ring_calls": 13,
+    "tp": 101,
+    "fp": 36,
+    "fn": 12
+   },
+   {
+    "threshold": 72.0,
+    "precision": 0.712,
+    "recall": 0.788,
+    "rings_found": 12,
+    "false_rings": 0,
+    "ring_calls": 12,
+    "tp": 89,
+    "fp": 36,
+    "fn": 24
+   },
+   {
+    "threshold": 73.2,
+    "precision": 0.712,
+    "recall": 0.788,
+    "rings_found": 12,
+    "false_rings": 0,
+    "ring_calls": 12,
+    "tp": 89,
+    "fp": 36,
+    "fn": 24
+   },
+   {
+    "threshold": 73.5,
+    "precision": 0.721,
+    "recall": 0.779,
+    "rings_found": 11,
+    "false_rings": 0,
+    "ring_calls": 11,
+    "tp": 88,
+    "fp": 34,
+    "fn": 25
+   },
+   {
+    "threshold": 74.5,
+    "precision": 0.721,
+    "recall": 0.779,
+    "rings_found": 11,
+    "false_rings": 0,
+    "ring_calls": 11,
+    "tp": 88,
+    "fp": 34,
+    "fn": 25
+   },
+   {
+    "threshold": 75.2,
+    "precision": 0.721,
+    "recall": 0.779,
+    "rings_found": 11,
+    "false_rings": 0,
+    "ring_calls": 11,
+    "tp": 88,
+    "fp": 34,
+    "fn": 25
+   },
+   {
+    "threshold": 75.8,
+    "precision": 0.721,
+    "recall": 0.779,
+    "rings_found": 11,
+    "false_rings": 0,
+    "ring_calls": 11,
+    "tp": 88,
+    "fp": 34,
+    "fn": 25
+   },
+   {
+    "threshold": 76.2,
+    "precision": 0.721,
+    "recall": 0.779,
+    "rings_found": 11,
+    "false_rings": 0,
+    "ring_calls": 11,
+    "tp": 88,
+    "fp": 34,
+    "fn": 25
+   },
+   {
+    "threshold": 76.8,
+    "precision": 0.721,
+    "recall": 0.779,
+    "rings_found": 11,
+    "false_rings": 0,
+    "ring_calls": 11,
+    "tp": 88,
+    "fp": 34,
+    "fn": 25
+   },
+   {
+    "threshold": 77.2,
+    "precision": 0.721,
+    "recall": 0.779,
+    "rings_found": 11,
+    "false_rings": 0,
+    "ring_calls": 11,
+    "tp": 88,
+    "fp": 34,
+    "fn": 25
+   },
+   {
+    "threshold": 78.2,
+    "precision": 0.66,
+    "recall": 0.549,
+    "rings_found": 9,
+    "false_rings": 0,
+    "ring_calls": 9,
+    "tp": 62,
+    "fp": 32,
+    "fn": 51
+   },
+   {
+    "threshold": 79.0,
+    "precision": 0.61,
+    "recall": 0.442,
+    "rings_found": 8,
+    "false_rings": 0,
+    "ring_calls": 8,
+    "tp": 50,
+    "fp": 32,
+    "fn": 63
+   },
+   {
+    "threshold": 79.2,
+    "precision": 0.61,
+    "recall": 0.442,
+    "rings_found": 8,
+    "false_rings": 0,
+    "ring_calls": 8,
+    "tp": 50,
+    "fp": 32,
+    "fn": 63
+   },
+   {
+    "threshold": 83.0,
+    "precision": 0.61,
+    "recall": 0.442,
+    "rings_found": 8,
+    "false_rings": 0,
+    "ring_calls": 8,
+    "tp": 50,
+    "fp": 32,
+    "fn": 63
+   },
+   {
+    "threshold": 84.0,
+    "precision": 0.61,
+    "recall": 0.442,
+    "rings_found": 8,
+    "false_rings": 0,
+    "ring_calls": 8,
+    "tp": 50,
+    "fp": 32,
+    "fn": 63
+   },
+   {
+    "threshold": 85.8,
+    "precision": 0.529,
+    "recall": 0.319,
+    "rings_found": 7,
+    "false_rings": 0,
+    "ring_calls": 7,
+    "tp": 36,
+    "fp": 32,
+    "fn": 77
+   },
+   {
+    "threshold": 86.0,
+    "precision": 0.574,
+    "recall": 0.31,
+    "rings_found": 6,
+    "false_rings": 0,
+    "ring_calls": 6,
+    "tp": 35,
+    "fp": 26,
+    "fn": 78
+   },
+   {
+    "threshold": 91.2,
+    "precision": 0.549,
+    "recall": 0.248,
+    "rings_found": 5,
+    "false_rings": 0,
+    "ring_calls": 5,
+    "tp": 28,
+    "fp": 23,
+    "fn": 85
+   },
+   {
+    "threshold": 91.8,
+    "precision": 0.675,
+    "recall": 0.239,
+    "rings_found": 4,
+    "false_rings": 0,
+    "ring_calls": 4,
+    "tp": 27,
+    "fp": 13,
+    "fn": 86
+   },
+   {
+    "threshold": 94.8,
+    "precision": 0.929,
+    "recall": 0.23,
+    "rings_found": 3,
+    "false_rings": 0,
+    "ring_calls": 3,
+    "tp": 26,
+    "fp": 2,
+    "fn": 87
+   },
+   {
+    "threshold": 95.5,
+    "precision": 0.882,
+    "recall": 0.133,
+    "rings_found": 2,
+    "false_rings": 0,
+    "ring_calls": 2,
+    "tp": 15,
+    "fp": 2,
+    "fn": 98
+   },
+   {
+    "threshold": 96.8,
+    "precision": 1.0,
+    "recall": 0.071,
+    "rings_found": 1,
+    "false_rings": 0,
+    "ring_calls": 1,
+    "tp": 8,
+    "fp": 0,
+    "fn": 105
+   }
+  ]
+ },
+ "both_gates": [
+  {
+   "slice": "main",
+   "version": "v3",
+   "variant": "facts",
+   "signal": "p_ring",
+   "threshold": 0.9,
+   "precision": 0.752,
+   "recall": 0.858,
+   "rings_found": 9,
+   "false_rings": 2,
+   "ring_calls": 11,
+   "tp": 97,
+   "fp": 32,
+   "fn": 16
+  },
+  {
+   "slice": "main",
+   "version": "v3",
+   "variant": "facts",
+   "signal": "evidence_0_100",
+   "threshold": 59.0,
+   "precision": 0.629,
+   "recall": 0.885,
+   "rings_found": 12,
+   "false_rings": 2,
+   "ring_calls": 14,
+   "tp": 100,
+   "fp": 59,
+   "fn": 13
+  },
+  {
+   "slice": "main",
+   "version": "v3",
+   "variant": "sentences",
+   "signal": "p_ring",
+   "threshold": 0.82,
+   "precision": 0.651,
+   "recall": 0.876,
+   "rings_found": 11,
+   "false_rings": 2,
+   "ring_calls": 13,
+   "tp": 99,
+   "fp": 53,
+   "fn": 14
+  },
+  {
+   "slice": "main",
+   "version": "v3",
+   "variant": "sentences",
+   "signal": "evidence_0_100",
+   "threshold": 70.5,
+   "precision": 0.746,
+   "recall": 0.885,
+   "rings_found": 12,
+   "false_rings": 0,
+   "ring_calls": 12,
+   "tp": 100,
+   "fp": 34,
+   "fn": 13
+  },
+  {
+   "slice": "main",
+   "version": "v2",
+   "variant": "facts",
+   "signal": "p_ring",
+   "threshold": 0.9,
+   "precision": 0.667,
+   "recall": 0.796,
+   "rings_found": 8,
+   "false_rings": 3,
+   "ring_calls": 11,
+   "tp": 90,
+   "fp": 45,
+   "fn": 23
+  },
+  {
+   "slice": "main",
+   "version": "v2",
+   "variant": "facts",
+   "signal": "evidence_0_100",
+   "threshold": 59.0,
+   "precision": 0.55,
+   "recall": 0.823,
+   "rings_found": 11,
+   "false_rings": 4,
+   "ring_calls": 15,
+   "tp": 93,
+   "fp": 76,
+   "fn": 20
+  },
+  {
+   "slice": "main",
+   "version": "v2",
+   "variant": "sentences",
+   "signal": "p_ring",
+   "threshold": 0.82,
+   "precision": 0.582,
+   "recall": 0.814,
+   "rings_found": 10,
+   "false_rings": 3,
+   "ring_calls": 13,
+   "tp": 92,
+   "fp": 66,
+   "fn": 21
+  },
+  {
+   "slice": "main",
+   "version": "v2",
+   "variant": "sentences",
+   "signal": "evidence_0_100",
+   "threshold": 70.5,
+   "precision": 0.75,
+   "recall": 0.823,
+   "rings_found": 11,
+   "false_rings": 0,
+   "ring_calls": 11,
+   "tp": 93,
+   "fp": 31,
+   "fn": 20
+  },
+  {
+   "slice": "heldout_a",
+   "version": "v2",
+   "variant": "facts",
+   "signal": "p_ring",
+   "threshold": 0.9,
+   "precision": 0.726,
+   "recall": 0.56,
+   "rings_found": 7,
+   "false_rings": 1,
+   "ring_calls": 8,
+   "tp": 61,
+   "fp": 23,
+   "fn": 48
+  },
+  {
+   "slice": "heldout_a",
+   "version": "v2",
+   "variant": "facts",
+   "signal": "evidence_0_100",
+   "threshold": 59.0,
+   "precision": 0.591,
+   "recall": 0.477,
+   "rings_found": 7,
+   "false_rings": 1,
+   "ring_calls": 8,
+   "tp": 52,
+   "fp": 36,
+   "fn": 57
+  },
+  {
+   "slice": "heldout_a",
+   "version": "v2",
+   "variant": "sentences",
+   "signal": "p_ring",
+   "threshold": 0.82,
+   "precision": 0.602,
+   "recall": 0.569,
+   "rings_found": 8,
+   "false_rings": 1,
+   "ring_calls": 9,
+   "tp": 62,
+   "fp": 41,
+   "fn": 47
+  },
+  {
+   "slice": "heldout_a",
+   "version": "v2",
+   "variant": "sentences",
+   "signal": "evidence_0_100",
+   "threshold": 70.5,
+   "precision": 0.64,
+   "recall": 0.505,
+   "rings_found": 7,
+   "false_rings": 0,
+   "ring_calls": 7,
+   "tp": 55,
+   "fp": 31,
+   "fn": 54
+  }
+ ],
+ "chosen_thresholds": {
+  "rows_facts|p_ring": 0.87,
+  "rows_facts|evidence_0_100": 64.5,
+  "facts|p_ring": 0.9,
+  "facts|evidence_0_100": 59.0,
+  "sentences|p_ring": 0.82,
+  "sentences|evidence_0_100": 70.5
+ }
+}
