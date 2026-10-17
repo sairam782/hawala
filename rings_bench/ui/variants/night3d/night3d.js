@@ -1,7 +1,8 @@
-/* Rings at night: a three-dimensional reading of the Rings bench.
-   Inputs (by relative path, same grammar as ../../app.js): ../../../data/slice.js (window.SLICE),
-   bench_results.js (window.BENCH), units.js (window.UNITS). When slice or bench is missing the page
-   builds a small made-up SAMPLE network and says so in a badge. No libraries besides three.js. */
+/* Rings at night: a three-dimensional reading of the Rings bench, loop 1 (clear first).
+   By default only IBM's twenty labeled groups are drawn, each laid out by its shape on a sparse grid.
+   The 1,797-account crowd is one toggle away, as faint dust behind the groups.
+   Inputs (same grammar as ../../app.js): ../../../data/slice.js (window.SLICE), bench_results.js (window.BENCH),
+   units.js (window.UNITS). When slice or bench is missing the page builds a small made-up SAMPLE and says so. */
 (function () {
 'use strict';
 const DATA = '../../../data/';
@@ -18,15 +19,15 @@ const easeOut = x => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 function fmtWhen(min) { const d = new Date((T0 + min) * 60000); return MONTHS[d.getUTCMonth()] + ' ' + d.getUTCDate() + ', ' + String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); }
 
-/* timings (README lists them): every one ease-out, every one dropped under prefers-reduced-motion */
-const OPEN_MS = 1600;       /* the one opening camera move */
-const FADE_TAU = 75;        /* model switch: layers and sphere colors settle in about 320 ms */
-const RESOLVE_MS = 450;     /* the catch: the ring's lines draw from source to target, loop closes / star snaps */
-const FLY_MS = 620;         /* the catch: a copy of the shape travels into its roster card */
-const CATCH_GAP = 160;      /* between consecutive catches */
-const PLAY_MS = 14000;      /* ten days of transfers */
+/* timings (README lists them); all ease-out, all dropped under prefers-reduced-motion */
+const OPEN_MS = 1000;      /* the one opening camera move */
+const TAU = 75;            /* model switch and crowd toggle: colors and opacities settle in about 320 ms */
+const RESOLVE_MS = 450;    /* the catch: the ring's lines draw from source to target */
+const FLY_MS = 620;        /* the catch: a copy of the shape travels into its roster card */
+const CATCH_GAP = 120;     /* between consecutive catches */
+const PLAY_MS = 14000;     /* ten days of transfers */
 
-const COL = { base: '#6E7B8D', ok: '#63C58D', bad: '#E07C74', miss: '#D8A64A', hair: '#8FA3B8', focus: '#E6E9EE' };
+const COL = { node: '#A7B2C1', ok: '#63C58D', building: '#3B6E52', pending: '#5E6878', miss: '#E9B44C', bad: '#EE7A72', dust: '#8FA3B8' };
 const FAMILY_NAMES = { anthropic: 'Anthropic', openai: 'OpenAI', deepseek: 'DeepSeek', mistral: 'Mistral', moonshot: 'Moonshot', xai: 'xAI', 'z-ai': 'Z.ai', google: 'Google', meta: 'Meta', qwen: 'Qwen', sample: 'Sample' };
 const famName = f => FAMILY_NAMES[f] || (f ? f.charAt(0).toUpperCase() + f.slice(1) : '?');
 function prettyModel(id) {
@@ -46,9 +47,9 @@ function makeSample() {
   ring.push(cyc.map((a, i) => add(a, cyc[(i + 1) % cyc.length], 9000 - i * 120, 2000 + i * 300, 0)));
   ring.push([0, 1, 2, 3, 4, 5, 6].map(i => add(110, 111 + i, 4000 + rnd() * 900, 4000 + i * 200, 1)));
   ring.push([0, 1, 2, 3, 4, 5].map(i => add(120 + i, 127, 3000 + rnd() * 500, 6000 + i * 250, 2)));
-  const ch = [130, 131, 132, 133]; ring.push(ch.slice(0, 3).map((a, i) => add(a, ch[i + 1], 20000 - i * 400, 9000 + i * 600, 3)));
-  [100, 110, 120, 127, 130, 133].forEach(a => add(a, Math.floor(rnd() * 90), 200 + rnd() * 800, Math.floor(rnd() * SPAN), -1));
-  const shapes = ['cycle', 'fan-out', 'fan-in', 'chain'];
+  ring.push([add(130, 131, 20000, 9000, 3)]);
+  [100, 110, 120, 127, 130, 131].forEach(a => add(a, Math.floor(rnd() * 90), 200 + rnd() * 800, Math.floor(rnd() * SPAN), -1));
+  const shapes = ['cycle', 'fan-out', 'fan-in', 'lone'];
   const ring_meta = {}; shapes.forEach((s, i) => ring_meta[i] = { shape: s, n: ring[i].length });
   const bg = T.filter(r => !key[r[0]][0]);
   const units = shapes.map((s, i) => ({ id: 'u0' + (i + 1), expected: 'ring', shape: s, ring_id: String(i), truth_ids: ring[i] }))
@@ -61,18 +62,20 @@ function makeSample() {
       let verdict = 'ordinary', ids = [];
       if (u.expected === 'ring' && p.find.includes(+u.ring_id)) { verdict = 'ring'; ids = u.truth_ids.slice(); }
       if (u.expected === 'ordinary' && p.fa.includes(u.id)) { verdict = 'ring'; ids = u.ids; }
-      runs.push({ run_id: mid + '_' + ver + ':' + u.id, model: mid, family: 'sample', version: ver, unit: u.id, expected: u.expected, shape: u.shape || 'none', ibm_shape: u.shape ? u.shape.toUpperCase() : null, verdict, pattern: verdict === 'ring' ? (u.shape || 'chain') : null, flagged_transfer_ids: ids, ring_accounts_flagged: [], why: 'SAMPLE: a made-up reason so the page renders without the bench file.' });
+      runs.push({ run_id: mid + '_' + ver + ':' + u.id, model: mid, family: 'sample', version: ver, unit: u.id, expected: u.expected, shape: u.shape || 'none', ibm_shape: u.shape && u.shape !== 'lone' ? u.shape.toUpperCase() : (u.shape ? 'no named shape' : null), verdict, pattern: verdict === 'ring' ? (u.shape || 'chain') : null, flagged_transfer_ids: ids, ring_accounts_flagged: [], why: 'SAMPLE: a made-up reason so the page renders without the bench file.' });
     });
   });
   return { slice: { transfers: T, key, ring_meta, sample: true }, bench: { models, runs, versions: { v1: 'SAMPLE version one', v2: 'SAMPLE version two' } }, units: { units } };
 }
 
-/* ---------- a small 3D force layout: grid-hashed repulsion, springs on account pairs, weak gravity ---------- */
-function layout(N, links) {
+/* ---------- the crowd's layout: grid-hashed repulsion, springs, ring accounts pinned to their groups, crowd kept behind ---------- */
+function crowdLayout(N, links, pinned, pinPos) {
   const rnd = seeded(20261017); const P = new Float32Array(N * 3), V = new Float32Array(N * 3), F = new Float32Array(N * 3);
-  const R0 = 40 * Math.cbrt(N / 100 + 1);
-  for (let i = 0; i < N; i++) { let x, y, z; do { x = rnd() * 2 - 1; y = rnd() * 2 - 1; z = rnd() * 2 - 1; } while (x * x + y * y + z * z > 1); P[i * 3] = x * R0; P[i * 3 + 1] = y * R0; P[i * 3 + 2] = z * R0; }
-  const K = 7, CELL = K * 3, C2 = CELL * CELL, IT = 280; const grid = new Map();
+  for (let i = 0; i < N; i++) {
+    if (pinned[i]) { P[i * 3] = pinPos[i * 3]; P[i * 3 + 1] = pinPos[i * 3 + 1]; P[i * 3 + 2] = pinPos[i * 3 + 2]; continue; }
+    P[i * 3] = (rnd() * 2 - 1) * 200; P[i * 3 + 1] = (rnd() * 2 - 1) * 140; P[i * 3 + 2] = -40 - rnd() * 140;
+  }
+  const K = 9, CELL = K * 3, C2 = CELL * CELL, IT = 220; const grid = new Map();
   const ck = (x, y, z) => ((x + 512) * 1024 + (y + 512)) * 1024 + (z + 512);
   for (let it = 0; it < IT; it++) {
     const alpha = 1 - it / IT; F.fill(0); grid.clear();
@@ -91,35 +94,31 @@ function layout(N, links) {
     }
     for (let q = 0; q < links.length; q++) {
       const u = links[q][0], v = links[q][1]; const ex = P[v * 3] - P[u * 3], ey = P[v * 3 + 1] - P[u * 3 + 1], ez = P[v * 3 + 2] - P[u * 3 + 2];
-      const d = Math.sqrt(ex * ex + ey * ey + ez * ez) || 0.01; const f = (d - K) / d * 0.12;
+      const d = Math.sqrt(ex * ex + ey * ey + ez * ez) || 0.01; const f = (d - K) / d * 0.1;
       F[u * 3] += ex * f; F[u * 3 + 1] += ey * f; F[u * 3 + 2] += ez * f; F[v * 3] -= ex * f; F[v * 3 + 1] -= ey * f; F[v * 3 + 2] -= ez * f;
     }
     const maxStep = 0.5 + 6 * alpha;
-    for (let i = 0; i < N * 3; i += 3) {
-      F[i] -= P[i] * 0.006; F[i + 1] -= P[i + 1] * 0.006; F[i + 2] -= P[i + 2] * 0.006;
-      let vx = (V[i] + F[i]) * 0.55, vy = (V[i + 1] + F[i + 1]) * 0.55, vz = (V[i + 2] + F[i + 2]) * 0.55;
+    for (let i = 0; i < N; i++) {
+      if (pinned[i]) continue; const b = i * 3;
+      F[b] -= P[b] * 0.004; F[b + 1] -= P[b + 1] * 0.006; F[b + 2] -= (P[b + 2] + 100) * 0.006;
+      let vx = (V[b] + F[b]) * 0.55, vy = (V[b + 1] + F[b + 1]) * 0.55, vz = (V[b + 2] + F[b + 2]) * 0.55;
       const len = Math.sqrt(vx * vx + vy * vy + vz * vz); if (len > maxStep) { const s = maxStep / len; vx *= s; vy *= s; vz *= s; }
-      V[i] = vx; V[i + 1] = vy; V[i + 2] = vz; P[i] += vx; P[i + 1] += vy; P[i + 2] += vz;
+      V[b] = vx; V[b + 1] = vy; V[b + 2] = vz; P[b] += vx; P[b + 1] += vy; P[b + 2] = Math.min(-30, P[b + 2] + vz);
     }
   }
-  /* center, and scale so 95 percent of accounts sit within radius 100 */
-  let mx = 0, my = 0, mz = 0; for (let i = 0; i < N; i++) { mx += P[i * 3]; my += P[i * 3 + 1]; mz += P[i * 3 + 2]; } mx /= N || 1; my /= N || 1; mz /= N || 1;
-  const rs = []; for (let i = 0; i < N; i++) { P[i * 3] -= mx; P[i * 3 + 1] -= my; P[i * 3 + 2] -= mz; rs.push(Math.hypot(P[i * 3], P[i * 3 + 1], P[i * 3 + 2])); }
-  rs.sort((a, b) => a - b); const r95 = rs[Math.floor(rs.length * .95)] || 1; const s = 100 / r95;
-  for (let i = 0; i < N * 3; i++) P[i] *= s;
   return P;
 }
 
 /* ---------- boot ---------- */
 async function boot() {
   if (!window.THREE) await loadScript('three.min.js');
-  if (!window.THREE) { const m = $('#stageMsg'); m.hidden = false; m.textContent = 'three.js did not load from the CDN or from the local copy (three.min.js in this folder).'; return; }
+  if (!window.THREE) { const m = $('#stageMsg'); m.hidden = false; m.textContent = 'three.js did not load: three.min.js is missing from this folder.'; return; }
   await Promise.all([loadScript(DATA + 'slice.js'), loadScript(DATA + 'bench_results.js'), loadScript(DATA + 'units.js')]);
   let sample = false;
   if (!(window.SLICE && window.SLICE.transfers && window.BENCH && window.BENCH.models && window.BENCH.runs)) {
     const s = makeSample(); window.SLICE = s.slice; window.BENCH = s.bench; window.UNITS = s.units; sample = true;
   }
-  try { init(sample); } catch (e) { const m = $('#stageMsg'); m.hidden = false; m.textContent = 'The page could not draw the network: ' + e.message; throw e; }
+  init(sample);
 }
 
 function init(sample) {
@@ -127,350 +126,359 @@ function init(sample) {
   const SL = window.SLICE, B = window.BENCH, U = window.UNITS && window.UNITS.units ? window.UNITS : null;
   if (sample) { const b = $('#srcBadge'); b.hidden = false; b.textContent = 'SAMPLE: made-up network, a data file was missing'; }
 
-  /* transfers, sorted by time */
-  const TR = SL.transfers.map(r => { const k = SL.key[r[0]] || [0, -1]; return { id: r[0], ts: r[1], from: r[2], to: r[3], paid: +r[4] || 0, cur: r[5] || '', t: parseT(r[1]), label: k[0] ? 1 : 0, ring: k[0] ? String(k[1]) : null }; });
+  /* transfers sorted by time; labeled groups; accounts */
+  const TR = SL.transfers.map(r => { const k = SL.key[r[0]] || [0, -1]; return { id: r[0], from: r[2], to: r[3], paid: +r[4] || 0, cur: r[5] || '', t: parseT(r[1]), label: k[0] ? 1 : 0, ring: k[0] ? String(k[1]) : null }; });
   TR.sort((a, b) => a.t - b.t);
-  const TR_T = TR.map(t => t.t);
   const BYID = {}; TR.forEach(t => BYID[t.id] = t);
   const RINGS = {}; TR.forEach(t => { if (t.label) (RINGS[t.ring] = RINGS[t.ring] || []).push(t); });
   const RING_IDS = Object.keys(RINGS).sort((a, b) => +a - +b); const NR = RING_IDS.length; const NTRUTH = TR.filter(t => t.label).length;
   const shapeOf = r => (SL.ring_meta && SL.ring_meta[r] && SL.ring_meta[r].shape) || 'other';
-
-  /* accounts */
   const idx = {}, nodes = [];
-  const nodeOf = a => { if (!(a in idx)) { idx[a] = nodes.length; nodes.push({ a, deg: 0, t: Infinity, rings: [] }); } return idx[a]; };
-  TR.forEach(t => {
-    const u = nodeOf(t.from), v = nodeOf(t.to); t.u = u; t.v = v; nodes[u].deg++; if (v !== u) nodes[v].deg++;
-    nodes[u].t = Math.min(nodes[u].t, t.t); nodes[v].t = Math.min(nodes[v].t, t.t);
-    if (t.label) { [u, v].forEach(n => { if (!nodes[n].rings.includes(t.ring)) nodes[n].rings.push(t.ring); }); }
-  });
-  const RING_ACCTS = new Set(nodes.filter(n => n.rings.length).map(n => n.a));
-  const pairs = new Map(); TR.forEach(t => { if (t.u !== t.v) { const k = t.u < t.v ? t.u * 100000 + t.v : t.v * 100000 + t.u; pairs.set(k, [t.u, t.v]); } });
-  const POS = layout(nodes.length, [...pairs.values()]);
-  const DE = TR.filter(t => t.u !== t.v);   /* drawable transfers (an account paying itself has no line) */
+  const nodeOf = a => { if (!(a in idx)) { idx[a] = nodes.length; nodes.push({ a, t: Infinity, ring: null }); } return idx[a]; };
+  TR.forEach(t => { t.u = nodeOf(t.from); t.v = nodeOf(t.to); nodes[t.u].t = Math.min(nodes[t.u].t, t.t); nodes[t.v].t = Math.min(nodes[t.v].t, t.t); if (t.label) { if (nodes[t.u].ring == null) nodes[t.u].ring = t.ring; if (nodes[t.v].ring == null) nodes[t.v].ring = t.ring; } });
+  const RING_ACCTS = new Set(nodes.filter(n => n.ring != null).map(n => n.a));
   const lastTail = TR.length ? TR[TR.length - 1].t : SPAN;
-  $('#sub').textContent = 'Accounts are spheres, transfers are lines: ' + fmtN(TR.length) + ' transfers among ' + fmtN(nodes.length) + ' accounts' + (sample ? ' (SAMPLE).' : ' from IBM\'s synthetic AMLworld file, Sep 1 to 10, 2022.');
 
-  /* units: ring index to neighborhood, and IBM's own shape name per neighborhood */
+  /* units: ring index to neighborhood; IBM's own shape name per neighborhood */
   const RU = {}, UINFO = {};
   if (U) U.units.forEach(u => { if (u.ring_id != null && u.ring_id !== '') RU[String(u.ring_id)] = u.id; });
-  B.runs.forEach(r => { if (!UINFO[r.unit]) UINFO[r.unit] = { ibm: r.ibm_shape && r.ibm_shape !== 'None' ? r.ibm_shape : null, shape: r.shape, expected: r.expected }; });
+  B.runs.forEach(r => { if (!UINFO[r.unit]) UINFO[r.unit] = { ibm: r.ibm_shape && r.ibm_shape !== 'None' ? r.ibm_shape : null }; });
   RING_IDS.forEach(r => { if (RU[r]) return; const ids = new Set(RINGS[r].map(t => t.id)); const run = B.runs.find(x => x.expected === 'ring' && (x.flagged_transfer_ids || []).some(id => ids.has(id))); if (run) RU[r] = run.unit; });
-  const ibmName = r => (RU[r] && UINFO[RU[r]] && UINFO[RU[r]].ibm) || shapeOf(r).toUpperCase();
+  const ibmRaw = r => (RU[r] && UINFO[RU[r]] && UINFO[RU[r]].ibm) || null;
+  const sentence = s => { s = String(s || '').toLowerCase(); return s.charAt(0).toUpperCase() + s.slice(1); };
+  const ibmName = r => sentence(ibmRaw(r) || shapeOf(r));   /* IBM's own name from the run's ibm_shape, in sentence case */
+  const cardName = r => ibmName(r);
 
-  /* models: every number below is recounted from the runs, the same rule as ../../app.js (a group is found when at least half its labeled transfers are flagged) */
-  const MODELS = B.models.map(m => ({ id: m.id, family: m.family || m.id.split('/')[0], version: m.version || 'v1', meta: m }));
-  function derive(m) {
+  /* models, recounted from the runs with the flat page's rule: a group is found when at least half its labeled transfers are flagged */
+  const MODELS = B.models.map(m => ({ id: m.id, family: m.family || m.id.split('/')[0], version: m.version || 'v1', row: m }));
+  const UR = {}; Object.keys(RU).forEach(r => UR[RU[r]] = r);
+  MODELS.forEach(m => {
     const R = B.runs.filter(r => r.model === m.id && (r.version || 'v1') === m.version);
     const F = new Set(), flagRun = {};
     R.forEach(r => (r.flagged_transfer_ids || []).forEach(id => { if (BYID[id]) { F.add(id); if (!flagRun[id]) flagRun[id] = r; } }));
-    const found = new Set(); RING_IDS.forEach(r => { const h = RINGS[r].filter(t => F.has(t.id)).length; if (h / RINGS[r].length >= .5) found.add(r); });
+    /* caught = the engine's own ring_found per run (it also rules out sweeps); recount only when the field is absent */
+    const found = new Set(); const hasRF = R.some(r => typeof r.ring_found === 'boolean');
+    if (hasRF) R.forEach(r => { if (r.ring_found === true && UR[r.unit] != null) found.add(UR[r.unit]); });
+    else RING_IDS.forEach(r => { const h = RINGS[r].filter(t => F.has(t.id)).length; if (h / RINGS[r].length >= .5) found.add(r); });
     let tp = 0; F.forEach(id => { if (BYID[id].label) tp++; });
+    if (m.row && typeof m.row.tp === 'number' && m.row.tp <= NTRUTH) tp = m.row.tp;
+    m.rowFound = m.row && typeof m.row.rings_found === 'number' ? m.row.rings_found : null;
     const falseRuns = R.filter(r => r.expected === 'ordinary' && r.verdict === 'ring' && (r.flagged_transfer_ids || []).length);
     const touches = r => Array.isArray(r.ring_accounts_flagged) ? r.ring_accounts_flagged.length > 0 : (r.flagged_transfer_ids || []).some(id => { const t = BYID[id]; return t && (RING_ACCTS.has(t.from) || RING_ACCTS.has(t.to)); });
     const fa = new Set(); R.filter(r => r.verdict === 'ring').forEach(r => { if (Array.isArray(r.flagged_accounts)) r.flagged_accounts.forEach(a => fa.add(a)); else (r.flagged_transfer_ids || []).forEach(id => { const t = BYID[id]; if (t) { fa.add(t.from); fa.add(t.to); } }); });
     let fin = 0; fa.forEach(a => { if (RING_ACCTS.has(a)) fin++; });
-    m.R = R; m.F = F; m.flagRun = flagRun; m.found = found; m.tp = tp; m.falseRuns = falseRuns; m.g = falseRuns.filter(touches).length; m.fa = fa.size; m.fin = fin;
-    m.prec = F.size ? tp / F.size : 0; m.label = prettyModel(m.id) + ' ' + m.version;
-    return m;
-  }
-  MODELS.forEach(derive);
+    const al = m.row && m.row.account_level; let faN = fa.size; if (al && al.flagged_accounts) { faN = al.flagged_accounts; fin = al.flagged_accounts_in_a_ring; }
+    Object.assign(m, { R, F, flagRun, found, tp, falseRuns, g: falseRuns.filter(touches).length, fa: faN, fin, prec: F.size ? tp / F.size : 0, label: prettyModel(m.id) + ' ' + m.version });
+  });
   const famCaught = r => [...new Set(MODELS.filter(m => m.found.has(r)).map(m => m.family))];
+
+  /* ---------- per-group layout by IBM's shape name: star, ring, columns, layers ---------- */
+  function shapeKind(r, ts) {
+    const n = String(ibmRaw(r) || shapeOf(r)).toUpperCase();
+    if (ts.length <= 1) return 'single';
+    if (/FAN/.test(n)) return 'star';
+    if (/CYCLE/.test(n)) return 'ring';
+    if (/SCATTER|GATHER/.test(n)) return 'columns';
+    if (/STACK|BIPARTITE|CHAIN/.test(n)) return 'layers';
+    return 'columns';
+  }
+  function localLayout(r) {
+    const ts = RINGS[r].filter(t => t.u !== t.v);
+    const ns = []; ts.forEach(t => { if (!ns.includes(t.u)) ns.push(t.u); if (!ns.includes(t.v)) ns.push(t.v); });
+    const out = {}, inn = {}; ns.forEach(n => { out[n] = 0; inn[n] = 0; }); ts.forEach(t => { out[t.u]++; inn[t.v]++; });
+    const kind = shapeKind(r, ts); const P = {}; const R = 17;
+    const role = n => out[n] > 0 && inn[n] === 0 ? 0 : inn[n] > 0 && out[n] === 0 ? 2 : 1;
+    const spread = (list, gap, max) => { const k = list.length; const s = k > 1 ? Math.min(gap, max / (k - 1)) : 0; return list.map((n, i) => (i - (k - 1) / 2) * s); };
+    if (kind === 'single') { const t = ts[0]; P[t.u] = [0, 5]; P[t.v] = [0, -5]; }
+    else if (kind === 'star') {
+      const hub = ns.slice().sort((a, b) => (out[b] + inn[b]) - (out[a] + inn[a]))[0]; P[hub] = [0, 0];
+      const rest = ns.filter(n => n !== hub); rest.forEach((n, i) => { const a = -Math.PI / 2 + i / rest.length * Math.PI * 2; P[n] = [Math.cos(a) * R, Math.sin(a) * R]; });
+    } else if (kind === 'ring') {
+      const order = []; const seen = new Set(); let cur = ns[0];
+      while (cur != null && !seen.has(cur)) { order.push(cur); seen.add(cur); const nx = ts.find(t => t.u === cur && !seen.has(t.v)); cur = nx ? nx.v : null; }
+      ns.forEach(n => { if (!seen.has(n)) order.push(n); });
+      order.forEach((n, i) => { const a = -Math.PI / 2 + i / order.length * Math.PI * 2; P[n] = [Math.cos(a) * R * 0.9, Math.sin(a) * R * 0.9]; });
+    } else if (kind === 'columns') {
+      [0, 1, 2].forEach(c => { const col = ns.filter(n => role(n) === c); const ys = spread(col, 6, 2 * R); col.forEach((n, i) => P[n] = [(c - 1) * R, -ys[i]]); });
+    } else {
+      const rows = [0, 1, 2].map(c => ns.filter(n => role(n) === c)).filter(l => l.length);
+      rows.forEach((row, ri) => { const xs = spread(row, 9, 2 * R); const y = rows.length > 1 ? (rows.length - 1) / 2 * 14 - ri * 14 : 0; row.forEach((n, i) => P[n] = [xs[i], y]); });
+    }
+    return { r, ts, ns, P, kind };
+  }
+  const SHAPE_ORDER = ['FAN-OUT', 'FAN-IN', 'CYCLE', 'SCATTER-GATHER', 'GATHER-SCATTER', 'STACK', 'BIPARTITE'];
+  const rank = r => { const n = ibmName(r).toUpperCase(); const i = SHAPE_ORDER.findIndex(s => n.indexOf(s) === 0); return i < 0 ? SHAPE_ORDER.length : i; };
+  const GROUPS = RING_IDS.map(localLayout);
+  const shaped = GROUPS.filter(g => g.kind !== 'single').sort((a, b) => rank(a.r) - rank(b.r) || +a.r - +b.r);
+  const singles = GROUPS.filter(g => g.kind === 'single');
+  const COLS = Math.min(4, Math.max(1, shaped.length)), ROWS = Math.ceil(shaped.length / COLS), CW = 68, CH = 58;
+  const top = ((ROWS - 1) * CH + (singles.length ? 46 : 0)) / 2;
+  shaped.forEach((g, i) => { const c = i % COLS, row = Math.floor(i / COLS); g.c = [(c - (COLS - 1) / 2) * CW, top - row * CH, (row - (ROWS - 1) / 2) * 10]; });
+  const singleY = top - (ROWS - 1) * CH - 50, SW = Math.min(24, (COLS * CW) / Math.max(1, singles.length));
+  singles.forEach((g, i) => { g.c = [(i - (singles.length - 1) / 2) * SW, singleY, ((ROWS - 1) / 2 + 0.6) * 10]; });
+  GROUPS.forEach(g => { g.W = {}; g.ns.forEach(n => g.W[n] = [g.c[0] + g.P[n][0], g.c[1] + g.P[n][1], g.c[2]]); });
+  const GBY = {}; GROUPS.forEach(g => GBY[g.r] = g);
 
   /* ---------- three.js scene ---------- */
   const stage = $('#stage'), cv = $('#cv');
-  let renderer;
+  let renderer = null;
   try { renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, powerPreference: 'high-performance' }); }
-  catch (e) { const m = $('#stageMsg'); m.hidden = false; m.textContent = 'This browser could not start WebGL, so the 3D network cannot draw. The roster and numbers still read from the data.'; renderer = null; }
+  catch (e) { const m = $('#stageMsg'); m.hidden = false; m.textContent = 'This browser could not start WebGL, so the 3D groups cannot draw. The roster and numbers still read from the data.'; }
   const scene = new THREE.Scene(); scene.background = new THREE.Color('#14181F');
-  scene.fog = new THREE.Fog('#14181F', 150, 520);
-  const camera = new THREE.PerspectiveCamera(42, 1, 1, 4000);
-  scene.add(new THREE.HemisphereLight(0xd6e0ec, 0x1a2130, 2.4));
-  const sun = new THREE.DirectionalLight(0xffffff, 1.1); sun.position.set(1, 2, 1.5); scene.add(sun);
+  const camera = new THREE.PerspectiveCamera(38, 1, 1, 4000);
+  scene.add(new THREE.HemisphereLight(0xdfe6ef, 0x1a2130, 2.6));
+  const sun = new THREE.DirectionalLight(0xffffff, 1.2); sun.position.set(0.6, 1, 1.4); scene.add(sun);
+  const tmpC = new THREE.Color(), M4 = new THREE.Matrix4(), Q = new THREE.Quaternion(), V1 = new THREE.Vector3(), V2 = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0), SC = new THREE.Vector3();
 
-  const vec = i => [POS[i * 3], POS[i * 3 + 1], POS[i * 3 + 2]];
-  function segGeometry(list) {
-    const a = new Float32Array(list.length * 6);
-    list.forEach((t, k) => { const p = vec(t.u), q = vec(t.v); a.set(p, k * 6); a.set(q, k * 6 + 3); });
-    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(a, 3)); return g;
+  /* group accounts: one instanced sphere mesh */
+  const GN = []; GROUPS.forEach(g => g.ns.forEach(n => GN.push({ g, n, p: g.W[n] })));
+  const gSph = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 16, 12), new THREE.MeshLambertMaterial({ color: 0xffffff }), Math.max(1, GN.length));
+  GN.forEach((x, i) => { M4.makeScale(1.7, 1.7, 1.7); M4.setPosition(x.p[0], x.p[1], x.p[2]); gSph.setMatrixAt(i, M4); gSph.setColorAt(i, tmpC.set(COL.node)); });
+  gSph.count = GN.length; gSph.computeBoundingSphere(); scene.add(gSph);
+  /* group transfers: instanced tubes (cylinders) with arrowheads (cones); missed transfers as instanced dots */
+  const NFAM = new Set(MODELS.map(m => m.family)).size || 1;
+  GROUPS.forEach(g => { g.agree = famCaught(g.r).length; g.w = 0.75 + 0.75 * g.agree / NFAM; });   /* 0.75x to 1.5x */
+  const GE = []; GROUPS.forEach(g => g.ts.forEach(t => GE.push({ g, t, a: g.W[t.u], b: g.W[t.v] })));
+  const TUBE_R = 0.6, NODE_R = 1.7, CONE_H = 2.8;
+  const tube = new THREE.InstancedMesh(new THREE.CylinderGeometry(TUBE_R, TUBE_R, 1, 8, 1), new THREE.MeshLambertMaterial({ color: 0xffffff }), Math.max(1, GE.length));
+  const cone = new THREE.InstancedMesh(new THREE.ConeGeometry(1.3, CONE_H, 12), new THREE.MeshLambertMaterial({ color: 0xffffff }), Math.max(1, GE.length));
+  const DOTS = []; GE.forEach((e, k) => { const L = Math.hypot(e.b[0] - e.a[0], e.b[1] - e.a[1], e.b[2] - e.a[2]) - 2 * NODE_R; const n = Math.max(1, Math.floor(L / 2.2)); for (let i = 1; i <= n; i++) { const f = (NODE_R + L * i / (n + 1)) / (L + 2 * NODE_R); DOTS.push({ k, p: [e.a[0] + (e.b[0] - e.a[0]) * f, e.a[1] + (e.b[1] - e.a[1]) * f, e.a[2] + (e.b[2] - e.a[2]) * f] }); } });
+  const dots = new THREE.InstancedMesh(new THREE.SphereGeometry(0.55, 8, 6), new THREE.MeshBasicMaterial({ color: COL.miss, transparent: true, opacity: 0.38, depthWrite: false }), Math.max(1, DOTS.length));
+  function setEdge(k, q) {   /* q: 0 hidden, 1 full length */
+    const e = GE[k]; V1.set(e.a[0], e.a[1], e.a[2]); V2.set(e.b[0], e.b[1], e.b[2]); const dir = V2.clone().sub(V1); const L = dir.length(); dir.normalize();
+    const full = Math.max(0.01, L - NODE_R - CONE_H - NODE_R * 0.4); const len = Math.max(0.0001, full * q);
+    const start = V1.clone().addScaledVector(dir, NODE_R * 0.8);
+    Q.setFromUnitVectors(UP, dir);
+    M4.compose(start.clone().addScaledVector(dir, len / 2), Q, SC.set(e.g.w, len, e.g.w)); tube.setMatrixAt(k, M4);
+    const s = q > 0.02 ? 1 : 0.0001; M4.compose(start.clone().addScaledVector(dir, len + CONE_H / 2), Q, SC.set(s, s, s)); cone.setMatrixAt(k, M4);
   }
-  /* all ordinary transfers: one merged hairline geometry, revealed in time order with drawRange */
-  const hair = new THREE.LineSegments(segGeometry(DE), new THREE.LineBasicMaterial({ color: COL.hair, transparent: true, opacity: 0.16, depthWrite: false }));
-  hair.userData.times = DE.map(t => t.t); scene.add(hair);
+  GE.forEach((e, k) => { setEdge(k, 1); tube.setColorAt(k, tmpC.set(COL.pending)); cone.setColorAt(k, tmpC.set(COL.pending)); });
+  tube.computeBoundingSphere(); cone.computeBoundingSphere(); scene.add(tube); scene.add(cone);
+  DOTS.forEach((d, i) => { M4.makeTranslation(d.p[0], d.p[1], d.p[2]); dots.setMatrixAt(i, M4); }); dots.computeBoundingSphere(); scene.add(dots);
 
-  /* accounts: one instanced mesh, instances ordered by first appearance so the scrub reveals them with .count */
-  const ORDER = nodes.map((n, i) => i).sort((a, b) => nodes[a].t - nodes[b].t);
-  const INST = new Int32Array(nodes.length); ORDER.forEach((n, k) => INST[n] = k);
-  const NODE_T = ORDER.map(n => nodes[n].t);
-  const spheres = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 12, 8), new THREE.MeshLambertMaterial({ color: 0xffffff }), nodes.length);
-  const M4 = new THREE.Matrix4(), tmpC = new THREE.Color();
-  ORDER.forEach((n, k) => { const r = 0.55 + 0.3 * Math.sqrt(nodes[n].deg); const p = vec(n); M4.makeScale(r, r, r); M4.setPosition(p[0], p[1], p[2]); spheres.setMatrixAt(k, M4); spheres.setColorAt(k, tmpC.set(COL.base)); });
-  spheres.instanceMatrix.needsUpdate = true; spheres.computeBoundingSphere(); scene.add(spheres);
-  const curCol = new Float32Array(nodes.length * 3), tgtCol = new Float32Array(nodes.length * 3);
-  tmpC.set(COL.base); for (let i = 0; i < nodes.length; i++) { curCol.set([tmpC.r, tmpC.g, tmpC.b], i * 3); tgtCol.set([tmpC.r, tmpC.g, tmpC.b], i * 3); }
-
-  const MAT = {
-    ok: new THREE.LineBasicMaterial({ color: COL.ok, transparent: true, opacity: 0, depthWrite: false }),
-    bad: new THREE.LineDashedMaterial({ color: COL.bad, transparent: true, opacity: 0, dashSize: 2.4, gapSize: 1.6, depthWrite: false }),
-    miss: new THREE.LineDashedMaterial({ color: COL.miss, transparent: true, opacity: 0, dashSize: 0.55, gapSize: 1.4, depthWrite: false }),
-  };
-  const OPAC = { ok: 0.95, bad: 0.85, miss: 0.85, caught: 1 };
-  function mkLines(list, kind) {
-    const o = new THREE.LineSegments(segGeometry(list), MAT[kind].clone());
-    if (kind !== 'ok') o.computeLineDistances();
-    o.userData = { list, times: list.map(t => t.t), kind, target: OPAC[kind] }; o.renderOrder = 2; scene.add(o); return o;
+  /* the crowd: off by default; faint dust behind the groups, ring accounts pinned where their group sits */
+  const pinned = new Uint8Array(nodes.length), pinPos = new Float32Array(nodes.length * 3);
+  GN.forEach(x => { if (!pinned[x.n]) { pinned[x.n] = 1; pinPos.set(x.p, x.n * 3); } });
+  const pairs = new Map(); TR.forEach(t => { if (t.u !== t.v) { const k = t.u < t.v ? t.u * 100000 + t.v : t.v * 100000 + t.u; pairs.set(k, [t.u, t.v]); } });
+  let CP = null, crowd = null;
+  function buildCrowd() {
+    CP = crowdLayout(nodes.length, [...pairs.values()], pinned, pinPos);
+    const vec = i => [CP[i * 3], CP[i * 3 + 1], CP[i * 3 + 2]];
+    const lineObj = (list, mat) => { const a = new Float32Array(Math.max(1, list.length) * 6); list.forEach((t, k) => { a.set(vec(t.u), k * 6); a.set(vec(t.v), k * 6 + 3); }); const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(a, 3)); g.setDrawRange(0, list.length * 2); const o = new THREE.LineSegments(g, mat); o.userData = { list, times: list.map(t => t.t) }; return o; };
+    const hairList = TR.filter(t => t.u !== t.v && !t.label);
+    const hair = lineObj(hairList, new THREE.LineBasicMaterial({ color: COL.dust, transparent: true, opacity: 0, depthWrite: false }));
+    const free = nodes.map((n, i) => i).filter(i => !pinned[i]).sort((a, b) => nodes[a].t - nodes[b].t);
+    const dust = new THREE.InstancedMesh(new THREE.SphereGeometry(0.9, 6, 4), new THREE.MeshBasicMaterial({ color: COL.dust, transparent: true, opacity: 0, depthWrite: false }), Math.max(1, free.length));
+    free.forEach((n, i) => { M4.makeTranslation(CP[n * 3], CP[n * 3 + 1], CP[n * 3 + 2]); dust.setMatrixAt(i, M4); }); dust.count = free.length; dust.userData.times = free.map(n => nodes[n].t);
+    crowd = { hair, dust, red: null, vec, lineObj, target: 0 };
+    scene.add(hair); scene.add(dust); buildRed();
   }
-  const focus = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: COL.focus, transparent: true, opacity: 0.9, depthTest: false }));
-  focus.renderOrder = 5; focus.visible = false; scene.add(focus);
+  function buildRed() {
+    if (!crowd) return; if (crowd.red) { scene.remove(crowd.red); crowd.red.geometry.dispose(); crowd.red.material.dispose(); }
+    const list = TR.filter(t => t.u !== t.v && !t.label && S.m && S.m.F.has(t.id));
+    crowd.red = crowd.lineObj(list, new THREE.LineDashedMaterial({ color: COL.bad, transparent: true, opacity: crowd.hair.material.opacity * 7, dashSize: 2.4, gapSize: 1.6, depthWrite: false }));
+    crowd.red.computeLineDistances(); scene.add(crowd.red); applyScrub();
+  }
 
   /* ---------- state ---------- */
-  const S = { m: null, layers: [], fading: [], caught: null, rings: [], ringState: {}, queue: [], nextCatch: 0, scrub: Infinity, playing: false, hover: null, openUntil: 0 };
+  const S = { m: null, scrub: Infinity, playing: false, rings: [], st: {}, queue: [], nextCatch: 0, hover: null, openUntil: 0, crowdOn: false };
   const upper = (arr, x) => { let lo = 0, hi = arr.length; while (lo < hi) { const mid = (lo + hi) >> 1; if (arr[mid] <= x) lo = mid + 1; else hi = mid; } return lo; };
+  const TR_T = TR.map(t => t.t);
   function applyScrub() {
     const x = S.scrub;
-    hair.geometry.setDrawRange(0, upper(hair.userData.times, x) * 2);
-    spheres.count = upper(NODE_T, x);
-    S.layers.concat(S.fading).forEach(o => { if (o.userData.times) o.geometry.setDrawRange(0, upper(o.userData.times, x) * 2); });
-    $('#when').textContent = x === Infinity ? 'Sep 10, plus the file\'s tail to ' + fmtWhen(lastTail).split(',')[0] : fmtWhen(x);
-    $('#count').textContent = fmtN(upper(TR_T, x)) + ' of ' + fmtN(TR.length) + ' transfers shown';
+    if (crowd) { [crowd.hair, crowd.red].forEach(o => o && o.geometry.setDrawRange(0, upper(o.userData.times, x) * 2)); crowd.dust.count = upper(crowd.dust.userData.times, x); }
+    $('#when').textContent = (x === Infinity ? 'Sep 10 + tail to ' + fmtWhen(lastTail).split(',')[0] : fmtWhen(x)) + ' · ' + fmtN(upper(TR_T, x)) + ' transfers';
+    if (S.m) updateRosterCount();
   }
 
-  /* ---------- caught layer: one dynamic geometry holding every found ring's flagged lines ---------- */
-  function buildCaught(m) {
-    const segs = [], ranges = {};
-    S.rings = RING_IDS.filter(r => m.found.has(r)).map(r => {
-      const list = RINGS[r].filter(t => t.u !== t.v && m.F.has(t.id)); const tc = Math.max(...RINGS[r].filter(t => m.F.has(t.id)).map(t => t.t));
-      ranges[r] = [segs.length, list.length]; list.forEach(t => segs.push(t)); return { r, tc, list };
-    }).sort((a, b) => a.tc - b.tc);
-    const g = new THREE.BufferGeometry(); const arr = new Float32Array(Math.max(1, segs.length) * 6);
-    segs.forEach((t, k) => { const p = vec(t.u); arr.set(p, k * 6); arr.set(p, k * 6 + 3); });
-    const attr = new THREE.BufferAttribute(arr, 3); attr.setUsage(THREE.DynamicDrawUsage); g.setAttribute('position', attr); g.setDrawRange(0, segs.length * 2);
-    const o = new THREE.LineSegments(g, MAT.ok.clone()); o.userData = { list: segs, kind: 'caught', target: OPAC.caught, ranges }; o.renderOrder = 3; scene.add(o);
-    S.ringState = {}; S.rings.forEach(x => S.ringState[x.r] = { start: null, done: false, card: null });
-    return o;
-  }
-  function writeCaught(now) {
-    const o = S.caught; if (!o) return false; const arr = o.geometry.attributes.position.array; let busy = false, dirty = false;
-    S.rings.forEach(x => {
-      const st = S.ringState[x.r]; if (st.done) return;
-      const [s0, n] = o.userData.ranges[x.r];
-      const p = st.start == null ? 0 : REDUCED() ? 1 : (now - st.start) / RESOLVE_MS;
-      for (let k = 0; k < n; k++) {
-        const t = o.userData.list[s0 + k]; const d = n > 1 ? 0.4 * k / (n - 1) : 0; const q = easeOut((p - d) / 0.6);
-        const a = vec(t.u), b = vec(t.v); arr[(s0 + k) * 6 + 3] = a[0] + (b[0] - a[0]) * q; arr[(s0 + k) * 6 + 4] = a[1] + (b[1] - a[1]) * q; arr[(s0 + k) * 6 + 5] = a[2] + (b[2] - a[2]) * q;
+  /* per-edge and per-node targets, recomputed every frame (113 tubes, a few hundred dots: cheap) */
+  const eCur = new Float32Array(GE.length * 3).fill(0.5), nCur = new Float32Array(GN.length * 3).fill(0.65);
+  const dotScale = new Float32Array(DOTS.length);
+  function stepGroups(now, dt) {
+    const k = REDUCED() ? 1 : 1 - Math.exp(-dt / TAU); const m = S.m; const c = new THREE.Color();
+    GE.forEach((e, i) => {
+      const t = e.t, shown = t.t <= S.scrub, fl = m.F.has(t.id), found = m.found.has(t.ring), st = S.st[t.ring];
+      let q = 0, col = COL.pending;
+      if (shown && fl) {
+        if (found && st && st.start != null) { col = COL.ok; const p = REDUCED() ? 1 : (now - st.start) / RESOLVE_MS; const order = e.g.ts.indexOf(t); const n = e.g.ts.length; const d = n > 1 ? 0.4 * order / (n - 1) : 0; q = easeOut((p - d) / 0.6); }
+        else { q = 1; col = found ? COL.building : COL.pending; }
       }
-      dirty = true;
-      if (st.start != null && p >= 1) st.done = true; else if (st.start != null) busy = true;
-      if (st.start == null) st.done = true;   /* collapsed and parked until caught */
+      e.miss = shown && !fl;
+      setEdge(i, q); c.set(col);
+      eCur[i * 3] += (c.r - eCur[i * 3]) * k; eCur[i * 3 + 1] += (c.g - eCur[i * 3 + 1]) * k; eCur[i * 3 + 2] += (c.b - eCur[i * 3 + 2]) * k;
+      tmpC.setRGB(eCur[i * 3], eCur[i * 3 + 1], eCur[i * 3 + 2]); tube.setColorAt(i, tmpC); cone.setColorAt(i, tmpC);
     });
-    if (dirty) o.geometry.attributes.position.needsUpdate = true;
-    return busy;
-  }
-
-  /* ---------- sphere colors: caught ring members green, false-alarm endpoints red, missed endpoints amber ---------- */
-  let NODE_BAD = new Set(), NODE_MISS = new Set();
-  function nodeTargets() {
-    const ok = new Set(); S.rings.forEach(x => { const st = S.ringState[x.r]; if (st && st.start != null) RINGS[x.r].forEach(t => { ok.add(t.u); ok.add(t.v); }); });
-    const c = new THREE.Color();
-    for (let i = 0; i < nodes.length; i++) {
-      c.set(ok.has(i) ? COL.ok : NODE_BAD.has(i) ? COL.bad : NODE_MISS.has(i) ? COL.miss : COL.base);
-      tgtCol[i * 3] = c.r; tgtCol[i * 3 + 1] = c.g; tgtCol[i * 3 + 2] = c.b;
+    tube.instanceMatrix.needsUpdate = true; cone.instanceMatrix.needsUpdate = true; tube.instanceColor.needsUpdate = true; cone.instanceColor.needsUpdate = true;
+    let dMoved = false;
+    DOTS.forEach((d, i) => { const tg = GE[d.k].miss ? 1 : 0; const v = dotScale[i] + (tg - dotScale[i]) * k; if (Math.abs(v - dotScale[i]) > 1e-4 || (v !== tg && Math.abs(v - tg) < 1e-3)) { dotScale[i] = Math.abs(v - tg) < 1e-3 ? tg : v; const s = Math.max(0.0001, dotScale[i]); M4.makeScale(s, s, s); M4.setPosition(d.p[0], d.p[1], d.p[2]); dots.setMatrixAt(i, M4); dMoved = true; } });
+    if (dMoved) dots.instanceMatrix.needsUpdate = true;
+    GN.forEach((x, i) => { const st = S.st[x.g.r]; c.set(st && st.start != null ? COL.ok : COL.node); nCur[i * 3] += (c.r - nCur[i * 3]) * k; nCur[i * 3 + 1] += (c.g - nCur[i * 3 + 1]) * k; nCur[i * 3 + 2] += (c.b - nCur[i * 3 + 2]) * k; tmpC.setRGB(nCur[i * 3], nCur[i * 3 + 1], nCur[i * 3 + 2]); gSph.setColorAt(i, tmpC); });
+    gSph.instanceColor.needsUpdate = true;
+    if (crowd) {
+      const tg = S.crowdOn ? 1 : 0; crowd.target += (tg - crowd.target) * k; const o = crowd.target;
+      crowd.hair.material.opacity = 0.10 * o; crowd.dust.material.opacity = 0.10 * o; if (crowd.red) crowd.red.material.opacity = 0.33 * o;
+      const vis = o > 0.005; crowd.hair.visible = crowd.dust.visible = vis; if (crowd.red) crowd.red.visible = vis;
     }
   }
-  function stepColors(dt) {
-    const k = REDUCED() ? 1 : 1 - Math.exp(-dt / FADE_TAU); let moved = false;
-    for (let i = 0; i < nodes.length; i++) {
-      let ch = false;
-      for (let c = 0; c < 3; c++) { const j = i * 3 + c; const d = tgtCol[j] - curCol[j]; if (Math.abs(d) > 0.002) { curCol[j] += d * k; ch = true; } else if (d !== 0) { curCol[j] = tgtCol[j]; ch = true; } }
-      if (ch) { tmpC.setRGB(curCol[i * 3], curCol[i * 3 + 1], curCol[i * 3 + 2]); spheres.setColorAt(INST[i], tmpC); moved = true; }
-    }
-    if (moved) spheres.instanceColor.needsUpdate = true;
+
+  /* ---------- labels under each group ---------- */
+  const labelsEl = $('#labels'); const LABELS = [];
+  shaped.forEach(g => { const el = document.createElement('div'); el.className = 'glabel'; el.innerHTML = '<div class="n">' + esc(ibmName(g.r)) + '</div><div class="s"></div>'; labelsEl.appendChild(el); el.addEventListener('mouseenter', () => setHover({ r: g.r }, el.getBoundingClientRect())); el.addEventListener('mouseleave', () => setHover(null)); const lo = Math.min(...g.ns.map(n => g.P[n][1])); LABELS.push({ el, g, anchor: [g.c[0], g.c[1] + lo - 4, g.c[2]] }); });
+  if (singles.length) { const el = document.createElement('div'); el.className = 'glabel'; el.innerHTML = '<div class="n">' + singles.length + ' single transfers</div><div class="s">IBM gives these no shape name</div>'; labelsEl.appendChild(el); LABELS.push({ el, g: null, anchor: [0, singleY - 13, singles[0].c[2]] }); }
+  function statusOf(r) { const m = S.m, st = S.st[r]; if (m.found.has(r)) return st && st.start != null ? ['caught', 'caught'] : ['', '']; if (S.scrub !== Infinity) return ['', '']; const hit = RINGS[r].filter(t => m.F.has(t.id)).length; const n = RINGS[r].length; if (hit && hit / n >= .5) return ['partial', 'missed: too broad']; return hit ? ['partial', 'partly, ' + hit + ' of ' + n] : ['missed', 'missed']; }
+  function placeLabels() {
+    const rect = cv.getBoundingClientRect(), srect = stage.getBoundingClientRect();
+    LABELS.forEach(L => {
+      const v = V1.set(L.anchor[0], L.anchor[1], L.anchor[2]).project(camera);
+      L.el.style.left = ((v.x + 1) / 2 * rect.width + rect.left - srect.left) + 'px'; L.el.style.top = ((1 - v.y) / 2 * rect.height + rect.top - srect.top) + 'px';
+      if (L.g) { const [cls, text] = statusOf(L.g.r); L.el.className = 'glabel ' + cls; const s = L.el.lastChild; if (s.textContent !== text) s.textContent = text; }
+    });
   }
 
-  /* ---------- select a model: cross-fade the lit layers, reset the roster, queue the catches ---------- */
+  /* ---------- select a model ---------- */
   function selectModel(m) {
-    S.m = m;
-    S.layers.forEach(o => { o.userData.target = 0; S.fading.push(o); });
-    if (S.caught) { S.caught.userData.target = 0; S.fading.push(S.caught); }
-    const ok = [], bad = [], miss = [];
-    DE.forEach(t => { const fl = m.F.has(t.id); if (t.label) { if (fl) { if (!m.found.has(t.ring)) ok.push(t); } else miss.push(t); } else if (fl) bad.push(t); });
-    NODE_BAD = new Set(); bad.forEach(t => { NODE_BAD.add(t.u); NODE_BAD.add(t.v); });
-    NODE_MISS = new Set(); miss.forEach(t => { NODE_MISS.add(t.u); NODE_MISS.add(t.v); });
-    S.layers = [mkLines(ok, 'ok'), mkLines(bad, 'bad'), mkLines(miss, 'miss')];
-    S.caught = buildCaught(m);
-    S.queue = []; clearRoster(); writeCaught(performance.now()); nodeTargets(); applyScrub(); renderResult(); renderPicker(); setHover(null);
+    S.m = m; S.queue = []; clearRoster();
+    S.rings = RING_IDS.filter(r => m.found.has(r)).map(r => ({ r, tc: Math.max(0, ...RINGS[r].filter(t => m.F.has(t.id)).map(t => t.t)) })).sort((a, b) => a.tc - b.tc);
+    S.st = {}; S.rings.forEach(x => S.st[x.r] = { start: null, card: null });
+    buildRed(); renderResult(); pick.value = m.id + '|' + m.version; setHover(null); applyScrub();
   }
 
-  /* ---------- the result copy: lead with what was caught; one limit line; end on the strongest true number ---------- */
+  /* ---------- result copy: lead with what was caught; one limit line; end on the strongest true number ---------- */
   function renderResult() {
-    const m = S.m;
-    $('#headline').innerHTML = esc(m.label) + ' caught <b class="ok">' + m.found.size + '</b> of ' + (sample ? 'the SAMPLE\'s ' : 'IBM\'s ') + NR + ' laundering rings and traced <b class="ok">' + m.tp + '</b> of ' + NTRUTH + ' laundering transfers; it raised <b>' + m.falseRuns.length + '</b> alarm' + (m.falseRuns.length === 1 ? '' : 's') + ' on ordinary neighborhoods, <b>' + m.g + '</b> of them on accounts that sit inside a ring.';
-    $('#limit').textContent = 'One run per model on a ten-day cut of IBM\'s synthetic file; the labels are IBM\'s generator\'s, the shape names are ours.';
+    const m = S.m; const whose = sample ? 'the SAMPLE\'s ' : 'IBM\'s ';
+    $('#sub').textContent = whose.charAt(0).toUpperCase() + whose.slice(1) + NR + ' labeled laundering rings, each drawn by its shape. Green: caught. Amber dots: missed.';
+    $('#headline').innerHTML = esc(m.label) + ' caught <b class="ok">' + m.found.size + '</b> of ' + whose + NR + ' laundering rings and traced <b class="ok">' + m.tp + '</b> of ' + NTRUTH + ' laundering transfers; it raised <b>' + m.falseRuns.length + '</b> alarm' + (m.falseRuns.length === 1 ? '' : 's') + ' on ordinary neighborhoods, <b>' + m.g + '</b> of them on accounts that sit inside a ring.';
+    $('#limit').innerHTML = ['The data is synthetic (IBM AMLworld) and the labels are IBM\'s generator\'s; one run per model.',
+      'The slice is enriched: ' + (sample ? 'SAMPLE' : '4 percent laundering against 0.1 percent in the file') + ', and its neighborhoods were cut around IBM\'s groups.',
+      'Every laundering transfer in the slice is ACH, which is a tell.'].map(x => '<li>' + esc(x) + '</li>').join('');
     const ringShare = NR ? m.found.size / NR : 0, acctShare = m.fa ? m.fin / m.fa : 0;
     if (m.fa && acctShare > ringShare) $('#strong').innerHTML = '<b>' + Math.round(acctShare * 100) + '%</b>of the accounts it flagged sit inside one of IBM\'s rings (' + fmtN(m.fin) + ' of ' + fmtN(m.fa) + ').';
     else $('#strong').innerHTML = '<b>' + m.found.size + ' of ' + NR + '</b>rings caught, each one carded below.';
-    const ver = (B.versions || {})[m.version]; $('#vnote').textContent = ver ? m.version + ': ' + ver : '';
-    $('#rosterCount').textContent = '0 of ' + NR;
+    updateRosterCount();
   }
 
-  /* ---------- picker: model (grouped by family) and version ---------- */
-  const pick = $('#modelPick');
-  const byName = {}; MODELS.forEach(m => (byName[m.id] = byName[m.id] || []).push(m));
-  const fams = [...new Set(MODELS.map(m => m.family))];
-  pick.innerHTML = fams.map(f => '<optgroup label="' + esc(famName(f)) + '">' + Object.keys(byName).filter(id => byName[id][0].family === f).map(id => '<option value="' + esc(id) + '">' + esc(prettyModel(id)) + '</option>').join('') + '</optgroup>').join('');
-  function renderPicker() {
-    pick.value = S.m.id;
-    $('#versions').innerHTML = byName[S.m.id].map(m => '<button type="button" data-v="' + esc(m.version) + '" aria-pressed="' + (m === S.m) + '">' + esc(m.version) + '</button>').join('');
-  }
-  pick.addEventListener('change', () => { const list = byName[pick.value]; selectModel(list.find(m => m.version === S.m.version) || list[0]); });
-  $('#versions').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const m = byName[S.m.id].find(x => x.version === b.dataset.v); if (m && m !== S.m) selectModel(m); });
+  /* ---------- picker: one list, model and version together (the version chips live behind it) ---------- */
+  const pick = $('#modelPick'); const fams = [...new Set(MODELS.map(m => m.family))];
+  pick.innerHTML = fams.map(f => '<optgroup label="' + esc(famName(f)) + '">' + MODELS.filter(m => m.family === f).map(m => '<option value="' + esc(m.id + '|' + m.version) + '" title="' + esc((B.versions || {})[m.version] || '') + '">' + esc(prettyModel(m.id) + ' · ' + m.version) + '</option>').join('') + '</optgroup>').join('');
+  pick.addEventListener('change', () => { const m = MODELS.find(x => x.id + '|' + x.version === pick.value); if (m) selectModel(m); });
 
   /* ---------- the caught roster ---------- */
   const roster = $('#roster');
   function clearRoster() { roster.querySelectorAll('.rcard').forEach(c => c.remove()); document.querySelectorAll('.fly').forEach(f => f.remove()); $('#rosterEmpty').hidden = false; }
-  function project(i) { const v = new THREE.Vector3(...vec(i)).project(camera); const r = cv.getBoundingClientRect(); return [(v.x + 1) / 2 * r.width + r.left, (1 - v.y) / 2 * r.height + r.top, v.z]; }
-  function miniSvg(r, w, h) {
-    const ts = RINGS[r].filter(t => t.u !== t.v); const ns = new Set(); ts.forEach(t => { ns.add(t.u); ns.add(t.v); });
-    const P = {}; ns.forEach(n => P[n] = project(n));
-    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; ns.forEach(n => { x0 = Math.min(x0, P[n][0]); x1 = Math.max(x1, P[n][0]); y0 = Math.min(y0, P[n][1]); y1 = Math.max(y1, P[n][1]); });
-    const pad = 5, s = Math.min((w - 2 * pad) / Math.max(x1 - x0, 1), (h - 2 * pad) / Math.max(y1 - y0, 1));
-    const ox = (w - (x1 - x0) * s) / 2, oy = (h - (y1 - y0) * s) / 2; const X = n => ((P[n][0] - x0) * s + ox).toFixed(1), Y = n => ((P[n][1] - y0) * s + oy).toFixed(1);
+  function miniSvg(g, w, h) {
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; g.ns.forEach(n => { const p = g.P[n]; x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, -p[1]); y1 = Math.max(y1, -p[1]); });
+    const pad = 5, s = Math.min((w - 2 * pad) / Math.max(x1 - x0, 1), (h - 2 * pad) / Math.max(y1 - y0, 1), 2);
+    const ox = (w - (x1 - x0) * s) / 2, oy = (h - (y1 - y0) * s) / 2; const X = n => ((g.P[n][0] - x0) * s + ox).toFixed(1), Y = n => ((-g.P[n][1] - y0) * s + oy).toFixed(1);
     const F = S.m.F;
-    const lines = ts.map(t => F.has(t.id) ? '<line x1="' + X(t.u) + '" y1="' + Y(t.u) + '" x2="' + X(t.v) + '" y2="' + Y(t.v) + '" stroke="' + COL.ok + '" stroke-width="1.6"/>' : '<line x1="' + X(t.u) + '" y1="' + Y(t.u) + '" x2="' + X(t.v) + '" y2="' + Y(t.v) + '" stroke="' + COL.miss + '" stroke-width="1.4" stroke-dasharray="1 3"/>').join('');
-    const dots = [...ns].map(n => '<circle cx="' + X(n) + '" cy="' + Y(n) + '" r="1.8" fill="#C9D2DD"/>').join('');
-    return { svg: '<svg class="mini" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" aria-hidden="true">' + lines + dots + '</svg>', box: [x0, y0, x1, y1] };
+    const lines = g.ts.map(t => '<line x1="' + X(t.u) + '" y1="' + Y(t.u) + '" x2="' + X(t.v) + '" y2="' + Y(t.v) + '" stroke="' + (F.has(t.id) ? COL.ok : COL.miss) + '" stroke-width="1.6"' + (F.has(t.id) ? '' : ' stroke-dasharray="1 2.5"') + ' stroke-linecap="round"/>').join('');
+    return '<svg class="mini" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" aria-hidden="true">' + lines + g.ns.map(n => '<circle cx="' + X(n) + '" cy="' + Y(n) + '" r="2" fill="#C9D2DD"/>').join('') + '</svg>';
   }
-  function money(r) {
-    const by = {}; RINGS[r].forEach(t => by[t.cur] = (by[t.cur] || 0) + t.paid); const k = Object.keys(by).sort((a, b) => by[b] - by[a]);
-    return k.length ? fmtN(Math.round(by[k[0]])) + ' ' + k[0] + (k.length > 1 ? ' + ' + (k.length - 1) + ' other currenc' + (k.length > 2 ? 'ies' : 'y') : '') : '';
-  }
-  const oneLine = w => { if (!w) return 'No reason recorded for this run.'; const m = String(w).match(/^.*?[.!?](\s|$)/); return (m ? m[0] : String(w)).trim(); };
+  /* rough Sep 2022 US dollar rates, used only to choose which currency to print, never to convert */
+  const CODE = { 'US Dollar': 'USD', Euro: 'EUR', 'UK Pound': 'GBP', 'Swiss Franc': 'CHF', 'Canadian Dollar': 'CAD', 'Australian Dollar': 'AUD', Yuan: 'CNY', Yen: 'JPY', Rupee: 'INR', Ruble: 'RUB', 'Mexican Peso': 'MXN', Shekel: 'ILS', 'Brazil Real': 'BRL', 'Saudi Riyal': 'SAR', Bitcoin: 'BTC' };
+  const USD = { 'US Dollar': 1, Euro: 1, 'UK Pound': 1.15, 'Swiss Franc': 1.03, 'Canadian Dollar': 0.76, 'Australian Dollar': 0.68, Yuan: 0.145, Yen: 0.007, Rupee: 0.0125, Ruble: 0.016, 'Mexican Peso': 0.05, Shekel: 0.29, 'Brazil Real': 0.19, 'Saudi Riyal': 0.27, Bitcoin: 20000 };
+  function money(r) { const by = {}; RINGS[r].forEach(t => by[t.cur] = (by[t.cur] || 0) + t.paid); const k = Object.keys(by).sort((a, b) => by[b] * (USD[b] || 1) - by[a] * (USD[a] || 1)); return k.length ? fmtN(Math.round(by[k[0]])) + ' ' + (CODE[k[0]] || k[0]) + (k.length > 1 ? ' +' + (k.length - 1) : '') : ''; }
+  const oneLine = w0 => { if (!w0) return 'No reason recorded for this run.'; const w = String(w0).replace(/\s*\u2014\s*/g, ', '); const m = String(w).match(/^.*?[.!?](\s|$)/); return (m ? m[0] : String(w)).trim(); };
   const runFor = (m, r) => m.R.find(x => x.unit === RU[r]);
+  function project(p) { const v = V1.set(p[0], p[1], p[2]).project(camera); const r = cv.getBoundingClientRect(); return [(v.x + 1) / 2 * r.width + r.left, (1 - v.y) / 2 * r.height + r.top]; }
   function addCard(r, animate) {
-    const m = S.m; $('#rosterEmpty').hidden = true;
-    const accts = new Set(); RINGS[r].forEach(t => { accts.add(t.from); accts.add(t.to); });
-    const others = famCaught(r).filter(f => f !== m.family).map(famName);
-    const run = runFor(m, r); const why = run && run.why;
-    const mini = miniSvg(r, 64, 44);
-    const card = document.createElement('article'); card.className = 'rcard' + (animate ? ' enter' : ''); card.dataset.ring = r;
-    card.innerHTML = mini.svg + '<div class="rc-t" title="IBM\'s shape name">' + esc(ibmName(r)) + '</div>' +
-      '<div class="rc-m">' + accts.size + ' accounts · ' + RINGS[r].length + ' transfer' + (RINGS[r].length === 1 ? '' : 's') + '</div><div class="rc-m rc-money" title="money moved">' + esc(money(r)) + '</div>' +
-      '<div class="rc-b"><div class="rc-fam">' + (others.length ? 'Also caught by ' + esc(others.join(', ')) : 'No other family caught it') + '</div><div class="rc-why" title="' + esc(why || '') + '">' + esc(oneLine(why)) + '</div></div>';
-    card.addEventListener('mouseenter', () => setHover({ kind: 'ring', r }, card.getBoundingClientRect()));
+    const g = GBY[r]; $('#rosterEmpty').hidden = true;
+    const card = document.createElement('article'); card.className = 'rcard' + (animate ? ' enter' : '');
+    card.innerHTML = miniSvg(g, 44, 40) + '<div><div class="rc-t">' + esc(cardName(r)) + '</div><div class="rc-m" title="money moved">' + esc((RINGS[r].length === 1 ? '1 transfer · ' : '') + money(r)) + '</div></div>';
+    card.addEventListener('mouseenter', () => setHover({ r }, card.getBoundingClientRect()));
     card.addEventListener('mouseleave', () => setHover(null));
-    roster.appendChild(card);
-    const before = roster.scrollLeft; roster.scrollLeft = roster.scrollWidth;
+    roster.appendChild(card); roster.scrollTop = roster.scrollHeight;
     if (animate && !REDUCED()) {
-      const target = card.querySelector('.mini'); target.classList.add('wait');
-      const tr = target.getBoundingClientRect(); const [x0, y0, x1, y1] = mini.box; const sr = stage.getBoundingClientRect();
-      const onScreen = x1 > sr.left && x0 < sr.right && y1 > sr.top && y0 < sr.bottom;
-      const bw = Math.max(x1 - x0, 48), bh = Math.max(y1 - y0, 34); const bx = onScreen ? (x0 + x1) / 2 - bw / 2 : sr.left + sr.width / 2 - bw / 2, by = onScreen ? (y0 + y1) / 2 - bh / 2 : sr.top + sr.height / 2 - bh / 2;
-      const fly = document.createElement('div'); fly.className = 'fly'; fly.innerHTML = mini.svg; fly.style.left = tr.left + 'px'; fly.style.top = tr.top + 'px'; document.body.appendChild(fly);
-      const anim = fly.animate([{ transform: 'translate(' + (bx - tr.left) + 'px,' + (by - tr.top) + 'px) scale(' + (bw / 64) + ',' + (bh / 44) + ')', opacity: 0.95 }, { transform: 'none', opacity: 1 }], { duration: FLY_MS, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'both' });
+      const target = card.querySelector('.mini'); target.classList.add('wait'); const tr = target.getBoundingClientRect();
+      let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; g.ns.forEach(n => { const p = project(g.W[n]); x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); });
+      const bw = Math.max(x1 - x0, 30), bh = Math.max(y1 - y0, 28), bx = (x0 + x1) / 2 - bw / 2, by = (y0 + y1) / 2 - bh / 2;
+      const fly = document.createElement('div'); fly.className = 'fly'; fly.innerHTML = miniSvg(g, 44, 40); fly.style.left = tr.left + 'px'; fly.style.top = tr.top + 'px'; document.body.appendChild(fly);
+      const anim = fly.animate([{ transform: 'translate(' + (bx - tr.left) + 'px,' + (by - tr.top) + 'px) scale(' + (bw / 44) + ',' + (bh / 40) + ')' }, { transform: 'none' }], { duration: FLY_MS, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'both' });
       anim.onfinish = () => { target.classList.remove('wait'); fly.remove(); };
     }
-    void before;
     return card;
   }
-  function updateRosterCount() { let k = 0; S.rings.forEach(x => { if (S.ringState[x.r].start != null) k++; }); $('#rosterCount').textContent = k + ' of ' + NR; }
-  function catchRing(r, now, animate) { const st = S.ringState[r]; st.start = animate ? now : now - RESOLVE_MS; st.done = false; st.card = addCard(r, animate); nodeTargets(); updateRosterCount(); }
-  function uncatch(r) { const st = S.ringState[r]; st.start = null; st.done = false; if (st.card) st.card.remove(); st.card = null; if (!roster.querySelector('.rcard')) $('#rosterEmpty').hidden = false; nodeTargets(); updateRosterCount(); }
+  function updateRosterCount() {
+    let k = 0; S.rings.forEach(x => { if (S.st[x.r].start != null) k++; }); $('#rosterCount').textContent = k + ' of ' + NR;
+    const done = S.scrub === Infinity, n = done ? S.m.found.size : k;
+    $('#punch').innerHTML = esc(S.m.label) + ' caught <span class="ok">' + n + ' of ' + NR + '</span> rings' + (done ? '' : ' by ' + esc(fmtWhen(S.scrub).split(',')[0]));
+  }
+  function catchRing(r, now, animate) { const st = S.st[r]; st.start = animate ? now : now - RESOLVE_MS; st.card = addCard(r, animate); updateRosterCount(); }
+  function uncatch(r) { const st = S.st[r]; st.start = null; if (st.card) st.card.remove(); st.card = null; if (!roster.querySelector('.rcard')) $('#rosterEmpty').hidden = false; updateRosterCount(); }
   function stepCatches(now) {
     S.rings.forEach(x => {
-      const st = S.ringState[x.r]; const due = S.scrub >= x.tc;
+      const st = S.st[x.r], due = S.scrub >= x.tc;
       if (due && st.start == null && !S.queue.includes(x.r)) S.queue.push(x.r);
       if (!due) { const qi = S.queue.indexOf(x.r); if (qi >= 0) S.queue.splice(qi, 1); if (st.start != null) uncatch(x.r); }
     });
-    if (now < S.openUntil - 500) return;   /* let the opening move settle before the first catch */
+    if (now < S.openUntil - 300) return;
     while (S.queue.length && (REDUCED() || now >= S.nextCatch)) { catchRing(S.queue.shift(), now, !REDUCED()); S.nextCatch = now + CATCH_GAP; }
   }
 
   /* ---------- hover card ---------- */
   const hc = $('#hover');
-  function idsHtml(list, cls) { const max = 24; return list.slice(0, max).map(x => '<span class="' + cls(x) + '">' + esc(x.id) + '</span>').join(' ') + (list.length > max ? ' <span>+' + (list.length - max) + ' more</span>' : ''); }
+  const idsHtml = (list, cls) => list.slice(0, 24).map(x => '<span class="' + cls(x) + '">' + esc(x.id) + '</span>').join(' ') + (list.length > 24 ? ' +' + (list.length - 24) + ' more' : '');
   function setHover(h, rect, mx, my) {
-    S.hover = h;
-    if (!h) { hc.hidden = true; focus.visible = false; return; }
-    const m = S.m; let html = '', seg = [];
-    if (h.kind === 'ring') {
-      const r = h.r; const ids = RINGS[r]; const hit = ids.filter(t => m.F.has(t.id)).length; const st = S.ringState[r];
-      const status = m.found.has(r) ? (st && st.start != null ? '<b class="s-ok">caught</b>' : '<b class="s-ok">found</b>, it lands when its last flagged transfer arrives') : hit ? '<b class="s-miss">partly traced</b>, ' + hit + ' of ' + ids.length + ' transfers' : '<b class="s-miss">missed</b>';
-      const run = runFor(m, r); const accts = new Set(); ids.forEach(t => { accts.add(t.from); accts.add(t.to); });
-      html = '<div class="hc-k">IBM group ' + esc(r) + (RU[r] ? ' · neighborhood ' + esc(RU[r]) : '') + ' · ' + status + '</div><div class="hc-t">' + esc(ibmName(r)) + '</div>' +
-        '<div class="hc-s">our shape name: ' + esc(shapeOf(r)) + ' · ' + ids.length + ' transfers among ' + accts.size + ' accounts · ' + esc(money(r)) + '</div>' +
-        '<p class="hc-why">' + esc(run && run.why ? oneLine(run.why) : 'No run recorded for this group.') + '</p>' +
-        '<div class="hc-ids">' + idsHtml(ids, t => m.F.has(t.id) ? 'i-ok' : 'i-miss') + '</div>';
-      seg = ids.filter(t => t.u !== t.v);
+    S.hover = h; if (!h) { hc.hidden = true; return; }
+    const m = S.m; let html;
+    if (h.r != null) {
+      const r = h.r, ids = RINGS[r], accts = new Set(); ids.forEach(t => { accts.add(t.from); accts.add(t.to); });
+      const [cls, text] = statusOf(r); const run = runFor(m, r); const others = famCaught(r).filter(f => f !== m.family).map(famName);
+      html = '<div class="hc-k"><b class="' + (cls === 'caught' ? 's-ok' : cls ? 's-miss' : '') + '">' + esc(text) + '</b></div>' +
+        '<div class="hc-t">' + esc(ibmName(r)) + '</div><div class="hc-s">' + ids.length + ' transfer' + (ids.length === 1 ? '' : 's') + ' among ' + accts.size + ' accounts · ' + esc(money(r)) + '<br>' + (others.length ? 'Also caught by ' + esc(others.join(', ')) : 'No other family caught it') + '</div>' +
+        '<p class="hc-why">' + esc(run && run.why ? oneLine(run.why) : 'No run recorded for this group.') + '</p><div class="hc-ids">' + idsHtml(ids, t => m.F.has(t.id) ? 'i-ok' : 'i-miss') + (RU[r] ? ' <span class="muted">(IBM group ' + esc(r) + ', neighborhood ' + esc(RU[r]) + ')</span>' : '') + '</div>';
     } else {
-      const run = h.run; const ids = (run.flagged_transfer_ids || []).filter(id => BYID[id]).map(id => BYID[id]); const lab = ids.filter(t => t.label).length;
-      const ra = Array.isArray(run.ring_accounts_flagged) ? run.ring_accounts_flagged.length : 0;
-      html = '<div class="hc-k"><b class="s-bad">false alarm</b> · neighborhood ' + esc(run.unit) + '</div><div class="hc-t">' + esc(run.pattern && run.pattern !== 'other' ? 'Called it ' + (/^[aeiou]/i.test(run.pattern) ? 'an ' : 'a ') + run.pattern : 'Called it a ring, no named shape') + '</div>' +
-        '<div class="hc-s">IBM labels ' + (ids.length - lab) + ' of these ' + ids.length + ' transfers ordinary' + (ra ? ' · ' + ra + ' of the flagged accounts sit inside an IBM ring' : '') + '</div>' +
-        '<p class="hc-why">' + esc(oneLine(run.why)) + '</p><div class="hc-ids">' + idsHtml(ids, t => t.label ? 'i-ok' : 'i-bad') + '</div>';
-      seg = ids.filter(t => t.u !== t.v);
+      const run = h.run, ids = (run.flagged_transfer_ids || []).filter(id => BYID[id]).map(id => BYID[id]); const lab = ids.filter(t => t.label).length; const ra = Array.isArray(run.ring_accounts_flagged) ? run.ring_accounts_flagged.length : 0;
+      const pat = run.pattern && run.pattern !== 'other' ? 'Called it ' + (/^[aeiou]/i.test(run.pattern) ? 'an ' : 'a ') + run.pattern : 'Called it a ring, no named shape';
+      html = '<div class="hc-k"><b class="s-bad">false alarm</b> on an ordinary neighborhood</div><div class="hc-t">' + esc(pat) + '</div><div class="hc-s">IBM labels ' + (ids.length - lab) + ' of these ' + ids.length + ' transfers ordinary' + (ra ? ' · ' + ra + ' of the flagged accounts sit inside an IBM ring' : '') + '</div><p class="hc-why">' + esc(oneLine(run.why)) + '</p><div class="hc-ids">' + idsHtml(ids, t => t.label ? 'i-ok' : 'i-bad') + ' <span class="muted">(neighborhood ' + esc(run.unit) + ')</span></div>';
     }
     hc.innerHTML = html; hc.hidden = false; placeCard(rect, mx, my);
-    focus.geometry.dispose(); focus.geometry = segGeometry(seg); focus.visible = seg.length > 0;
   }
   function placeCard(rect, mx, my) {
-    const W = window.innerWidth, H = window.innerHeight, cw = hc.offsetWidth, ch = hc.offsetHeight;
-    let x, y; if (rect) { x = rect.left; y = rect.top - ch - 10; } else { x = mx + 16; y = my + 16; if (x + cw > W - 8) x = mx - cw - 16; if (y + ch > H - 8) y = my - ch - 16; }
+    const W = window.innerWidth, H = window.innerHeight, cw = hc.offsetWidth, ch = hc.offsetHeight; let x, y;
+    if (rect) { x = rect.left; y = rect.top - ch - 10; if (y < 8) y = rect.bottom + 10; } else { x = mx + 16; y = my + 16; if (x + cw > W - 8) x = mx - cw - 16; if (y + ch > H - 8) y = my - ch - 16; }
     hc.style.left = Math.max(8, Math.min(W - cw - 8, x)) + 'px'; hc.style.top = Math.max(8, Math.min(H - ch - 8, y)) + 'px';
   }
   const ray = new THREE.Raycaster(); const ndc = new THREE.Vector2(); let mouse = null, mouseMoved = false;
   function pickAt(mx, my) {
-    const r = cv.getBoundingClientRect(); ndc.set((mx - r.left) / r.width * 2 - 1, -(my - r.top) / r.height * 2 + 1);
-    ray.setFromCamera(ndc, camera); ray.params.Line.threshold = cam.radius * 0.007;
-    const targets = [S.caught].concat(S.layers).filter(Boolean);
-    const hits = ray.intersectObjects(targets, false);
-    for (const h of hits) {
-      const o = h.object; const t = o.userData.list[Math.floor(h.index / 2)]; if (!t) continue;
-      if (o === S.caught) { const st = S.ringState[t.ring]; if (!st || st.start == null) continue; }
-      if (t.label) return { kind: 'ring', r: t.ring }; const run = S.m.flagRun[t.id]; if (run) return { kind: 'false', run };
-    }
-    const sh = ray.intersectObject(spheres, false)[0];
-    if (sh) { const n = nodes[ORDER[sh.instanceId]]; if (n && n.rings.length) return { kind: 'ring', r: n.rings[0] }; }
+    const r = cv.getBoundingClientRect(); ndc.set((mx - r.left) / r.width * 2 - 1, -(my - r.top) / r.height * 2 + 1); ray.setFromCamera(ndc, camera);
+    const h = ray.intersectObjects([gSph, tube, cone], false)[0];
+    if (h) { if (h.object === gSph) return { r: GN[h.instanceId].g.r }; return { r: GE[h.instanceId].g.r }; }
+    if (S.crowdOn && crowd && crowd.red) { ray.params.Line.threshold = cam.radius * 0.006; const l = ray.intersectObject(crowd.red, false)[0]; if (l) { const t = crowd.red.userData.list[Math.floor(l.index / 2)]; const run = t && S.m.flagRun[t.id]; if (run) return { run }; } }
     return null;
   }
 
-  /* ---------- orbit camera with damping (no auto moves except the one opening) ---------- */
-  const cam = { theta: 0.6, phi: 1.15, radius: 300, target: new THREE.Vector3(), vT: 0, vP: 0, goalR: 300, home: null };
-  function fitRadius() { const w = stage.clientWidth || 800, h = stage.clientHeight || 500; const vf = camera.fov * Math.PI / 360; const hf = Math.atan(Math.tan(vf) * (w / h)); return 112 / Math.sin(Math.min(vf, hf)); }
-  function resize() { const w = stage.clientWidth || 800, h = stage.clientHeight || 500; if (renderer) { renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); renderer.setSize(w, h, false); } camera.aspect = w / h; camera.updateProjectionMatrix(); }
-  function placeCamera() {
-    const sp = Math.sin(cam.phi); camera.position.set(cam.target.x + cam.radius * sp * Math.sin(cam.theta), cam.target.y + cam.radius * Math.cos(cam.phi), cam.target.z + cam.radius * sp * Math.cos(cam.theta));
-    camera.lookAt(cam.target); scene.fog.near = Math.max(10, cam.radius - 90); scene.fog.far = cam.radius + 260;
-  }
+  /* ---------- camera: one opening move, then a held three-quarter view; orbit with damping ---------- */
+  const cam = { theta: 0.22, phi: 1.36, radius: 300, goalR: 300, target: new THREE.Vector3(0, 0, 0), vT: 0, vP: 0, home: 300, open: null };
+  let ext = [0, 0]; GROUPS.forEach(g => g.ns.forEach(n => { ext[0] = Math.max(ext[0], Math.abs(g.W[n][0])); ext[1] = Math.max(ext[1], Math.abs(g.W[n][1])); }));
+  function fitRadius() { const w = stage.clientWidth || 800, h = stage.clientHeight || 500; const vf = camera.fov * Math.PI / 360; const hf = Math.atan(Math.tan(vf) * (w / h)); return Math.max((ext[0] + 14) / Math.tan(hf), (ext[1] + 30) / Math.tan(vf)) * 1.02 + 24; }
+  function resize() { const w = stage.clientWidth || 800, h = stage.clientHeight || 500; if (renderer) { renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); renderer.setSize(w, h, false); } camera.aspect = w / h; camera.updateProjectionMatrix(); const old = cam.home; cam.home = fitRadius(); if (Math.abs(cam.goalR - old) < 1) { cam.goalR = cam.home; cam.radius = cam.home; } }
+  function placeCamera() { const sp = Math.sin(cam.phi); camera.position.set(cam.target.x + cam.radius * sp * Math.sin(cam.theta), cam.target.y + cam.radius * Math.cos(cam.phi), cam.target.z + cam.radius * sp * Math.cos(cam.theta)); camera.lookAt(cam.target); }
   let drag = null;
-  cv.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, pan: e.button === 2 || e.shiftKey }; cv.setPointerCapture(e.pointerId); cv.classList.add('dragging'); S.openUntil = 0; cam.open = null; });
+  cv.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, pan: e.button === 2 || e.shiftKey }; cv.setPointerCapture(e.pointerId); cv.classList.add('dragging'); cam.open = null; });
   cv.addEventListener('pointermove', e => {
-    mouse = [e.clientX, e.clientY]; mouseMoved = true;
-    if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY;
-    if (drag.pan) { const k = cam.radius * 0.0012; const right = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0), up = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 1); cam.target.addScaledVector(right, -dx * k).addScaledVector(up, dy * k); }
-    else { cam.vT = -dx * 0.0055; cam.vP = -dy * 0.0055; }
+    mouse = [e.clientX, e.clientY]; mouseMoved = true; if (!drag) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY;
+    if (drag.pan) { const k = cam.radius * 0.0012; cam.target.addScaledVector(V1.setFromMatrixColumn(camera.matrix, 0), -dx * k).addScaledVector(V2.setFromMatrixColumn(camera.matrix, 1), dy * k); }
+    else { cam.vT = -dx * 0.005; cam.vP = -dy * 0.005; }
   });
-  const endDrag = e => { if (!drag) return; drag = null; cv.classList.remove('dragging'); try { cv.releasePointerCapture(e.pointerId); } catch (err) { /* already released */ } };
+  const endDrag = e => { if (!drag) return; drag = null; cv.classList.remove('dragging'); try { cv.releasePointerCapture(e.pointerId); } catch (err) { /* released */ } };
   cv.addEventListener('pointerup', endDrag); cv.addEventListener('pointercancel', endDrag);
   cv.addEventListener('pointerleave', () => { mouse = null; if (S.hover && !drag) setHover(null); });
   cv.addEventListener('contextmenu', e => e.preventDefault());
-  cv.addEventListener('wheel', e => { e.preventDefault(); cam.goalR = Math.max(30, Math.min(1400, cam.goalR * Math.exp(e.deltaY * 0.0012))); cam.open = null; }, { passive: false });
-  cv.addEventListener('dblclick', () => { cam.target.set(0, 0, 0); cam.goalR = cam.home; cam.vT = cam.vP = 0; });
+  cv.addEventListener('wheel', e => { e.preventDefault(); cam.goalR = Math.max(60, Math.min(1400, cam.goalR * Math.exp(e.deltaY * 0.0012))); cam.open = null; }, { passive: false });
+  cv.addEventListener('dblclick', () => { cam.target.set(0, 0, 0); cam.goalR = cam.home; cam.theta = 0.22; cam.phi = 1.36; cam.vT = cam.vP = 0; });
 
-  /* ---------- scrub and play ---------- */
+  /* ---------- crowd toggle, scrub and play ---------- */
+  const crowdBtn = $('#crowd');
+  crowdBtn.addEventListener('click', () => { if (!crowd) buildCrowd(); S.crowdOn = !S.crowdOn; crowdBtn.setAttribute('aria-pressed', String(S.crowdOn)); crowdBtn.textContent = S.crowdOn ? 'Hide the crowd' : 'Show the crowd'; });
   const scrubEl = $('#scrub'), playBtn = $('#play');
   $('#ticks').innerHTML = Array.from({ length: 10 }, (_, i) => '<span>Sep ' + (i + 1) + '</span>').join('');
-  const setScrub = v => { S.scrub = v >= 1000 ? Infinity : v / 1000 * SPAN; applyScrub(); };
-  scrubEl.addEventListener('input', () => { stopPlay(); setScrub(+scrubEl.value); });
+  scrubEl.addEventListener('input', () => { stopPlay(); const v = +scrubEl.value; S.scrub = v >= 1000 ? Infinity : v / 1000 * SPAN; applyScrub(); });
   function stopPlay() { S.playing = false; playBtn.textContent = S.scrub === Infinity ? 'Play the ten days' : 'Resume'; }
-  playBtn.addEventListener('click', () => {
-    if (S.playing) { stopPlay(); return; }
-    if (S.scrub === Infinity) { S.scrub = 0; scrubEl.value = 0; applyScrub(); }
-    S.playing = true; S.lastStep = performance.now(); playBtn.textContent = 'Pause';
-  });
+  playBtn.addEventListener('click', () => { if (S.playing) { stopPlay(); return; } if (S.scrub === Infinity) { S.scrub = 0; scrubEl.value = 0; applyScrub(); } S.playing = true; S.lastStep = performance.now(); playBtn.textContent = 'Pause'; });
   function stepPlay(now, dt) {
     if (!S.playing) return;
-    if (REDUCED()) { if (now - S.lastStep < 900) return; S.lastStep = now; S.scrub = Math.floor(S.scrub / DAY + 1) * DAY; }
-    else S.scrub += dt * SPAN / PLAY_MS;
+    if (REDUCED()) { if (now - S.lastStep < 900) return; S.lastStep = now; S.scrub = Math.floor(S.scrub / DAY + 1) * DAY; } else S.scrub += dt * SPAN / PLAY_MS;
     if (S.scrub >= SPAN) { S.scrub = Infinity; S.playing = false; playBtn.textContent = 'Play the ten days'; }
     scrubEl.value = S.scrub === Infinity ? 1000 : Math.round(S.scrub / SPAN * 1000); applyScrub();
   }
@@ -480,39 +488,27 @@ function init(sample) {
   function frame(now) {
     const dt = Math.min(64, now - last); last = now;
     stepPlay(now, dt); stepCatches(now);
-    /* camera: the opening move, then damped orbit */
-    if (cam.open) { const p = easeOut((now - cam.open.t0) / OPEN_MS); cam.radius = cam.open.r0 + (cam.home - cam.open.r0) * p; cam.goalR = cam.radius; cam.theta = cam.open.th0 + (cam.open.th1 - cam.open.th0) * p; cam.phi = cam.open.ph0 + (cam.open.ph1 - cam.open.ph0) * p; if (p >= 1) cam.open = null; }
-    else {
-      cam.theta += cam.vT; cam.phi = Math.max(0.15, Math.min(Math.PI - 0.15, cam.phi + cam.vP));
-      const decay = Math.pow(0.86, dt / 16.7); cam.vT *= decay; cam.vP *= decay; if (drag && !drag.pan) { cam.vT *= 0.5; cam.vP *= 0.5; }
-      cam.radius += (cam.goalR - cam.radius) * (1 - Math.pow(0.82, dt / 16.7));
-    }
-    placeCamera();
-    /* layer opacities: exponential ease-out toward each target */
-    const k = REDUCED() ? 1 : 1 - Math.exp(-dt / FADE_TAU);
-    S.layers.concat(S.caught ? [S.caught] : [], S.fading).forEach(o => { o.material.opacity += (o.userData.target - o.material.opacity) * k; });
-    S.fading = S.fading.filter(o => { if (o.material.opacity < 0.01) { scene.remove(o); o.geometry.dispose(); o.material.dispose(); return false; } return true; });
-    writeCaught(now);   /* touches only rings still resolving or not yet parked */
-    stepColors(dt);
-    if (mouse && mouseMoved && !drag && renderer) { mouseMoved = false; const h = pickAt(mouse[0], mouse[1]); const same = h && S.hover && h.kind === S.hover.kind && h.r === S.hover.r && h.run === S.hover.run; if (!same) setHover(h, null, mouse[0], mouse[1]); else placeCard(null, mouse[0], mouse[1]); }
+    if (cam.open) { const p = easeOut((now - cam.open.t0) / OPEN_MS); cam.radius = cam.goalR = cam.open.r0 + (cam.home - cam.open.r0) * p; cam.theta = cam.open.th0 + (0.22 - cam.open.th0) * p; cam.phi = cam.open.ph0 + (1.36 - cam.open.ph0) * p; if (p >= 1) cam.open = null; }
+    else { cam.theta += cam.vT; cam.phi = Math.max(0.2, Math.min(Math.PI - 0.2, cam.phi + cam.vP)); const d = Math.pow(0.86, dt / 16.7); cam.vT *= d; cam.vP *= d; if (drag && !drag.pan) { cam.vT *= 0.5; cam.vP *= 0.5; } cam.radius += (cam.goalR - cam.radius) * (1 - Math.pow(0.82, dt / 16.7)); }
+    placeCamera(); stepGroups(now, dt); placeLabels();
+    if (mouse && mouseMoved && !drag && renderer) { mouseMoved = false; const h = pickAt(mouse[0], mouse[1]); const same = h && S.hover && h.r === S.hover.r && h.run === S.hover.run; if (!same) setHover(h, null, mouse[0], mouse[1]); else placeCard(null, mouse[0], mouse[1]); }
     if (renderer) renderer.render(scene, camera);
     requestAnimationFrame(frame);
   }
 
-  /* ---------- start ---------- */
-  resize(); cam.home = fitRadius(); cam.radius = cam.goalR = cam.home;
-  if ('ResizeObserver' in window) new ResizeObserver(() => { resize(); }).observe(stage); else window.addEventListener('resize', resize);
+  /* ---------- start: default model Claude Sonnet v4 when present, else the strongest ---------- */
+  resize(); cam.radius = cam.goalR = cam.home;
+  if ('ResizeObserver' in window) new ResizeObserver(resize).observe(stage); else window.addEventListener('resize', resize);
   const strength = m => m.found.size + m.prec * NR;
-  const first = MODELS.slice().sort((a, b) => strength(b) - strength(a))[0];
-  if (!REDUCED()) { cam.open = { t0: performance.now(), r0: cam.home * 1.75, th0: cam.theta - 0.7, th1: cam.theta, ph0: 0.55, ph1: cam.phi }; S.openUntil = performance.now() + OPEN_MS; }
+  const first = MODELS.find(m => /claude-sonnet/.test(m.id) && m.version === 'v4') || MODELS.slice().sort((a, b) => strength(b) - strength(a))[0];
+  if (!REDUCED()) { cam.open = { t0: performance.now(), r0: cam.home * 1.3, th0: 0.7, ph0: 1.15 }; S.openUntil = performance.now() + OPEN_MS; }
   if (first) selectModel(first); else $('#headline').textContent = 'No models in the bench output yet.';
-  $('#foot').textContent = (sample ? 'SAMPLE data, made up in the page. ' : 'Data: ' + DATA + 'slice.js, bench_results.js, units.js. ') + 'Numbers are recounted in the page from the runs: a group counts as caught when at least half its labeled transfers are flagged.';
-  window.__night3d = { S, MODELS, NR, sample, info: () => renderer ? renderer.info.render.calls : 0 };   /* for inspection and screenshots */
+  window.__night3d = { S, MODELS, NR, sample, calls: () => renderer ? renderer.info.render.calls : 0, toggleCrowd: () => crowdBtn.click() };
   requestAnimationFrame(frame);
 }
 
-/* any uncaught error is written into the page (data-errors on <body>) so a headless check can read it */
+/* any uncaught error is written onto <body data-errors> so a headless check can read it */
 window.addEventListener('error', e => { document.body.dataset.errors = (document.body.dataset.errors || '') + ' | ' + (e.message || 'error') + ' @' + (e.lineno || '?'); });
 window.addEventListener('unhandledrejection', e => { document.body.dataset.errors = (document.body.dataset.errors || '') + ' | ' + String(e.reason && e.reason.message || e.reason); });
-boot();
+boot().catch(e => { const m = $('#stageMsg'); m.hidden = false; m.textContent = 'The page could not draw: ' + e.message; throw e; });
 })();
