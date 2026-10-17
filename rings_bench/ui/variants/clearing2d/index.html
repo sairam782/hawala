@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap"></noscript>
-<link rel="stylesheet" href="clearing.css">
-<link rel="stylesheet" href="zoom.css">
+<link rel="stylesheet" href="clearing.css?v=20261017-1505">
+<link rel="stylesheet" href="zoom.css?v=20261017-1505">
 </head>
 <body>
 <header class="top">
@@ -29,7 +29,7 @@
         <li class="fbox" tabindex="0"><span class="ft"><b class="mono">3</b> Look closer</span><span class="fc" id="fc3"></span></li>
         <li class="fbox" tabindex="0"><span class="ft"><b class="mono">4</b> Settled</span><span class="fc" id="fc4"></span></li>
       </ol>
-      <div class="act"><p class="cap" id="caption" aria-live="polite"></p><button class="btn cta" id="play" type="button">Start the search</button></div>
+      <div class="act"><p class="cap" id="caption" hidden></p><button class="btn cta" id="play" type="button">Start the search</button></div>
     </div>
     <div class="stage" id="stage">
       <canvas id="cv" role="img" aria-label="Network of accounts and transfers; neighborhoods the model rules ordinary fade, and its catches, alarms and misses stay lit"></canvas>
@@ -40,17 +40,17 @@
       <div class="clock mono" id="clock" aria-live="polite"></div>
       <label class="tog"><input type="checkbox" id="all"> Show everything again</label>
     </div>
+    <section class="roster" aria-label="Needs a look">
+  <div class="rhead"><h2 class="tip" tabindex="0" title="Neighborhoods where the first pass was unsure: a call at low confidence, or model families split. They stay lit. Click a card to replay a stronger model's recorded verdict.">Needs a look</h2><span class="mono" id="rcount"></span><span class="small muted" id="rnote"></span></div>
+  <div class="strip" id="strip"></div>
+</section>
   </section>
 
   <aside class="rail">
-    <section class="r-block r-what">
-      <p class="eyebrow">What this is</p>
-      <p>An AI first pass reads every neighborhood of transfers, clears the ordinary ones, catches the laundering rings it is sure of, and hands what it cannot settle to a stronger model. Every call it makes is scored against IBM's labels, so you can see where to trust it.</p>
-    </section>
     <section class="r-block r-now" aria-live="polite">
       <p class="eyebrow">What it is doing now</p>
+      <p class="big" id="nowBig"></p>
       <p class="now" id="nowText"></p>
-      <p class="tally mono" id="nowTally"></p>
       <p class="speed" id="nowSpeed"></p>
     </section>
     <section class="r-block r-you">
@@ -58,9 +58,15 @@
       <p id="youText"></p>
     </section>
     <p class="r-next" id="nextText"></p>
-    <p class="r-honest small muted" id="honestText"></p>
+    <div class="r-spacer"></div>
+    <section class="r-block r-what">
+      <p class="eyebrow">What this is</p>
+      <p>AI triage for laundering rings: a fast first pass, then a closer look, scored on IBM's labels.</p>
+    </section>
+    <p class="r-honest" id="honestText"></p>
     <details class="r-details">
       <summary>Details: model, families dial, key</summary>
+      <p class="small muted credit">Synthetic data: IBM AMLworld, CDLA-Sharing-1.0; labels are IBM's.</p>
 
     <div class="result">
       <p class="eyebrow">Scored against IBM's labels</p>
@@ -93,25 +99,18 @@
   </aside>
 </div>
 
-<section class="roster" aria-label="Needs a look">
-  <div class="rhead"><h2 class="tip" tabindex="0" title="Neighborhoods where the first pass was unsure: a call at low confidence, or model families split. They stay lit. Click a card to replay a stronger model's recorded verdict.">Needs a look</h2><span class="mono" id="rcount"></span><span class="small muted" id="rnote"></span></div>
-  <div class="strip" id="strip"></div>
-</section>
 
-<footer class="honest">
-  <p>Synthetic data: IBM's AMLworld generator made every transfer, and IBM's labels are the answer key.</p>
-  <p id="hEnrich">The slice is enriched (4.0 percent laundering against 0.10 in the full file), and its neighborhoods were cut around IBM's groups.</p>
-  <p>Every laundering transfer in the slice is ACH, a tell a model can lean on.</p>
-</footer>
 
-<script src="../../../data/slice.js"></script>
-<script src="../../../data/units.js"></script>
-<script src="../../../data/panel.js"></script>
-<script src="../../../data/bench_results.js"></script>
-<script src="../../../data/investigate.js"></script>
-<script src="layout.js"></script>
-<script src="layout_core.js"></script>
-<script src="clearing.js"></script>
-<script src="zoom.js"></script>
+
+
+<script src="../../../data/slice.js?v=20261017-1505"></script>
+<script src="../../../data/units.js?v=20261017-1505"></script>
+<script src="../../../data/panel.js?v=20261017-1505"></script>
+<script src="../../../data/bench_results.js?v=20261017-1505"></script>
+<script src="../../../data/investigate.js?v=20261017-1505"></script>
+<script src="layout.js?v=20261017-1505"></script>
+<script src="layout_core.js?v=20261017-1505"></script>
+<script src="clearing.js?v=20261017-1505"></script>
+<script src="zoom.js?v=20261017-1505"></script>
 </body>
 </html>

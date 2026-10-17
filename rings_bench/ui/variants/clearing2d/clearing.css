@@ -178,3 +178,32 @@ select { width: 100%; font: 13px var(--sans); color: var(--ink); background: var
 .r-details summary { cursor: pointer; font-size: 12.5px; color: var(--muted); }
 .r-details[open] summary { margin-bottom: 10px; }
 .r-details > div { margin-top: 10px; }
+
+/* 15:00 redline: the rail runs full height; the tray sits under the graph only; the funnel reads at a glance */
+:root { --flowH: 92px; --footH: 0px; --stageH: max(320px, calc(100vh - var(--top) - var(--flowH) - var(--scrubH) - var(--rosterH))); }
+.wall { height: calc(100vh - var(--top)); min-height: 560px; grid-template-rows: minmax(0, 1fr); }
+.stagecol { display: flex; flex-direction: column; min-height: 0; }
+.stagecol .roster { border-top: 1px solid var(--rule); }
+.rail { height: auto; min-height: 0; overflow-y: auto; gap: 12px; }
+.strip:empty::before { content: none; }
+#verNote, #dialNote, .keynote, .cap { display: none; }
+.flow { flex-direction: row; align-items: center; gap: 16px; padding: 10px 14px; }
+.funnel { flex: 1; min-width: 0; gap: 30px; }
+.fbox { min-height: 72px; padding: 7px 11px; opacity: .55; }
+.fbox .ft { font: 600 16px var(--sans); }
+.fbox .fc { font: 13px/1.3 var(--sans); margin-top: 3px; }
+.fbox:not(:last-child)::after { right: -22px; width: 15px; height: 15px; border-width: 3px; border-top-style: solid; border-right-style: solid; }
+.fbox.on { border: 2px solid var(--accent); background: rgba(127,183,176,.2); box-shadow: none; opacity: 1; }
+.fbox.done { background: rgba(143,203,138,.08); border-color: rgba(143,203,138,.55); color: #9CC898; opacity: 1; }
+.fbox.done .ft::after { content: "  \2713"; color: var(--ok); }
+.act { flex: none; min-height: 0; }
+/* the rail, scannable: a number-led line, one sentence each */
+.r-now .big { font: 600 28px/1.15 var(--serif); color: var(--ink); margin-bottom: 6px; }
+.r-now .now { font: 400 15px/1.4 var(--sans); }
+.r-you p:last-child { font-size: 15px; }
+.r-spacer { flex: 1; }
+.r-now { border-top: 0; padding-top: 0; }
+.r-what { border-top: 1px solid var(--rule); padding-top: 8px; }
+.r-what p:last-child { font-size: 13px; color: var(--muted); }
+.r-honest { margin: 0; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: help; }
+.credit { margin: 0 0 8px; }

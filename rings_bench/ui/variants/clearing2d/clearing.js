@@ -374,12 +374,9 @@ function renderClock() {
   const now = performance.now(); let readN = 0; T.read.forEach(r => { if (ST.t >= r) readN++; });
   const lookN = T.status.filter(x => x === 'look').length; const inv = Object.keys(INV).filter(id => landed(id, now)).length;
   let html;
-  if (ST.stage === 0) html = 'The whole slice, lit · <b>' + UNITS.length + '</b> neighborhoods to read';
-  else if (ST.stage === 1) html = (ST.t < HOLD + FADE ? 'Transfers outside the neighborhoods step back' : 'Reading ' + esc((UNITS[Math.max(0, readN - 1)] || {}).id)) + ' · read <b>' + readN + ' of ' + UNITS.length + '</b> · ' + esc(speedLine(1));
-  else if (ST.before) html = '<b>Before</b> · <b>' + lookN + '</b> neighborhoods the first pass could not settle';
-  else if (ST.stage === 2) html = trayApplies(ST.sel) ? '<b>' + lookN + '</b> neighborhoods the first pass could not settle' : 'The tray is recorded for Claude Sonnet 5.5 v4 only';
-  else if (ST.stage === 3) html = 'Investigated <b>' + inv + ' of ' + lookN + '</b> · ' + esc(speedLine(3));
-  else html = closingLine();
+  if (ST.stage <= 1) html = 'read <b>' + readN + ' of ' + UNITS.length + '</b>' + (ST.stage === 1 ? ' · ' + esc(speedLine(1)) : '');
+  else if (ST.stage === 3) html = 'checked <b>' + inv + ' of ' + lookN + '</b> · ' + esc(speedLine(3));
+  else html = 'read <b>' + UNITS.length + ' of ' + UNITS.length + '</b>' + (ST.stage === 4 && !ST.before && inv ? ' · checked <b>' + inv + ' of ' + lookN + '</b>' : '');
   $('#clock').innerHTML = html;
   renderFunnel();
 }
@@ -404,24 +401,24 @@ function renderRail(lookN, human, caught, alarms, cleared, inv) {
   const s = ST.sel; const tray = trayApplies(s); const n = ST.before ? 2 : ST.stage;
   const fa = tray && INVD && INVD.results ? TRAY.filter(x => x.expected !== 'ring' && INVD.results[x.unit] && INVD.results[x.unit].verdict === 'ring').length : 0;
   let readN = 0; TL.read.forEach(r => { if (ST.t >= r) readN++; });
-  let now = '', tally = '', you = '', next = '';
-  if (n === 0) { now = 'Nothing read yet. ' + UNITS.length + ' neighborhoods, ' + num(TR.length) + ' transfers, all lit.'; you = 'Without this you read all ' + UNITS.length + '.'; next = 'Press Start the search.'; }
-  else if (n === 1) { now = 'Reading neighborhood ' + Math.max(1, readN) + ' of ' + UNITS.length + '. Ordinary ones fade. Rings it catches trace green in place.'; tally = 'caught ' + caught + ' · alarms ' + alarms + ' · cleared ' + cleared; you = 'Without this you read all ' + UNITS.length + '.'; next = ST.playing ? 'Watch it read, or press Skip to the end of the search.' : 'Press Continue the search.'; }
+  let big = '', now = '', you = '', next = '';
+  if (n === 0) { big = UNITS.length + ' to read'; now = 'Nothing read yet: ' + num(TR.length) + ' transfers, all lit.'; you = 'Without this you would read all ' + UNITS.length + '.'; next = 'Press Start the search.'; }
+  else if (n === 1) { big = caught + (caught === 1 ? ' ring' : ' rings') + ' caught · ' + alarms + (alarms === 1 ? ' alarm' : ' alarms'); now = 'Reading neighborhood ' + Math.max(1, readN) + ' of ' + UNITS.length + '. Ordinary ones fade; rings trace green.'; you = 'Without this you would read all ' + UNITS.length + '.'; next = ST.playing ? 'Watch it read.' : 'Press Continue the search.'; }
   else if (n === 2) {
-    now = 'Done reading. ' + s.k + (s.k === 1 ? ' ring' : ' rings') + ' caught, ' + s.f + (s.f === 1 ? ' alarm' : ' alarms') + '.' + (tray ? ' It was not sure about ' + lookN + ' neighborhoods: they pulse amber and sit in the tray.' : '');
-    you = tray ? 'The ' + s.k + ' caught are written up with the transfers cited. The ' + lookN + ' in the tray are the ones worth your time; the rest are cleared.' : 'The ' + s.k + ' caught are written up with the transfers cited. The closer look is recorded for Claude Sonnet 5.5 v4; pick it under Details to continue.';
+    big = tray ? lookN + ' unsettled' : s.k + (s.k === 1 ? ' ring' : ' rings') + ' caught · ' + s.f + (s.f === 1 ? ' alarm' : ' alarms');
+    now = 'Done reading: ' + s.k + (s.k === 1 ? ' ring' : ' rings') + ' caught, ' + s.f + (s.f === 1 ? ' alarm' : ' alarms') + '.' + (tray ? ' The ' + lookN + ' it was unsure about pulse amber.' : '');
+    you = tray ? 'The ' + lookN + ' in the tray are the ones worth your time; the rest are cleared.' : 'The closer look is recorded for Claude Sonnet 5.5 v4 only.';
     next = ST.before ? 'Switch to After to see them settled.' : tray ? 'Press Look closer at all ' + lookN + '.' : 'Pick Claude Sonnet 5.5 v4 under Details.';
   }
-  else if (n === 3) { now = 'A stronger model is reading the ' + lookN + ', one at a time. Each is cleared or confirmed as a ring.'; tally = inv + ' of ' + lookN; you = 'Watch the tray shrink: cleared ones leave your list, confirmed ones join the rings.'; next = 'Watch the tray; it settles by itself.'; }
+  else if (n === 3) { big = inv + ' of ' + lookN + ' checked'; now = 'A stronger model checks each one: cleared, or confirmed as a ring.'; you = 'Watch your list shrink: cleared ones leave, confirmed ones join the rings.'; next = 'It settles by itself.'; }
   else {
-    const al = s.f + fa;
-    now = 'Settled. ' + human + ' rings and ' + al + (al === 1 ? ' alarm are' : ' alarms are') + ' what a person needs to look at. ' + (NR - human) + ' rings it never found ' + (ST.missedAt != null ? 'are shown dotted so you see the limit.' : 'can be shown dotted so you see the limit.');
-    you = 'Your morning: ' + human + ' rings with reasons, ' + al + (al === 1 ? ' alarm' : ' alarms') + ' to dismiss, nothing else. Click any ring to watch the money move. Click a card to read why.';
+    const al = s.f + fa; big = human + ' rings for a human';
+    now = 'Plus ' + al + (al === 1 ? ' alarm' : ' alarms') + '. ' + (NR - human) + ' rings were never found' + (ST.missedAt != null ? '; they show dotted.' : '.');
+    you = 'Your morning: ' + human + ' rings with reasons and ' + al + (al === 1 ? ' alarm' : ' alarms') + ' to dismiss, nothing else.';
     next = ST.missedAt == null ? 'Press Show what was missed.' : 'Start over, or pick another model under Details.';
   }
-  const sp = n === 1 || n === 3 ? speedLine(n) : ''; $('#nowSpeed').textContent = sp; $('#nowSpeed').hidden = !sp;
-  $('#nowText').textContent = now; $('#nowTally').textContent = tally; $('#nowTally').hidden = !tally; $('#youText').textContent = you; $('#nextText').textContent = 'Next: ' + next;
-  $('#honestText').textContent = honestLine();
+  $('#nowBig').textContent = big; $('#nowText').textContent = now; $('#youText').textContent = you; $('#nextText').textContent = 'Next: ' + next;
+  const hl = honestLine(); $('#honestText').textContent = hl.short; $('#honestText').title = hl.full;
 }
 /* how much faster than a live run the playback is: live = 20 parallel calls, bounded by 60 calls a minute */
 const msOf = r => { const v = parseFloat(r && r.latency_ms); return isFinite(v) ? v : 0; };
@@ -445,11 +442,13 @@ function voteClause() {
 let HONEST = null;
 function honestLine() {
   if (HONEST != null) return HONEST;
+  const sl = SL.slice || {};
   const s = ST.sel; const ms = r => { const v = parseFloat(r && r.latency_ms); return isFinite(v) ? v : 0; };
   let calls = s.runs.length, total = s.runs.reduce((a, r) => a + ms(r), 0); void msOf;
   if (trayApplies(s) && INVD && INVD.results) { const R = Object.values(INVD.results); calls += R.length; total += R.reduce((a, r) => a + ms(r), 0); }
   const one = Math.round(total / 60000), par = fmtDur(Math.max(total / 20 / 1000, calls));
-  HONEST = SAMPLE ? 'A SAMPLE network made up by the page; nothing here is a measurement.' : 'A recorded run on IBM\'s synthetic data, replayed. Live, these ' + calls + ' calls take about ' + one + (one === 1 ? ' minute' : ' minutes') + ' one at a time, about ' + par + ' on 20 workers.' + (trayApplies(s) ? voteClause() : '');
+  const full = SAMPLE ? 'A SAMPLE network made up by the page; nothing here is a measurement.' : 'A recorded run on IBM\'s synthetic data, replayed. Live, these ' + calls + ' calls take about ' + one + (one === 1 ? ' minute' : ' minutes') + ' one at a time, about ' + par + ' on 20 workers.' + (trayApplies(s) ? voteClause() : '') + (sl.rate ? ' The slice is enriched to ' + (sl.rate * 100).toFixed(1) + ' percent laundering and every laundering transfer in it is ACH.' : '');
+  HONEST = { full, short: SAMPLE ? 'SAMPLE network, not a measurement.' : 'Recorded run, replayed. Live: about ' + par + ' on 20 workers.' };
   return HONEST;
 }
 function captionText(lookN, human) {
@@ -594,7 +593,7 @@ function renderTrayHead() {
     const R = TRAY.map(x => Object.assign({ unit: x.unit, expected: x.expected }, INVD.results[x.unit] || {}));
     const cl = R.filter(r => r.verdict === 'ordinary' && r.expected !== 'ring').length, found = R.filter(r => truthy(r.ring_found)).length, fa = R.filter(r => r.verdict === 'ring' && r.expected !== 'ring').length;
     note = 'Investigator: ' + R.length + ' looked at, ' + cl + ' cleared, ' + found + (found === 1 ? ' ring' : ' rings') + ' found, ' + fa + (fa === 1 ? ' false alarm' : ' false alarms');
-  } else note = 'Investigated by ' + INV_MODEL + ' (runs recorded earlier, replayed here). Click a card.';
+  } else note = '';
   const showBA = ST.stage === 4 && trayApplies(ST.sel) && !!INVD && (ST.before || trayDone());
   BA.hidden = !showBA; $('#rnote').hidden = showBA; $('#rcount').hidden = showBA;
   if (showBA) { const tl = BA.querySelector('.tally'); tl.textContent = tallyLine(); tl.title = tl.textContent; }
@@ -632,7 +631,7 @@ function renderHeadline() {
   const rc = s.k / Math.max(1, NR), cl = s.cleared / Math.max(1, NORD);
   void rc; void cl; $('#closer').innerHTML = s.k + ' of ' + NR + ' <span>rings caught on the first pass</span>';
   $('#verNote').textContent = BE.versions && BE.versions[s.ver] ? s.ver + ': ' + noDash(BE.versions[s.ver]) + '.' : '';
-  if (sl.rate && sl.full_rows) $('#hEnrich').textContent = 'The slice is enriched (' + (sl.rate * 100).toFixed(1) + ' percent laundering against ' + (sl.full_laundering / sl.full_rows * 100).toFixed(2) + ' in the full file), and its neighborhoods were cut around IBM\'s groups.';
+  if (sl.rate && sl.full_rows && document.getElementById('hEnrich')) $('#hEnrich').textContent = 'The slice is enriched (' + (sl.rate * 100).toFixed(1) + ' percent laundering against ' + (sl.full_laundering / sl.full_rows * 100).toFixed(2) + ' in the full file), and its neighborhoods were cut around IBM\'s groups.';
 }
 
 /* ---------- hover card per neighborhood ---------- */

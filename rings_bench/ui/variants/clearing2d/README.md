@@ -6,6 +6,10 @@ To open it, double-click `index.html`. It reads `../../../data/` (slice, units, 
 
 The whole slice starts lit, the real graph, and the first pass reads the 60 neighborhoods one by one: each one it rules ordinary fades, and each ring it catches traces green in place. The neighborhoods it could not settle stay lit and drop into a "Needs a look" tray, and a stronger model looks closer at them one card at a time, so each one either fades as cleared or closes green as a ring. What remains is what is worth a look: the rings caught, the two alarms, and, on request, the rings both passes missed in amber dotted.
 
+## 15:00 redline (current)
+
+Every local script and stylesheet tag carries `?v=<build>` (now `20261017-1505`); bump it on every hand-back. The small explanatory text is gone from the screen (captions, version note, dial note, footer, tray note, empty-tray sentence). The data credit is one line inside Details, and the longer caveats live in the honest line's hover title. The rail runs the full window height; the tray sits under the graph only. The rail reads top to bottom: What it is doing now (a 28 px number-led line, one sentence, and the playback speed during a pass), What this means for you, Next, then What this is and the one-line honest note at the foot, then Details. The funnel boxes are 72 px or taller with 16 px titles, a check mark on finished steps, and larger arrows; the button sits at the right end of the funnel row. The status line shows only "read N of 60" (or "checked N of 30") and the playback speed.
+
 ## The side rail
 
 From top to bottom: What this is (two fixed lines); What it is doing now (large text that changes with the step and counts up live during the passes); What this means for you (plain, second person); Next (mirrors the button); one honest line, computed from the recorded latencies ("these 90 calls take about 12 minutes one at a time, about 35 seconds on 20 workers"); then Details, collapsed by default, which holds the model picker, the families dial, the key, the investigator note and the scored headline with its limit line. The rail fits 1280 by 900 without scrolling at every step with Details closed.
