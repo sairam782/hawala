@@ -1,0 +1,896 @@
+{
+ "tag": "random_clean",
+ "model": "jev-1.13.0",
+ "written": "2026-10-17 12:54",
+ "variants": [
+  "sentences"
+ ],
+ "ledger": {
+  "calls": 40,
+  "cost_usd": 0.002148,
+  "latency_ms_median": 115.7,
+  "latency_ms_p90": 199.6,
+  "latency_ms_max": 220.2,
+  "model": "jev-1.13.0",
+  "log": "calls_random_clean.jsonl"
+ },
+ "question_set": "1",
+ "questions": {
+  "scheme": {
+   "type": "choice",
+   "instructions": "Judging only from the transfers and the code-computed facts, is there a money-laundering scheme among these transfers, or is this ordinary traffic?",
+   "criteria": {
+    "ring": "A laundering scheme is present: the facts show a structure that moves money through accounts on purpose, such as a loop that returns money to where it started, one account bursting money out to many accounts or gathering it in from many within a short time, money arriving at an account and leaving again soon after in a chain, or a tight group of accounts trading among themselves.",
+    "ordinary": "Ordinary traffic: recurring payments of similar amounts between the same accounts over many days, a busy account with many counterparties but no burst within an hour, no loop that returns money, and no chain where money arrives and leaves again soon after. A busy account is not by itself suspicious, and a single large or odd transfer with no structure around it reads as ordinary here."
+   }
+  },
+  "pattern": {
+   "type": "choice",
+   "instructions": "Which pattern best describes the money movement among these transfers?",
+   "criteria": {
+    "fan-out": "Fan-out: one account sends money to many different accounts within a short time. The facts list a burst OUT of one account to many distinct accounts, or one account that sent to many distinct accounts.",
+    "fan-in": "Fan-in: many different accounts send money to one account within a short time. The facts list a burst INTO one account from many distinct accounts, or one account that received from many distinct accounts.",
+    "cycle": "Cycle: money leaves an account, passes through two or more other accounts, and returns to where it started. The facts list a directed loop that returns money to a starting account.",
+    "chain": "Chain: money is passed along, account to account, each one forwarding soon after receiving, with similar amounts. The facts list pass-through pairs whose amounts in and out are close.",
+    "scatter-gather": "Scatter-gather: one account splits money out to several middle accounts, and those middle accounts send it on to one collecting account. The facts list a burst out of one account and a burst into another through the same middle accounts.",
+    "mesh": "Mesh: a group of accounts trades among themselves, many transfers in several directions within the group, more than ordinary customers would, with no single hub and no loop.",
+    "lone": "Lone: one suspicious transfer on its own, an unusual amount or a one-off between two accounts that otherwise never deal, with no loop, burst or chain around it.",
+    "other": "Other: a laundering structure that is none of fan-out, fan-in, cycle, chain, scatter-gather, mesh or lone, such as a mix of two of them.",
+    "none": "None: ordinary traffic with no laundering structure, such as recurring payments between the same accounts, a busy merchant or payroll account, or scattered unrelated transfers."
+   }
+  },
+  "evidence": {
+   "type": "score",
+   "instructions": "How strong is the structural evidence of a laundering scheme in these transfers?",
+   "criteria": [
+    "No structure at all: no loop, no burst, no pass-through chain; the transfers look like unrelated everyday payments.",
+    "Weak: one busy account or one pass-through pair, which ordinary business also produces.",
+    "Moderate: a partial structure, such as several pass-through pairs with mismatched amounts, or a small burst.",
+    "Strong: a clear structure, such as a directed loop, a burst to or from many distinct accounts, or a chain with matching amounts.",
+    "Overwhelming: more than one clear structure, or one structure that involves most of the transfers in the neighborhood."
+   ]
+  }
+ },
+ "rows": [
+  {
+   "unit": "u01",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 781,
+   "p_ring": 0.71,
+   "scheme": "ring",
+   "scheme_confidence": 0.42,
+   "pattern": "chain",
+   "pattern_confidence": 0.95,
+   "pattern_probs": {
+    "chain": 0.96,
+    "mesh": 0.02,
+    "other": 0.02
+   },
+   "evidence_0_100": 70.2,
+   "evidence_top": 2.81,
+   "evidence_confidence": 0.54,
+   "correct": false
+  },
+  {
+   "unit": "u02",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 566,
+   "p_ring": 0.01,
+   "scheme": "ordinary",
+   "scheme_confidence": 0.98,
+   "pattern": "fan-out",
+   "pattern_confidence": 0.51,
+   "pattern_probs": {
+    "fan-out": 0.56,
+    "mesh": 0.24,
+    "other": 0.11
+   },
+   "evidence_0_100": 59.2,
+   "evidence_top": 2.37,
+   "evidence_confidence": 0.32,
+   "correct": true
+  },
+  {
+   "unit": "u03",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 740,
+   "p_ring": 0.99,
+   "scheme": "ring",
+   "scheme_confidence": 0.98,
+   "pattern": "fan-in",
+   "pattern_confidence": 0.6,
+   "pattern_probs": {
+    "fan-in": 0.64,
+    "other": 0.27,
+    "chain": 0.08
+   },
+   "evidence_0_100": 98.0,
+   "evidence_top": 3.92,
+   "evidence_confidence": 0.93,
+   "correct": false
+  },
+  {
+   "unit": "u04",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 776,
+   "p_ring": 0.83,
+   "scheme": "ring",
+   "scheme_confidence": 0.66,
+   "pattern": "chain",
+   "pattern_confidence": 0.89,
+   "pattern_probs": {
+    "chain": 0.9,
+    "mesh": 0.05,
+    "other": 0.04
+   },
+   "evidence_0_100": 70.0,
+   "evidence_top": 2.8,
+   "evidence_confidence": 0.6,
+   "correct": false
+  },
+  {
+   "unit": "u05",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 774,
+   "p_ring": 0.81,
+   "scheme": "ring",
+   "scheme_confidence": 0.62,
+   "pattern": "chain",
+   "pattern_confidence": 0.79,
+   "pattern_probs": {
+    "chain": 0.81,
+    "mesh": 0.13,
+    "other": 0.06
+   },
+   "evidence_0_100": 59.5,
+   "evidence_top": 2.38,
+   "evidence_confidence": 0.68,
+   "correct": false
+  },
+  {
+   "unit": "u06",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 563,
+   "p_ring": 0.02,
+   "scheme": "ordinary",
+   "scheme_confidence": 0.96,
+   "pattern": "other",
+   "pattern_confidence": 0.3,
+   "pattern_probs": {
+    "other": 0.38,
+    "mesh": 0.29,
+    "fan-in": 0.14
+   },
+   "evidence_0_100": 54.0,
+   "evidence_top": 2.16,
+   "evidence_confidence": 0.28,
+   "correct": true
+  },
+  {
+   "unit": "u07",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 803,
+   "p_ring": 0.99,
+   "scheme": "ring",
+   "scheme_confidence": 0.98,
+   "pattern": "fan-in",
+   "pattern_confidence": 0.53,
+   "pattern_probs": {
+    "fan-in": 0.58,
+    "chain": 0.19,
+    "other": 0.19
+   },
+   "evidence_0_100": 96.2,
+   "evidence_top": 3.85,
+   "evidence_confidence": 0.88,
+   "correct": false
+  },
+  {
+   "unit": "u08",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 665,
+   "p_ring": 0.92,
+   "scheme": "ring",
+   "scheme_confidence": 0.84,
+   "pattern": "other",
+   "pattern_confidence": 0.44,
+   "pattern_probs": {
+    "other": 0.5,
+    "chain": 0.23,
+    "fan-in": 0.17
+   },
+   "evidence_0_100": 58.2,
+   "evidence_top": 2.33,
+   "evidence_confidence": 0.72,
+   "correct": false
+  },
+  {
+   "unit": "u09",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 777,
+   "p_ring": 0.79,
+   "scheme": "ring",
+   "scheme_confidence": 0.58,
+   "pattern": "chain",
+   "pattern_confidence": 0.87,
+   "pattern_probs": {
+    "chain": 0.88,
+    "mesh": 0.06,
+    "other": 0.05
+   },
+   "evidence_0_100": 70.5,
+   "evidence_top": 2.82,
+   "evidence_confidence": 0.51,
+   "correct": false
+  },
+  {
+   "unit": "u10",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 807,
+   "p_ring": 0.81,
+   "scheme": "ring",
+   "scheme_confidence": 0.62,
+   "pattern": "chain",
+   "pattern_confidence": 0.81,
+   "pattern_probs": {
+    "chain": 0.83,
+    "mesh": 0.12,
+    "other": 0.05
+   },
+   "evidence_0_100": 67.2,
+   "evidence_top": 2.69,
+   "evidence_confidence": 0.63,
+   "correct": false
+  },
+  {
+   "unit": "u11",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 749,
+   "p_ring": 0.76,
+   "scheme": "ring",
+   "scheme_confidence": 0.52,
+   "pattern": "chain",
+   "pattern_confidence": 0.88,
+   "pattern_probs": {
+    "chain": 0.89,
+    "mesh": 0.06,
+    "other": 0.04
+   },
+   "evidence_0_100": 71.0,
+   "evidence_top": 2.84,
+   "evidence_confidence": 0.68,
+   "correct": false
+  },
+  {
+   "unit": "u12",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 776,
+   "p_ring": 0.86,
+   "scheme": "ring",
+   "scheme_confidence": 0.72,
+   "pattern": "chain",
+   "pattern_confidence": 0.91,
+   "pattern_probs": {
+    "chain": 0.92,
+    "mesh": 0.06,
+    "other": 0.02
+   },
+   "evidence_0_100": 65.8,
+   "evidence_top": 2.63,
+   "evidence_confidence": 0.47,
+   "correct": false
+  },
+  {
+   "unit": "u13",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 719,
+   "p_ring": 0.87,
+   "scheme": "ring",
+   "scheme_confidence": 0.74,
+   "pattern": "chain",
+   "pattern_confidence": 0.89,
+   "pattern_probs": {
+    "chain": 0.9,
+    "mesh": 0.06,
+    "other": 0.04
+   },
+   "evidence_0_100": 67.0,
+   "evidence_top": 2.68,
+   "evidence_confidence": 0.43,
+   "correct": false
+  },
+  {
+   "unit": "u14",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 628,
+   "p_ring": 0.02,
+   "scheme": "ordinary",
+   "scheme_confidence": 0.96,
+   "pattern": "mesh",
+   "pattern_confidence": 0.53,
+   "pattern_probs": {
+    "mesh": 0.58,
+    "none": 0.21,
+    "other": 0.15
+   },
+   "evidence_0_100": 40.8,
+   "evidence_top": 1.63,
+   "evidence_confidence": 0.35,
+   "correct": true
+  },
+  {
+   "unit": "u15",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 795,
+   "p_ring": 0.91,
+   "scheme": "ring",
+   "scheme_confidence": 0.82,
+   "pattern": "chain",
+   "pattern_confidence": 0.91,
+   "pattern_probs": {
+    "chain": 0.92,
+    "other": 0.04,
+    "mesh": 0.03
+   },
+   "evidence_0_100": 72.8,
+   "evidence_top": 2.91,
+   "evidence_confidence": 0.6,
+   "correct": false
+  },
+  {
+   "unit": "u16",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 703,
+   "p_ring": 0.84,
+   "scheme": "ring",
+   "scheme_confidence": 0.68,
+   "pattern": "chain",
+   "pattern_confidence": 0.33,
+   "pattern_probs": {
+    "chain": 0.4,
+    "other": 0.35,
+    "mesh": 0.22
+   },
+   "evidence_0_100": 56.0,
+   "evidence_top": 2.24,
+   "evidence_confidence": 0.81,
+   "correct": false
+  },
+  {
+   "unit": "u17",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 777,
+   "p_ring": 0.8,
+   "scheme": "ring",
+   "scheme_confidence": 0.6,
+   "pattern": "chain",
+   "pattern_confidence": 0.82,
+   "pattern_probs": {
+    "chain": 0.84,
+    "mesh": 0.08,
+    "other": 0.08
+   },
+   "evidence_0_100": 66.2,
+   "evidence_top": 2.65,
+   "evidence_confidence": 0.56,
+   "correct": false
+  },
+  {
+   "unit": "u18",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 507,
+   "p_ring": 0.01,
+   "scheme": "ordinary",
+   "scheme_confidence": 0.98,
+   "pattern": "mesh",
+   "pattern_confidence": 0.29,
+   "pattern_probs": {
+    "mesh": 0.37,
+    "other": 0.3,
+    "fan-in": 0.15
+   },
+   "evidence_0_100": 58.0,
+   "evidence_top": 2.32,
+   "evidence_confidence": 0.24,
+   "correct": true
+  },
+  {
+   "unit": "u19",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 770,
+   "p_ring": 0.77,
+   "scheme": "ring",
+   "scheme_confidence": 0.54,
+   "pattern": "chain",
+   "pattern_confidence": 0.92,
+   "pattern_probs": {
+    "chain": 0.93,
+    "mesh": 0.04,
+    "other": 0.03
+   },
+   "evidence_0_100": 60.8,
+   "evidence_top": 2.43,
+   "evidence_confidence": 0.62,
+   "correct": false
+  },
+  {
+   "unit": "u20",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 577,
+   "p_ring": 0.9,
+   "scheme": "ring",
+   "scheme_confidence": 0.8,
+   "pattern": "other",
+   "pattern_confidence": 0.38,
+   "pattern_probs": {
+    "other": 0.45,
+    "chain": 0.28,
+    "mesh": 0.21
+   },
+   "evidence_0_100": 53.5,
+   "evidence_top": 2.14,
+   "evidence_confidence": 0.88,
+   "correct": false
+  },
+  {
+   "unit": "u21",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 756,
+   "p_ring": 0.85,
+   "scheme": "ring",
+   "scheme_confidence": 0.7,
+   "pattern": "mesh",
+   "pattern_confidence": 0.55,
+   "pattern_probs": {
+    "mesh": 0.6,
+    "other": 0.22,
+    "chain": 0.17
+   },
+   "evidence_0_100": 58.0,
+   "evidence_top": 2.32,
+   "evidence_confidence": 0.73,
+   "correct": false
+  },
+  {
+   "unit": "u22",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 730,
+   "p_ring": 0.91,
+   "scheme": "ring",
+   "scheme_confidence": 0.82,
+   "pattern": "other",
+   "pattern_confidence": 0.21,
+   "pattern_probs": {
+    "other": 0.3,
+    "fan-out": 0.28,
+    "chain": 0.23
+   },
+   "evidence_0_100": 71.0,
+   "evidence_top": 2.84,
+   "evidence_confidence": 0.31,
+   "correct": false
+  },
+  {
+   "unit": "u23",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 762,
+   "p_ring": 0.82,
+   "scheme": "ring",
+   "scheme_confidence": 0.64,
+   "pattern": "mesh",
+   "pattern_confidence": 0.4,
+   "pattern_probs": {
+    "mesh": 0.47,
+    "other": 0.29,
+    "chain": 0.23
+   },
+   "evidence_0_100": 55.5,
+   "evidence_top": 2.22,
+   "evidence_confidence": 0.82,
+   "correct": false
+  },
+  {
+   "unit": "u24",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 776,
+   "p_ring": 0.79,
+   "scheme": "ring",
+   "scheme_confidence": 0.58,
+   "pattern": "chain",
+   "pattern_confidence": 0.9,
+   "pattern_probs": {
+    "chain": 0.91,
+    "mesh": 0.07,
+    "other": 0.02
+   },
+   "evidence_0_100": 63.2,
+   "evidence_top": 2.53,
+   "evidence_confidence": 0.54,
+   "correct": false
+  },
+  {
+   "unit": "u25",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 536,
+   "p_ring": 0.01,
+   "scheme": "ordinary",
+   "scheme_confidence": 0.98,
+   "pattern": "other",
+   "pattern_confidence": 0.25,
+   "pattern_probs": {
+    "other": 0.33,
+    "mesh": 0.3,
+    "none": 0.16
+   },
+   "evidence_0_100": 37.0,
+   "evidence_top": 1.48,
+   "evidence_confidence": 0.43,
+   "correct": true
+  },
+  {
+   "unit": "u26",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 758,
+   "p_ring": 0.85,
+   "scheme": "ring",
+   "scheme_confidence": 0.7,
+   "pattern": "mesh",
+   "pattern_confidence": 0.49,
+   "pattern_probs": {
+    "mesh": 0.55,
+    "chain": 0.22,
+    "other": 0.22
+   },
+   "evidence_0_100": 56.5,
+   "evidence_top": 2.26,
+   "evidence_confidence": 0.78,
+   "correct": false
+  },
+  {
+   "unit": "u27",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 711,
+   "p_ring": 0.89,
+   "scheme": "ring",
+   "scheme_confidence": 0.78,
+   "pattern": "fan-out",
+   "pattern_confidence": 0.27,
+   "pattern_probs": {
+    "fan-out": 0.35,
+    "chain": 0.29,
+    "other": 0.26
+   },
+   "evidence_0_100": 70.2,
+   "evidence_top": 2.81,
+   "evidence_confidence": 0.33,
+   "correct": false
+  },
+  {
+   "unit": "u28",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 963,
+   "p_ring": 1.0,
+   "scheme": "ring",
+   "scheme_confidence": 1.0,
+   "pattern": "cycle",
+   "pattern_confidence": 0.67,
+   "pattern_probs": {
+    "cycle": 0.71,
+    "other": 0.27,
+    "chain": 0.01
+   },
+   "evidence_0_100": 97.2,
+   "evidence_top": 3.89,
+   "evidence_confidence": 0.92,
+   "correct": false
+  },
+  {
+   "unit": "u29",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 776,
+   "p_ring": 0.89,
+   "scheme": "ring",
+   "scheme_confidence": 0.78,
+   "pattern": "chain",
+   "pattern_confidence": 0.88,
+   "pattern_probs": {
+    "chain": 0.89,
+    "mesh": 0.08,
+    "other": 0.03
+   },
+   "evidence_0_100": 64.5,
+   "evidence_top": 2.58,
+   "evidence_confidence": 0.52,
+   "correct": false
+  },
+  {
+   "unit": "u30",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 727,
+   "p_ring": 0.88,
+   "scheme": "ring",
+   "scheme_confidence": 0.76,
+   "pattern": "chain",
+   "pattern_confidence": 0.26,
+   "pattern_probs": {
+    "chain": 0.34,
+    "other": 0.32,
+    "mesh": 0.28
+   },
+   "evidence_0_100": 57.0,
+   "evidence_top": 2.28,
+   "evidence_confidence": 0.77,
+   "correct": false
+  },
+  {
+   "unit": "u31",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 682,
+   "p_ring": 0.86,
+   "scheme": "ring",
+   "scheme_confidence": 0.72,
+   "pattern": "chain",
+   "pattern_confidence": 0.93,
+   "pattern_probs": {
+    "chain": 0.94,
+    "mesh": 0.03,
+    "other": 0.03
+   },
+   "evidence_0_100": 67.0,
+   "evidence_top": 2.68,
+   "evidence_confidence": 0.66,
+   "correct": false
+  },
+  {
+   "unit": "u32",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 508,
+   "p_ring": 0.02,
+   "scheme": "ordinary",
+   "scheme_confidence": 0.96,
+   "pattern": "fan-in",
+   "pattern_confidence": 0.55,
+   "pattern_probs": {
+    "fan-in": 0.6,
+    "other": 0.2,
+    "mesh": 0.08
+   },
+   "evidence_0_100": 53.5,
+   "evidence_top": 2.14,
+   "evidence_confidence": 0.37,
+   "correct": true
+  },
+  {
+   "unit": "u33",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 851,
+   "p_ring": 1.0,
+   "scheme": "ring",
+   "scheme_confidence": 1.0,
+   "pattern": "fan-in",
+   "pattern_confidence": 0.31,
+   "pattern_probs": {
+    "fan-in": 0.39,
+    "other": 0.35,
+    "cycle": 0.24
+   },
+   "evidence_0_100": 99.5,
+   "evidence_top": 3.98,
+   "evidence_confidence": 0.98,
+   "correct": false
+  },
+  {
+   "unit": "u34",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 759,
+   "p_ring": 0.9,
+   "scheme": "ring",
+   "scheme_confidence": 0.8,
+   "pattern": "chain",
+   "pattern_confidence": 0.31,
+   "pattern_probs": {
+    "chain": 0.39,
+    "other": 0.3,
+    "mesh": 0.26
+   },
+   "evidence_0_100": 59.0,
+   "evidence_top": 2.36,
+   "evidence_confidence": 0.69,
+   "correct": false
+  },
+  {
+   "unit": "u35",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 629,
+   "p_ring": 0.96,
+   "scheme": "ring",
+   "scheme_confidence": 0.92,
+   "pattern": "other",
+   "pattern_confidence": 0.45,
+   "pattern_probs": {
+    "other": 0.51,
+    "chain": 0.32,
+    "mesh": 0.1
+   },
+   "evidence_0_100": 60.2,
+   "evidence_top": 2.41,
+   "evidence_confidence": 0.65,
+   "correct": false
+  },
+  {
+   "unit": "u36",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 731,
+   "p_ring": 0.91,
+   "scheme": "ring",
+   "scheme_confidence": 0.82,
+   "pattern": "other",
+   "pattern_confidence": 0.19,
+   "pattern_probs": {
+    "other": 0.28,
+    "mesh": 0.27,
+    "chain": 0.26
+   },
+   "evidence_0_100": 68.5,
+   "evidence_top": 2.74,
+   "evidence_confidence": 0.38,
+   "correct": false
+  },
+  {
+   "unit": "u37",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 514,
+   "p_ring": 0.01,
+   "scheme": "ordinary",
+   "scheme_confidence": 0.98,
+   "pattern": "other",
+   "pattern_confidence": 0.29,
+   "pattern_probs": {
+    "other": 0.37,
+    "none": 0.3,
+    "mesh": 0.13
+   },
+   "evidence_0_100": 39.8,
+   "evidence_top": 1.59,
+   "evidence_confidence": 0.38,
+   "correct": true
+  },
+  {
+   "unit": "u38",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 858,
+   "p_ring": 1.0,
+   "scheme": "ring",
+   "scheme_confidence": 1.0,
+   "pattern": "fan-in",
+   "pattern_confidence": 0.27,
+   "pattern_probs": {
+    "fan-in": 0.35,
+    "other": 0.35,
+    "cycle": 0.27
+   },
+   "evidence_0_100": 99.5,
+   "evidence_top": 3.98,
+   "evidence_confidence": 0.98,
+   "correct": false
+  },
+  {
+   "unit": "u39",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 774,
+   "p_ring": 0.81,
+   "scheme": "ring",
+   "scheme_confidence": 0.62,
+   "pattern": "chain",
+   "pattern_confidence": 0.79,
+   "pattern_probs": {
+    "chain": 0.81,
+    "mesh": 0.13,
+    "other": 0.06
+   },
+   "evidence_0_100": 62.7,
+   "evidence_top": 2.51,
+   "evidence_confidence": 0.57,
+   "correct": false
+  },
+  {
+   "unit": "u40",
+   "expected": "ordinary",
+   "shape": null,
+   "variant": "sentences",
+   "state_chars": 613,
+   "p_ring": 0.86,
+   "scheme": "ring",
+   "scheme_confidence": 0.72,
+   "pattern": "fan-out",
+   "pattern_confidence": 0.34,
+   "pattern_probs": {
+    "fan-out": 0.41,
+    "other": 0.31,
+    "mesh": 0.14
+   },
+   "evidence_0_100": 74.0,
+   "evidence_top": 2.96,
+   "evidence_confidence": 0.2,
+   "correct": false
+  }
+ ]
+}

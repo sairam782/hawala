@@ -130,6 +130,10 @@ Set 1, evidence Score on the sentence state, threshold 70.5 of 100:
 | main v2, gated | 0.75 | 0.89 | 12 | 0 |
 | heldout_a v2, before | 0.30 | 0.66 | 10 | 11 |
 | heldout_a v2, gated | 0.50 | 0.55 | 8 | 2 |
+| random clean v3, before (40 ordinary units, zero rings) | n/a | n/a | n/a | 12 |
+| random clean v3, gated | n/a | n/a | n/a | 6 |
+| random clean v3, Sonnet low-drop alone | n/a | n/a | n/a | 8 |
+| random clean v3, low-drop and gate together | n/a | n/a | n/a | 5 |
 
 Set 2, evidence Score on the sentence state, threshold 30.2 of 100 (a lower bar, since the rulings pulled every
 ordinary neighborhood's score down):
@@ -188,6 +192,8 @@ Set 1 evidence Score on the sentence state (the cleanest curve):
 | heldout_a v2 | 60 | 40 | 10 | 8 | 2 | 26% | 129 s (27%) |
 | heldout_a v2 | 70 | 22 | 8 | 3 | 4 | 56% | 273 s (58%) |
 | heldout_a v2 | 75 | 18 | 8 | 2 | 6 | 62% | 300 s (64%) |
+| random clean v3 (40 ordinary, zero rings) | all | 40 | 0 | 12 | 0 | 0 |
+| random clean v3 | 70 | 13 | 0 | 6 | 0 | 65% |
 
 Set 2 p(ring) on the facts-only state (sharper savings, more rings closed unseen):
 
@@ -197,6 +203,8 @@ Set 2 p(ring) on the facts-only state (sharper savings, more rings closed unseen
 | main v3 | 0.7 | 12 | 9 | 0 | 10 | 77% | 326 s (77%) |
 | heldout_a v2 | 0.5 | 24 | 8 | 5 | 7 | 53% | 256 s (55%) |
 | heldout_a v2 | 0.7 | 18 | 6 | 3 | 9 | 66% | 311 s (66%) |
+
+Random clean (added 12:56 on the engine thread's ask): 40 ordinary neighborhoods cut from random accounts with no labeled row and no ring account in reach, so every ring call is a false alarm. Jev's set 1 Score on the sentence state runs high there too (median 64.5 of 100; the scheme Choice says ring for 33 of 40), because the facts hold real bursts ("14 ACH transfers from 14 distinct accounts in 27 minutes") and Jev reads a burst as structure, as Sonnet does. At the main-chosen thresholds the gate (70.5) keeps 6 of Sonnet v3's 12 false ring calls and the pre-filter (70) lets 13 of 40 through to the LLM, which calls 6 of those ring; Sonnet's own low-drop keeps 8 of 12, and both together keep 5. Set 2's Score is weaker here (gate at 30.2 keeps 10 of 12). So on clean traffic Jev halves the false alarms and the LLM bill; it does not remove the burst-shaped false alarms, because the code facts call them bursts. Per-unit scores: `out\jev_random_clean.json`, `out\jev_random_clean_q2.json`.
 
 Reading: at a Score threshold of 70, the LLM reads fewer than half the neighborhoods, finds the same 13 rings on main
 and 8 of the 10 it would have found on heldout_a, and makes a quarter of the false ring calls, at about half the cost and
