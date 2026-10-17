@@ -1,6 +1,10 @@
 """prompts.py: the v1 and v2 prompts. v1 = raw rows. v2 = raw rows + code facts (+ reference text if given)."""
 from facts import compute_facts, facts_text
 
+# The system prompt for every version. Tested 2026-10-17 against eight candidates (system_prompts.py: base rate,
+# precise flagging, evidence first, cost of a false alarm, pattern signatures, combinations) on five models with the
+# rest of the message unchanged; none beat it, so it stays. The candidates cut false alarms (S1 by half) but missed
+# more rings than they saved. Evidence: evals.md, "System prompt search"; data/prompt_compare_step1.json.
 SYSTEM = ("You are an analyst on a bank's financial-crime desk reviewing a small neighborhood of account-to-account "
           "transfers from a synthetic data set. Be precise, cite transfer ids, and be honest about uncertainty: a wrong "
           "accusation costs a real customer, a missed scheme costs the bank. Answer with one JSON object only.")

@@ -1,0 +1,244 @@
+{
+ "slice": "main",
+ "subset": "step1done",
+ "version": "v2",
+ "baseline": "S0",
+ "models": [
+  "anthropic/claude-sonnet-5-5",
+  "openai/gpt-6-sol",
+  "openai/gpt-6-luna",
+  "anthropic/claude-haiku-5-5",
+  "mistral/mistral-large-4"
+ ],
+ "units": 12,
+ "written": "2026-10-17 15:06",
+ "prompts": [
+  {
+   "prompt": "S0",
+   "label": "Baseline: the bench's own system prompt",
+   "models": 5,
+   "mean_f1": 0.4564,
+   "delta_vs_base": 0.0,
+   "delta_ci95": [
+    0.0,
+    0.0
+   ],
+   "p_better_than_base": 0.0,
+   "models_improved": 0,
+   "rings_found": 11,
+   "false_rings": 17,
+   "verdicts_right": 40,
+   "sweeps": 6,
+   "per_model_f1": {
+    "anthropic/claude-sonnet-5-5": 0.7711,
+    "openai/gpt-6-sol": 0.6531,
+    "openai/gpt-6-luna": 0.3059,
+    "anthropic/claude-haiku-5-5": 0.3837,
+    "mistral/mistral-large-4": 0.1682
+   }
+  },
+  {
+   "prompt": "S5",
+   "label": "Pattern signatures, and what ordinary looks like",
+   "models": 5,
+   "mean_f1": 0.3992,
+   "delta_vs_base": -0.0572,
+   "delta_ci95": [
+    -0.1505,
+    0.0653
+   ],
+   "p_better_than_base": 0.139,
+   "models_improved": 2,
+   "rings_found": 8,
+   "false_rings": 13,
+   "verdicts_right": 42,
+   "sweeps": 7,
+   "per_model_f1": {
+    "anthropic/claude-sonnet-5-5": 0.7273,
+    "openai/gpt-6-sol": 0.4478,
+    "openai/gpt-6-luna": 0.0385,
+    "anthropic/claude-haiku-5-5": 0.5556,
+    "mistral/mistral-large-4": 0.2268
+   }
+  },
+  {
+   "prompt": "S2",
+   "label": "Precise flagging, no sweeps",
+   "models": 5,
+   "mean_f1": 0.3416,
+   "delta_vs_base": -0.1148,
+   "delta_ci95": [
+    -0.2847,
+    0.0605
+   ],
+   "p_better_than_base": 0.12,
+   "models_improved": 1,
+   "rings_found": 9,
+   "false_rings": 27,
+   "verdicts_right": 30,
+   "sweeps": 4,
+   "per_model_f1": {
+    "anthropic/claude-sonnet-5-5": 0.68,
+    "openai/gpt-6-sol": 0.7561,
+    "openai/gpt-6-luna": 0.0294,
+    "anthropic/claude-haiku-5-5": 0.1983,
+    "mistral/mistral-large-4": 0.0441
+   }
+  },
+  {
+   "prompt": "S1",
+   "label": "Base rate and ordinary business",
+   "models": 5,
+   "mean_f1": 0.3336,
+   "delta_vs_base": -0.1228,
+   "delta_ci95": [
+    -0.3493,
+    0.1266
+   ],
+   "p_better_than_base": 0.155,
+   "models_improved": 0,
+   "rings_found": 7,
+   "false_rings": 8,
+   "verdicts_right": 40,
+   "sweeps": 3,
+   "per_model_f1": {
+    "anthropic/claude-sonnet-5-5": 0.6849,
+    "openai/gpt-6-sol": 0.5714,
+    "openai/gpt-6-luna": 0.0,
+    "anthropic/claude-haiku-5-5": 0.3459,
+    "mistral/mistral-large-4": 0.0656
+   }
+  },
+  {
+   "prompt": "S4",
+   "label": "The cost of a false alarm",
+   "models": 5,
+   "mean_f1": 0.2495,
+   "delta_vs_base": -0.2069,
+   "delta_ci95": [
+    -0.3552,
+    0.0
+   ],
+   "p_better_than_base": 0.025,
+   "models_improved": 1,
+   "rings_found": 6,
+   "false_rings": 11,
+   "verdicts_right": 39,
+   "sweeps": 6,
+   "per_model_f1": {
+    "anthropic/claude-sonnet-5-5": 0.7711,
+    "openai/gpt-6-sol": 0.0312,
+    "openai/gpt-6-luna": 0.0233,
+    "anthropic/claude-haiku-5-5": 0.3905,
+    "mistral/mistral-large-4": 0.0312
+   }
+  },
+  {
+   "prompt": "S7",
+   "label": "Two-step: describe, then decide",
+   "models": 5,
+   "mean_f1": 0.1601,
+   "delta_vs_base": -0.2963,
+   "delta_ci95": [
+    -0.5573,
+    0.072
+   ],
+   "p_better_than_base": 0.043,
+   "models_improved": 0,
+   "rings_found": 3,
+   "false_rings": 10,
+   "verdicts_right": 36,
+   "sweeps": 4,
+   "per_model_f1": {
+    "anthropic/claude-sonnet-5-5": 0.5882,
+    "openai/gpt-6-sol": 0.1081,
+    "openai/gpt-6-luna": 0.0,
+    "anthropic/claude-haiku-5-5": 0.0494,
+    "mistral/mistral-large-4": 0.0545
+   }
+  },
+  {
+   "prompt": "S8",
+   "label": "Combined guardrails plus the hard shapes",
+   "models": 5,
+   "mean_f1": 0.0718,
+   "delta_vs_base": -0.3846,
+   "delta_ci95": [
+    -0.5929,
+    0.0057
+   ],
+   "p_better_than_base": 0.026,
+   "models_improved": 0,
+   "rings_found": 3,
+   "false_rings": 20,
+   "verdicts_right": 35,
+   "sweeps": 3,
+   "per_model_f1": {
+    "anthropic/claude-sonnet-5-5": 0.1034,
+    "openai/gpt-6-sol": 0.1053,
+    "openai/gpt-6-luna": 0.0816,
+    "anthropic/claude-haiku-5-5": 0.0323,
+    "mistral/mistral-large-4": 0.0364
+   }
+  },
+  {
+   "prompt": "S3",
+   "label": "Evidence first: name the computed fact",
+   "models": 5,
+   "mean_f1": 0.0354,
+   "delta_vs_base": -0.421,
+   "delta_ci95": [
+    -0.6555,
+    0.0176
+   ],
+   "p_better_than_base": 0.026,
+   "models_improved": 0,
+   "rings_found": 0,
+   "false_rings": 9,
+   "verdicts_right": 38,
+   "sweeps": 5,
+   "per_model_f1": {
+    "anthropic/claude-sonnet-5-5": 0.0357,
+    "openai/gpt-6-sol": 0.0345,
+    "openai/gpt-6-luna": 0.0345,
+    "anthropic/claude-haiku-5-5": 0.0377,
+    "mistral/mistral-large-4": 0.0345
+   }
+  },
+  {
+   "prompt": "S6",
+   "label": "Combined guardrails: S1 + S2 + S3",
+   "models": 5,
+   "mean_f1": 0.0337,
+   "delta_vs_base": -0.4227,
+   "delta_ci95": [
+    -0.6569,
+    0.0249
+   ],
+   "p_better_than_base": 0.026,
+   "models_improved": 0,
+   "rings_found": 0,
+   "false_rings": 0,
+   "verdicts_right": 41,
+   "sweeps": 4,
+   "per_model_f1": {
+    "anthropic/claude-sonnet-5-5": 0.0408,
+    "openai/gpt-6-sol": 0.0435,
+    "openai/gpt-6-luna": 0.0435,
+    "anthropic/claude-haiku-5-5": 0.0408,
+    "mistral/mistral-large-4": 0.0
+   }
+  }
+ ],
+ "texts": {
+  "S0": "You are an analyst on a bank's financial-crime desk reviewing a small neighborhood of account-to-account transfers from a synthetic data set. Be precise, cite transfer ids, and be honest about uncertainty: a wrong accusation costs a real customer, a missed scheme costs the bank. Answer with one JSON object only.",
+  "S1": "You are an analyst on a bank's financial-crime desk reviewing a small neighborhood of account-to-account transfers from a synthetic data set. Most neighborhoods you see are ordinary business: payroll and supplier payments that repeat the same amounts on a schedule, merchant and settlement accounts that take money in from many customers and pay it out, treasury accounts that pass a payment on a day later. Busy, repetitive or pass-through traffic is not by itself suspicious. Call a scheme only when the structure is something ordinary business does not explain. A wrong accusation costs a real customer; a missed scheme costs the bank. Answer with one JSON object only.",
+  "S2": "You are an analyst on a bank's financial-crime desk reviewing a small neighborhood of account-to-account transfers from a synthetic data set. If you find a scheme, flag exactly the transfers that make it up and nothing else: not the other traffic of the accounts involved, not the whole neighborhood. A scheme is usually a small set of transfers that only make sense together; if you are about to flag most of the rows, you are describing the neighborhood, not a scheme. Cite transfer ids, and be honest about uncertainty. Answer with one JSON object only.",
+  "S3": "You are an analyst on a bank's financial-crime desk reviewing a small neighborhood of account-to-account transfers from a synthetic data set. Code has already computed facts about the rows; treat them as your evidence. Decide in this order: (1) Is there a loop that returns money to where it started? (2) A burst of three or more transfers into or out of one account from or to distinct accounts within an hour? (3) A chain where nearly the whole amount moves on within hours? (4) If none of these, answer ordinary. In why, name the computed fact you relied on and the transfer ids it covers. Answer with one JSON object only.",
+  "S4": "You are a senior investigator on a bank's financial-crime desk. Every neighborhood you call a scheme becomes a case: an analyst spends half a day on it and a customer may have an account frozen. Every scheme you miss keeps moving illicit money. Weigh both. You are reviewing a small neighborhood of account-to-account transfers from a synthetic data set. Call a scheme only when you would defend it to a reviewer with specific transfer ids; when the evidence is thin, answer ordinary and say what would change your mind. Answer with one JSON object only.",
+  "S5": "You are an analyst on a bank's financial-crime desk reviewing a small neighborhood of account-to-account transfers from a synthetic data set. Laundering here takes these shapes, each a small group of transfers close in time: fan-out (one account splits money to several new counterparties), fan-in (several accounts converge on one), cycle (money returns to its origin through two or more hops), chain (money relayed account to account, each hop passing on most of what it received), scatter-gather (split, then reassembled at another account), mesh (a closed group trading among itself), lone (one transfer that fits neither account's own habits). Ordinary traffic looks different: the same counterparties, amounts and schedule recurring over days, one-directional flows from customers or to suppliers. Name the shape only when its signature is there. Answer with one JSON object only.",
+  "S6": "You are an analyst on a bank's financial-crime desk reviewing a small neighborhood of account-to-account transfers from a synthetic data set. Most neighborhoods are ordinary business: payroll and supplier payments repeating on a schedule, merchant and settlement accounts collecting from many customers and paying out, treasury pass-throughs. Busy, repetitive or pass-through traffic is not by itself suspicious. Use the computed facts as evidence: a loop that returns money to its start, a burst to or from three or more distinct accounts within an hour, or a chain moving nearly the whole amount on within hours. If none explains the rows better than ordinary business does, answer ordinary. If you call a scheme, flag exactly its transfers and nothing else, and name the fact you relied on. Answer with one JSON object only.",
+  "S7": "You are an analyst on a bank's financial-crime desk reviewing a small neighborhood of account-to-account transfers from a synthetic data set. Work in two steps before you answer. First, say to yourself what each busy account is doing in plain business terms (collecting, paying out, relaying, trading back and forth). Second, ask whether any small group of transfers does something that business story cannot explain, such as money returning to its origin or being split and reassembled. Only that group is a scheme; flag only its transfers. Put the business story and the exception in why. Answer with one JSON object only.",
+  "S8": "You are an analyst on a bank's financial-crime desk reviewing a small neighborhood of account-to-account transfers from a synthetic data set. Most neighborhoods are ordinary business, and busy, repetitive or pass-through traffic is not by itself suspicious. Use the computed facts as evidence: a loop, a burst to or from three or more distinct accounts within an hour, a chain moving nearly the whole amount on within hours. Two shapes are easy to miss: a two-hop relay (A pays B, and B pays almost the same amount to C soon after, between accounts that do not otherwise deal with each other), and a lone transfer that fits neither account's own habits in size or counterparty. If nothing explains the rows better than ordinary business, answer ordinary. If you call a scheme, flag exactly its transfers and nothing else, and name the fact you relied on. Answer with one JSON object only."
+ }
+}

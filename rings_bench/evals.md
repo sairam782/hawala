@@ -1,6 +1,102 @@
 # Model screen: every Nicrron chat model on the Rings bench
 
-**Round one done.** 66 chat models in the catalog, 1,678 model calls so far, $22.30 spent. Written 2026-10-17 14:57 by `screen.py report`; every number below is read from the scored files it names, so rerun it rather than editing this file.
+**Round one done.** 66 chat models in the catalog, 2,077 model calls so far, $28.26 spent. Written 2026-10-17 15:06 by `screen.py report`; every number below is read from the scored files it names, so rerun it rather than editing this file.
+
+## System prompt search
+
+**Decision: keep S0, the bench's own system prompt.** No candidate beat it. The closest, S5 (Pattern signatures, and what ordinary looks like), scored -0.057 mean F1 (95% range -0.150 to +0.065) and improved 2 of 5 models. The candidates did cut false alarms, as designed, but every one of them also missed rings, and the misses cost more than the alarms saved. Stopped early for time: the comparison covers the 12 neighborhoods every candidate had finished on all five models, so it is a direction, not a verdict. prompts.py records the result next to SYSTEM.
+
+Only the system message changes. Rows, code facts, the question and the answer format are the bench's v2, so a change in score is the system prompt's doing. Candidates were written from round one's failures (31% of all answers called an ordinary neighborhood a ring; 7% caught a ring by sweeping in about 11 wrong transfers per real one) and none mentions the data's artifacts (the ACH tell, late timestamps, neighborhood size). Changes are paired: the same models on the same neighborhoods, resampled together.
+
+### Eight candidates on a five-model panel, 12 neighborhoods
+
+Panel: anthropic/claude-sonnet-5-5, openai/gpt-6-sol, openai/gpt-6-luna, anthropic/claude-haiku-5-5, mistral/mistral-large-4. S0 is the bench's own runs of the same models.
+
+| Prompt | What it changes | Mean F1 | vs S0 | 95% range of the change | Better than S0 in | Models improved | Rings caught | False alarms | Sweeps |
+|---|---|---:|---:|---|---:|---:|---:|---:|---:|
+| **S0** | Baseline: the bench's own system prompt | 0.456 | – | – | – | – | 11 | 17 | 6 |
+| **S5** | Pattern signatures, and what ordinary looks like | 0.399 | -0.057 | -0.150 to +0.065 | 14% of resamples | 2 of 5 | 8 | 13 | 7 |
+| **S2** | Precise flagging, no sweeps | 0.342 | -0.115 | -0.285 to +0.060 | 12% of resamples | 1 of 5 | 9 | 27 | 4 |
+| **S1** | Base rate and ordinary business | 0.334 | -0.123 | -0.349 to +0.127 | 16% of resamples | 0 of 5 | 7 | 8 | 3 |
+| **S4** | The cost of a false alarm | 0.249 | -0.207 | -0.355 to +0.000 | 2% of resamples | 1 of 5 | 6 | 11 | 6 |
+| **S7** | Two-step: describe, then decide | 0.160 | -0.296 | -0.557 to +0.072 | 4% of resamples | 0 of 5 | 3 | 10 | 4 |
+| **S8** | Combined guardrails plus the hard shapes | 0.072 | -0.385 | -0.593 to +0.006 | 3% of resamples | 0 of 5 | 3 | 20 | 3 |
+| **S3** | Evidence first: name the computed fact | 0.035 | -0.421 | -0.655 to +0.018 | 3% of resamples | 0 of 5 | 0 | 9 | 5 |
+| **S6** | Combined guardrails: S1 + S2 + S3 | 0.034 | -0.423 | -0.657 to +0.025 | 3% of resamples | 0 of 5 | 0 | 0 | 4 |
+
+### The prompts
+
+<details><summary><b>S0</b>: Baseline: the bench's own system prompt</summary>
+
+```text
+You are an analyst on a bank's financial-crime desk reviewing a small neighborhood of account-to-account transfers from a synthetic data set. Be precise, cite transfer ids, and be honest about uncertainty: a wrong accusation costs a real customer, a missed scheme costs the bank. Answer with one JSON object only.
+```
+
+</details>
+
+<details><summary><b>S1</b>: Base rate and ordinary business</summary>
+
+```text
+You are an analyst on a bank's financial-crime desk reviewing a small neighborhood of account-to-account transfers from a synthetic data set. Most neighborhoods you see are ordinary business: payroll and supplier payments that repeat the same amounts on a schedule, merchant and settlement accounts that take money in from many customers and pay it out, treasury accounts that pass a payment on a day later. Busy, repetitive or pass-through traffic is not by itself suspicious. Call a scheme only when the structure is something ordinary business does not explain. A wrong accusation costs a real customer; a missed scheme costs the bank. Answer with one JSON object only.
+```
+
+</details>
+
+<details><summary><b>S2</b>: Precise flagging, no sweeps</summary>
+
+```text
+You are an analyst on a bank's financial-crime desk reviewing a small neighborhood of account-to-account transfers from a synthetic data set. If you find a scheme, flag exactly the transfers that make it up and nothing else: not the other traffic of the accounts involved, not the whole neighborhood. A scheme is usually a small set of transfers that only make sense together; if you are about to flag most of the rows, you are describing the neighborhood, not a scheme. Cite transfer ids, and be honest about uncertainty. Answer with one JSON object only.
+```
+
+</details>
+
+<details><summary><b>S3</b>: Evidence first: name the computed fact</summary>
+
+```text
+You are an analyst on a bank's financial-crime desk reviewing a small neighborhood of account-to-account transfers from a synthetic data set. Code has already computed facts about the rows; treat them as your evidence. Decide in this order: (1) Is there a loop that returns money to where it started? (2) A burst of three or more transfers into or out of one account from or to distinct accounts within an hour? (3) A chain where nearly the whole amount moves on within hours? (4) If none of these, answer ordinary. In why, name the computed fact you relied on and the transfer ids it covers. Answer with one JSON object only.
+```
+
+</details>
+
+<details><summary><b>S4</b>: The cost of a false alarm</summary>
+
+```text
+You are a senior investigator on a bank's financial-crime desk. Every neighborhood you call a scheme becomes a case: an analyst spends half a day on it and a customer may have an account frozen. Every scheme you miss keeps moving illicit money. Weigh both. You are reviewing a small neighborhood of account-to-account transfers from a synthetic data set. Call a scheme only when you would defend it to a reviewer with specific transfer ids; when the evidence is thin, answer ordinary and say what would change your mind. Answer with one JSON object only.
+```
+
+</details>
+
+<details><summary><b>S5</b>: Pattern signatures, and what ordinary looks like</summary>
+
+```text
+You are an analyst on a bank's financial-crime desk reviewing a small neighborhood of account-to-account transfers from a synthetic data set. Laundering here takes these shapes, each a small group of transfers close in time: fan-out (one account splits money to several new counterparties), fan-in (several accounts converge on one), cycle (money returns to its origin through two or more hops), chain (money relayed account to account, each hop passing on most of what it received), scatter-gather (split, then reassembled at another account), mesh (a closed group trading among itself), lone (one transfer that fits neither account's own habits). Ordinary traffic looks different: the same counterparties, amounts and schedule recurring over days, one-directional flows from customers or to suppliers. Name the shape only when its signature is there. Answer with one JSON object only.
+```
+
+</details>
+
+<details><summary><b>S6</b>: Combined guardrails: S1 + S2 + S3</summary>
+
+```text
+You are an analyst on a bank's financial-crime desk reviewing a small neighborhood of account-to-account transfers from a synthetic data set. Most neighborhoods are ordinary business: payroll and supplier payments repeating on a schedule, merchant and settlement accounts collecting from many customers and paying out, treasury pass-throughs. Busy, repetitive or pass-through traffic is not by itself suspicious. Use the computed facts as evidence: a loop that returns money to its start, a burst to or from three or more distinct accounts within an hour, or a chain moving nearly the whole amount on within hours. If none explains the rows better than ordinary business does, answer ordinary. If you call a scheme, flag exactly its transfers and nothing else, and name the fact you relied on. Answer with one JSON object only.
+```
+
+</details>
+
+<details><summary><b>S7</b>: Two-step: describe, then decide</summary>
+
+```text
+You are an analyst on a bank's financial-crime desk reviewing a small neighborhood of account-to-account transfers from a synthetic data set. Work in two steps before you answer. First, say to yourself what each busy account is doing in plain business terms (collecting, paying out, relaying, trading back and forth). Second, ask whether any small group of transfers does something that business story cannot explain, such as money returning to its origin or being split and reassembled. Only that group is a scheme; flag only its transfers. Put the business story and the exception in why. Answer with one JSON object only.
+```
+
+</details>
+
+<details><summary><b>S8</b>: Combined guardrails plus the hard shapes</summary>
+
+```text
+You are an analyst on a bank's financial-crime desk reviewing a small neighborhood of account-to-account transfers from a synthetic data set. Most neighborhoods are ordinary business, and busy, repetitive or pass-through traffic is not by itself suspicious. Use the computed facts as evidence: a loop, a burst to or from three or more distinct accounts within an hour, a chain moving nearly the whole amount on within hours. Two shapes are easy to miss: a two-hop relay (A pays B, and B pays almost the same amount to C soon after, between accounts that do not otherwise deal with each other), and a lone transfer that fits neither account's own habits in size or counterparty. If nothing explains the rows better than ordinary business, answer ordinary. If you call a scheme, flag exactly its transfers and nothing else, and name the fact you relied on. Answer with one JSON object only.
+```
+
+</details>
 
 ## Round one: every chat model on 20 neighborhoods
 
