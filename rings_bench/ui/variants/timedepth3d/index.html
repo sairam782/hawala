@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Rings in Time</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
+<link rel="stylesheet" href="style.css">
+<!-- data: each file is optional; the page falls back to a labeled SAMPLE -->
+<script src="../../../data/slice.js"></script>
+<script src="../../../data/units.js"></script>
+<script src="../../../data/bench_results.js"></script>
+<!-- three.js from the CDN, then the local copy if the CDN is unreachable -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+<script>if (!window.THREE) document.write('<script src="three.min.js"><\/script>');</script>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <h1>Rings in time</h1>
+    <p class="sub">Accounts sit on the map; days run into depth. Every transfer is drawn at the moment it happened.</p>
+  </div>
+  <div class="badges" id="badges"></div>
+</header>
+
+<div class="layout">
+  <section class="stagecol">
+    <div class="stage" id="stage">
+      <canvas id="cv" aria-label="Transfer network with time as depth"></canvas>
+      <div class="daylabels" id="dayLabels" aria-hidden="true"></div>
+      <div class="viewname" id="viewName"></div>
+      <div class="nogl" id="noGl" hidden>This page needs WebGL to draw the network. The results and the caught list below still read correctly.</div>
+    </div>
+    <div class="controls">
+      <div class="ctl view" role="group" aria-label="Camera">
+        <button type="button" class="btn" id="btnMap" aria-pressed="true">Map</button>
+        <button type="button" class="btn" id="btnTime" aria-pressed="false">Timeline</button>
+        <label class="plabel" for="tilt">Tilt</label>
+        <input type="range" id="tilt" min="0" max="90" step="1" value="0" aria-label="Tilt from map (0) to timeline (90)">
+      </div>
+      <div class="ctl scrub" role="group" aria-label="Day scrub">
+        <button type="button" class="btn" id="btnPlay">Play the ten days</button>
+        <input type="range" id="cut" min="0" max="11" step="0.05" value="11" aria-label="Show transfers up to this day">
+        <span class="fig readout" id="cutRead"></span>
+      </div>
+    </div>
+  </section>
+
+  <aside class="side">
+    <div class="pick">
+      <label class="plabel" for="modelPick">Model</label>
+      <select id="modelPick"></select>
+      <div class="vers" id="versRow" role="group" aria-label="Version"></div>
+      <p class="vnote" id="versNote"></p>
+    </div>
+    <div class="result">
+      <h2 class="headline" id="headline"></h2>
+      <p class="limit" id="limit"></p>
+      <p class="strong" id="strong"></p>
+    </div>
+    <div class="legend" aria-label="Key">
+      <h3>Key</h3>
+      <ul>
+        <li><svg width="34" height="10"><line x1="1" y1="5" x2="33" y2="5" class="k-norm"/></svg>a transfer, at the moment it happened</li>
+        <li><svg width="34" height="10"><circle cx="17" cy="5" r="2" class="k-acct"/></svg>an account, on the map plane</li>
+        <li><svg width="34" height="10"><line x1="1" y1="5" x2="33" y2="5" class="k-ok"/></svg>flagged by the model, IBM agrees</li>
+        <li><svg width="34" height="10"><line x1="1" y1="5" x2="33" y2="5" class="k-bad"/></svg>flagged, IBM labels it ordinary</li>
+        <li><svg width="34" height="10"><line x1="1" y1="5" x2="33" y2="5" class="k-miss"/></svg>IBM labels it laundering, model missed it</li>
+        <li><svg width="34" height="10"><line x1="1" y1="5" x2="33" y2="5" class="k-life"/></svg>one account across time, inside a lit group</li>
+        <li><svg width="34" height="10"><rect x="2" y="1" width="30" height="8" class="k-cut"/></svg>the day the scrub has reached</li>
+      </ul>
+      <p class="hint">Hover a colored line for the group. Drag to pan, scroll to zoom, double-click to reset.</p>
+    </div>
+  </aside>
+</div>
+
+<section class="roster" aria-label="Caught rings">
+  <div class="rhead"><h2>Caught</h2><span class="fig" id="rosterCount"></span><span class="rnote" id="rosterNote"></span></div>
+  <div class="cards" id="cards"></div>
+</section>
+
+<div class="hover" id="hover" hidden></div>
+<script src="app3d.js"></script>
+</body>
+</html>
