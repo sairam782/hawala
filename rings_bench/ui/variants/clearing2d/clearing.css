@@ -129,3 +129,14 @@ select { width: 100%; font: 13px var(--sans); color: var(--ink); background: var
 .ctlhead2 .val { color: var(--accent); }
 .ctl input[type=range] { width: 100%; }
 .card.busy .sweep { animation-duration: var(--sweep, 1.2s); }
+
+/* before and after */
+.ba { margin-left: auto; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.ba[hidden] { display: none; }
+.ba .seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; flex: none; }
+.ba .seg button { font: 500 12px var(--sans); background: transparent; color: var(--muted); border: 0; padding: 3px 12px; cursor: pointer; }
+.ba .seg button + button { border-left: 1px solid var(--rule); }
+.ba .seg button.on { background: var(--accent); color: var(--ground); }
+.ba .tally { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.rhead h2, .rhead #rcount { flex: none; white-space: nowrap; }
+.scrub .btn { flex: none; }
