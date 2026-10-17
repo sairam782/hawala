@@ -1,0 +1,594 @@
+{
+ "per_case_majority": {
+  "main:u08": {
+   "class": "chain_cut_short",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "chain_cut_short": 5
+   }
+  },
+  "main:u14": {
+   "class": "format_or_currency_tell",
+   "votes": 3,
+   "of": 5,
+   "all": {
+    "recurring_payments_read_as_scheme": 1,
+    "format_or_currency_tell": 3,
+    "other": 1
+   }
+  },
+  "main:u19": {
+   "class": "lone_no_structure",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "lone_no_structure": 5
+   }
+  },
+  "main:u20": {
+   "class": "format_or_currency_tell",
+   "votes": 3,
+   "of": 5,
+   "all": {
+    "lone_no_structure": 2,
+    "format_or_currency_tell": 3
+   }
+  },
+  "main:u28": {
+   "class": "lone_no_structure",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "lone_no_structure": 5
+   }
+  },
+  "main:u33": {
+   "class": "chain_cut_short",
+   "votes": 3,
+   "of": 5,
+   "all": {
+    "pass_through_guess": 2,
+    "chain_cut_short": 3
+   }
+  },
+  "main:u35": {
+   "class": "recurring_payments_read_as_scheme",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "recurring_payments_read_as_scheme": 5
+   }
+  },
+  "main:u37": {
+   "class": "lone_no_structure",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "lone_no_structure": 5
+   }
+  },
+  "main:u46": {
+   "class": "recurring_payments_read_as_scheme",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "recurring_payments_read_as_scheme": 5
+   }
+  },
+  "main:u53": {
+   "class": "lone_no_structure",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "lone_no_structure": 5
+   }
+  },
+  "heldout_a:u01": {
+   "class": "lone_no_structure",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "lone_no_structure": 5
+   }
+  },
+  "heldout_a:u05": {
+   "class": "wrong_rows_flagged",
+   "votes": 2,
+   "of": 4,
+   "all": {
+    "wrong_rows_flagged": 2,
+    "hedged_verdict": 1,
+    "other": 1
+   }
+  },
+  "heldout_a:u07": {
+   "class": "chain_cut_short",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "chain_cut_short": 5
+   }
+  },
+  "heldout_a:u15": {
+   "class": "lone_no_structure",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "lone_no_structure": 5
+   }
+  },
+  "heldout_a:u17": {
+   "class": "chain_cut_short",
+   "votes": 4,
+   "of": 5,
+   "all": {
+    "format_or_currency_tell": 1,
+    "chain_cut_short": 4
+   }
+  },
+  "heldout_a:u22": {
+   "class": "other",
+   "votes": 4,
+   "of": 5,
+   "all": {
+    "other": 4,
+    "hedged_verdict": 1
+   }
+  },
+  "heldout_a:u23": {
+   "class": "lone_no_structure",
+   "votes": 3,
+   "of": 5,
+   "all": {
+    "format_or_currency_tell": 2,
+    "lone_no_structure": 3
+   }
+  },
+  "heldout_a:u24": {
+   "class": "lone_no_structure",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "lone_no_structure": 5
+   }
+  },
+  "heldout_a:u25": {
+   "class": "lone_no_structure",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "lone_no_structure": 5
+   }
+  },
+  "heldout_a:u31": {
+   "class": "pass_through_guess",
+   "votes": 3,
+   "of": 5,
+   "all": {
+    "pass_through_guess": 3,
+    "recurring_payments_read_as_scheme": 2
+   }
+  },
+  "heldout_a:u34": {
+   "class": "lone_no_structure",
+   "votes": 4,
+   "of": 5,
+   "all": {
+    "lone_no_structure": 4,
+    "format_or_currency_tell": 1
+   }
+  },
+  "heldout_a:u41": {
+   "class": "hedged_verdict",
+   "votes": 4,
+   "of": 5,
+   "all": {
+    "hedged_verdict": 4,
+    "wrong_rows_flagged": 1
+   }
+  },
+  "heldout_a:u53": {
+   "class": "lone_no_structure",
+   "votes": 4,
+   "of": 5,
+   "all": {
+    "hedged_verdict": 1,
+    "lone_no_structure": 4
+   }
+  },
+  "heldout_b:u11": {
+   "class": "chain_cut_short",
+   "votes": 3,
+   "of": 5,
+   "all": {
+    "pass_through_guess": 1,
+    "format_or_currency_tell": 1,
+    "chain_cut_short": 3
+   }
+  },
+  "heldout_b:u15": {
+   "class": "lone_no_structure",
+   "votes": 4,
+   "of": 5,
+   "all": {
+    "lone_no_structure": 4,
+    "format_or_currency_tell": 1
+   }
+  },
+  "heldout_b:u20": {
+   "class": "recurring_payments_read_as_scheme",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "recurring_payments_read_as_scheme": 5
+   }
+  },
+  "heldout_b:u24": {
+   "class": "lone_no_structure",
+   "votes": 3,
+   "of": 5,
+   "all": {
+    "wrong_rows_flagged": 1,
+    "lone_no_structure": 3,
+    "format_or_currency_tell": 1
+   }
+  },
+  "heldout_b:u29": {
+   "class": "wrong_rows_flagged",
+   "votes": 4,
+   "of": 4,
+   "all": {
+    "wrong_rows_flagged": 4
+   }
+  },
+  "heldout_b:u33": {
+   "class": "lone_no_structure",
+   "votes": 3,
+   "of": 5,
+   "all": {
+    "recurring_payments_read_as_scheme": 1,
+    "lone_no_structure": 3,
+    "format_or_currency_tell": 1
+   }
+  },
+  "heldout_b:u36": {
+   "class": "recurring_payments_read_as_scheme",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "recurring_payments_read_as_scheme": 5
+   }
+  },
+  "heldout_b:u38": {
+   "class": "recurring_payments_read_as_scheme",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "recurring_payments_read_as_scheme": 5
+   }
+  },
+  "heldout_b:u39": {
+   "class": "recurring_payments_read_as_scheme",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "recurring_payments_read_as_scheme": 5
+   }
+  },
+  "heldout_b:u45": {
+   "class": "lone_no_structure",
+   "votes": 3,
+   "of": 5,
+   "all": {
+    "lone_no_structure": 3,
+    "format_or_currency_tell": 2
+   }
+  },
+  "heldout_b:u50": {
+   "class": "burst_is_normal_here",
+   "votes": 2,
+   "of": 5,
+   "all": {
+    "burst_is_normal_here": 2,
+    "wrong_rows_flagged": 2,
+    "format_or_currency_tell": 1
+   }
+  },
+  "heldout_b:u52": {
+   "class": "recurring_payments_read_as_scheme",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "recurring_payments_read_as_scheme": 5
+   }
+  },
+  "heldout_b:u54": {
+   "class": "lone_no_structure",
+   "votes": 3,
+   "of": 5,
+   "all": {
+    "format_or_currency_tell": 1,
+    "lone_no_structure": 3,
+    "hedged_verdict": 1
+   }
+  },
+  "heldout_c:u01": {
+   "class": "lone_no_structure",
+   "votes": 4,
+   "of": 5,
+   "all": {
+    "wrong_rows_flagged": 1,
+    "lone_no_structure": 4
+   }
+  },
+  "heldout_c:u03": {
+   "class": "wrong_rows_flagged",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "wrong_rows_flagged": 5
+   }
+  },
+  "heldout_c:u06": {
+   "class": "recurring_payments_read_as_scheme",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "recurring_payments_read_as_scheme": 5
+   }
+  },
+  "heldout_c:u09": {
+   "class": "recurring_payments_read_as_scheme",
+   "votes": 3,
+   "of": 5,
+   "all": {
+    "recurring_payments_read_as_scheme": 3,
+    "pass_through_guess": 2
+   }
+  },
+  "heldout_c:u11": {
+   "class": "lone_no_structure",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "lone_no_structure": 5
+   }
+  },
+  "heldout_c:u12": {
+   "class": "pass_through_guess",
+   "votes": 3,
+   "of": 5,
+   "all": {
+    "recurring_payments_read_as_scheme": 2,
+    "pass_through_guess": 3
+   }
+  },
+  "heldout_c:u13": {
+   "class": "lone_no_structure",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "lone_no_structure": 5
+   }
+  },
+  "heldout_c:u19": {
+   "class": "recurring_payments_read_as_scheme",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "recurring_payments_read_as_scheme": 5
+   }
+  },
+  "heldout_c:u25": {
+   "class": "lone_no_structure",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "lone_no_structure": 5
+   }
+  },
+  "heldout_c:u32": {
+   "class": "burst_is_normal_here",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "burst_is_normal_here": 5
+   }
+  },
+  "heldout_c:u34": {
+   "class": "lone_no_structure",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "lone_no_structure": 5
+   }
+  },
+  "heldout_c:u38": {
+   "class": "lone_no_structure",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "lone_no_structure": 5
+   }
+  },
+  "heldout_c:u41": {
+   "class": "recurring_payments_read_as_scheme",
+   "votes": 3,
+   "of": 5,
+   "all": {
+    "recurring_payments_read_as_scheme": 3,
+    "format_or_currency_tell": 1,
+    "pass_through_guess": 1
+   }
+  },
+  "heldout_c:u45": {
+   "class": "pass_through_guess",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "pass_through_guess": 5
+   }
+  },
+  "heldout_c:u47": {
+   "class": "hedged_verdict",
+   "votes": 2,
+   "of": 5,
+   "all": {
+    "hedged_verdict": 2,
+    "wrong_rows_flagged": 1,
+    "lone_no_structure": 1,
+    "chain_cut_short": 1
+   }
+  },
+  "heldout_c:u55": {
+   "class": "chain_cut_short",
+   "votes": 4,
+   "of": 5,
+   "all": {
+    "hedged_verdict": 1,
+    "chain_cut_short": 4
+   }
+  },
+  "random_clean:u03": {
+   "class": "burst_is_normal_here",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "burst_is_normal_here": 5
+   }
+  },
+  "random_clean:u07": {
+   "class": "burst_is_normal_here",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "burst_is_normal_here": 5
+   }
+  },
+  "random_clean:u10": {
+   "class": "recurring_payments_read_as_scheme",
+   "votes": 4,
+   "of": 5,
+   "all": {
+    "pass_through_guess": 1,
+    "recurring_payments_read_as_scheme": 4
+   }
+  },
+  "random_clean:u23": {
+   "class": "recurring_payments_read_as_scheme",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "recurring_payments_read_as_scheme": 5
+   }
+  },
+  "random_clean:u28": {
+   "class": "recurring_payments_read_as_scheme",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "recurring_payments_read_as_scheme": 5
+   }
+  },
+  "random_clean:u33": {
+   "class": "burst_is_normal_here",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "burst_is_normal_here": 5
+   }
+  },
+  "random_clean:u38": {
+   "class": "burst_is_normal_here",
+   "votes": 5,
+   "of": 5,
+   "all": {
+    "burst_is_normal_here": 5
+   }
+  },
+  "random_clean:u39": {
+   "class": "recurring_payments_read_as_scheme",
+   "votes": 3,
+   "of": 5,
+   "all": {
+    "recurring_payments_read_as_scheme": 3,
+    "pass_through_guess": 2
+   }
+  }
+ },
+ "by_model": {
+  "anthropic/claude-sonnet-5-5": {
+   "chain_cut_short": 2,
+   "recurring_payments_read_as_scheme": 18,
+   "lone_no_structure": 17,
+   "pass_through_guess": 4,
+   "wrong_rows_flagged": 4,
+   "format_or_currency_tell": 3,
+   "other": 1,
+   "hedged_verdict": 4,
+   "burst_is_normal_here": 6
+  },
+  "openai/gpt-6-sol": {
+   "chain_cut_short": 5,
+   "format_or_currency_tell": 4,
+   "lone_no_structure": 21,
+   "recurring_payments_read_as_scheme": 12,
+   "wrong_rows_flagged": 6,
+   "other": 1,
+   "pass_through_guess": 6,
+   "burst_is_normal_here": 5
+  },
+  "moonshot/kimi-k3": {
+   "chain_cut_short": 5,
+   "format_or_currency_tell": 3,
+   "lone_no_structure": 21,
+   "pass_through_guess": 3,
+   "recurring_payments_read_as_scheme": 16,
+   "hedged_verdict": 4,
+   "wrong_rows_flagged": 2,
+   "burst_is_normal_here": 6
+  },
+  "deepseek/deepseek-v4-pro": {
+   "chain_cut_short": 6,
+   "format_or_currency_tell": 9,
+   "lone_no_structure": 17,
+   "recurring_payments_read_as_scheme": 16,
+   "other": 2,
+   "hedged_verdict": 2,
+   "wrong_rows_flagged": 2,
+   "burst_is_normal_here": 5,
+   "pass_through_guess": 1
+  },
+  "xai/grok-4.7": {
+   "chain_cut_short": 7,
+   "lone_no_structure": 23,
+   "other": 2,
+   "recurring_payments_read_as_scheme": 12,
+   "pass_through_guess": 6,
+   "hedged_verdict": 1,
+   "wrong_rows_flagged": 3,
+   "burst_is_normal_here": 5
+  }
+ },
+ "recoverable_by_kind": {
+  "missed_ring": {
+   "partly": 138,
+   "no": 31,
+   "yes": 14
+  },
+  "false_ring": {
+   "partly": 59,
+   "yes": 36,
+   "no": 20
+  }
+ },
+ "agreement": {
+  "5 of 5": 33,
+  "3 of 5": 14,
+  "2 of 4": 1,
+  "4 of 5": 9,
+  "4 of 4": 1,
+  "2 of 5": 2
+ }
+}

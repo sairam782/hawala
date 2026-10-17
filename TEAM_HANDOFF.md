@@ -87,3 +87,40 @@ Everything above is in `rings_bench/bench.py` and `rings_bench/mi.py` with recei
 - Hide the payment format: Sonnet's precision falls 0.46 to 0.27, GPT-6 Sol's holds. The data has a tell.
 - On clean traffic with no laundering in reach, the strong models still raise an alarm on 1 in 5 to 3 in 10
   neighborhoods; the v5 framing cuts it to 1 in 10.
+
+## 14:35 update: what is on main now, and how to plug model work into it
+
+- **The demo page is `rings_bench/ui/variants/clearing2d/index.html`** (double-click; live copy at
+  https://dashboard.alexmong.com/mt2-f0bown7jys9uclrx/rings/ui/variants/clearing2d/index.html). Four steps: Search
+  (first pass), Ambiguous (the tray), Look closer (the investigator), Settled. `?stage=1..4` opens a step; click a
+  neighborhood for the cluster zoom with Follow the money. `walkthrough/run.py` in that folder runs the whole demo in
+  headless Edge and screenshots every state; run it after any change.
+- **What the page reads**, all under `rings_bench/data/`: `bench_results.js` (every model and version; the model picker
+  lists its rows), `panel.js` (the nine-family vote; the dial), `uncertain_tray.json` (the 30 the first pass could not
+  settle: Sonnet v3 low confidence, or families split 3 to n-3), `investigate.js` (Claude Opus 5.5 v5 on those 30;
+  `make_investigate.py` rebuilds it from the batch file). The tray and investigation exist for Sonnet v4 only.
+- **To put a new model or prompt version on the page**: run it as a bench arm (`bench.py run --model M --version V`,
+  then `bench.py results`), and its row appears in the model picker with its own catches, alarms and fades. A new
+  version needs its name in `prompts.py` and `bench.py` (grep for "v5"). To make it the first pass of the funnel too,
+  rebuild the tray and the investigation for it: `uncertain_tray.json` is built from that model's v3-style run and
+  `panel.json`, then `bench.py run --model anthropic/claude-opus-5-5 --version v5 --units <the tray's ids>` and
+  `python make_investigate.py`. Ask the engine thread before changing the data files; it rewrites them.
+- **Error classes and a v6 prompt** are in `rings_bench/misses/REPORT.md` (five-vendor post-mortem of every missed
+  and false ring). Nobody has run v6 yet; the clean path is the model screen on the 20, then a bench arm on the 60 and
+  the held-out slices, then the page.
+- **The model screen** (`eval/model-screen` branch: `screen.py`, `evals.md`) scores the bench's way, so its rows and
+  ours compare directly; its results file can sit beside the others under `data/` when it merges.
+
+## 14:58: our PRISM traces, exported, and how to import them into the team workspace
+
+`rings_bench/export/prism_traces_2026-10-17.jsonl.gz` holds every run the engine sent to PRISM today (2,697
+records: agent name, model, input, output, the tool steps, metadata, latency, original trace id). To put them in the
+team workspace without a single new model call:
+
+    python rings_bench/import_traces.py --key <team pt-sk key> --project <team project uuid>
+
+Standard library only. Tracing is free. Agent names are kept, so Knowledge Base assignments, alert rules and the
+evaluator attach to the same names (`rings-<family>-<version>[-<slice>]`). `--agents rings-anthropic-v3,rings-openai-v3`
+imports a subset; `--dry-run` shows what would go. Create any evaluator task BEFORE importing (a task only sees traces
+created after it). Then `bench.py analyze` and `bench.py rootcause` with the team key run Root Cause on a workspace
+that has only these runs, which is the fix for the timeout on the practice workspace.

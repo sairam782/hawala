@@ -1,51 +1,66 @@
 # Rings bench, the clearing
 
-Open `index.html` with a double-click. It reads `../../../data/*.js` and the baked `layout.js`; with the data missing it shows a labeled SAMPLE.
+To open it, double-click `index.html`. It reads `../../../data/` (slice, units, panel, bench_results, investigate), the baked `layout.js` and, if present, `zoom.css` and `zoom.js`. Those two files belong to the separate cluster-zoom overlay, written by another builder. If the data files are missing, a labeled SAMPLE network stands in. The page makes no network calls apart from loading Google Fonts.
 
 ## The argument, in three sentences
 
-The whole ten-day slice starts lit: 2,824 transfers among 1,797 accounts, the real graph, nothing pre-sorted. As the model reads the 60 neighborhoods one by one, everything it rules ordinary fades, so the screen clears as it works. What is left at the end is what is worth a look: the rings it caught (green, in place in the graph), the alarms it raised (red dashed) and the rings it missed (amber dotted, shown last).
+The whole slice starts lit, the real graph, and the first pass reads the 60 neighborhoods one by one: each one it rules ordinary fades, and each ring it catches traces green in place. The neighborhoods it could not settle stay lit and drop into a "Needs a look" tray, and a stronger model looks closer at them one card at a time, so each one either fades as cleared or closes green as a ring. What remains is what is worth a look: the rings caught, the two alarms, and, on request, the rings both passes missed in amber dotted.
 
-## The sequence (one clock; Play, the scrub and `?t=` all read the same frame)
+## 15:10 palette pass (current, build 20261017-1525)
 
-| Step | Duration | What it carries |
-|---|---|---|
-| Opening hold | 700 ms | The whole slice, lit and uniform. The key is already on screen. |
-| Outside steps back | 400 ms | 1,626 transfers sit in none of the 60 neighborhoods, so no model read them; they fade first, and a header badge says so. |
-| Each neighborhood read | 60 ms each, plus 150 ms dwell on a catch | Ruled ordinary: its accounts and transfers fade to about 8 percent over 400 ms. Called a ring on an ordinary neighborhood: it stays at full strength, outlined red dashed, its flagged transfers red dashed (fades in over 200 ms). |
-| Catch | 450 ms, overlapping the pass | In place, inside the graph: the ring's flagged laundering transfers trace in green from payer to payee and its outline closes, settling to a width set by how many model families called it a ring. A text card drops into the Caught roster (200 ms). |
-| Gap | 250 ms | The pass is over; the field is mostly dark. |
-| Reveal | 600 ms | Missed rings and every laundering transfer the model did not flag appear in amber dotted. |
+The chrome follows the team landing page, and its tokens sit at the top of `clearing.css`: page #141a33, graph #10152b, surfaces #1a2140, cards #1f2749, borders #2f3a63 / #4b5e83, text #e8ebf5 / #9ea8c0, primary #5b4dff, gold thread #c9a04a. Space Grotesk is used for the title, funnel titles, the rail's number line and buttons. The rail and zoom overlay are frosted glass, falling back to the solid surface. On load the page eases from the landing's navy #1b2a55 over 500 ms. Semantic colors (caught green, alarm red, missed amber, investigator teal, unsettled amber) are unchanged. Contrast: text 12.2 to 15.1:1, muted 5.8 to 7.6:1, gold 5.7 to 7.4:1 on every surface; white on the primary button is 5.3:1, but only 4.3:1 on its hover color.
 
-Claude Sonnet 5.5 v4 runs about 7.4 s in total. A model with more catches runs a little longer (150 ms per catch).
+## 15:00 redline
 
-Green appears only where the chosen model caught the ring (its own `ring_found`, never recounted). Outline width carries the panel's family count; color does not. Headline: "<Model> caught k of IBM's 20 laundering rings and traced m of 113 laundering transfers; it raised f alarms on ordinary neighborhoods, g of them on accounts that sit inside a ring." Then one limit line, then the stronger of "rings caught" and "ordinary neighborhoods cleared".
+Every local script and stylesheet tag carries `?v=<build>` (now `20261017-1505`); bump it on every hand-back. The small explanatory text is gone from the screen (captions, version note, dial note, footer, tray note, empty-tray sentence). The data credit is one line inside Details, and the longer caveats live in the honest line's hover title. The rail runs the full window height; the tray sits under the graph only. The rail reads top to bottom: What it is doing now (a 28 px number-led line, one sentence, and the playback speed during a pass), What this means for you, Next, then What this is and the one-line honest note at the foot, then Details. The funnel boxes are 72 px or taller with 16 px titles, a check mark on finished steps, and larger arrows; the button sits at the right end of the funnel row. The status line shows only "read N of 60" (or "checked N of 30") and the playback speed.
 
-Controls: Play the pass (Pause, Play again), the scrub, Show everything again (undims everything and shows every mark at once), the model and version picker (every model and version with runs; default Claude Sonnet 5.5 v4), hover cards on any neighborhood (IBM's shape name in sentence case, how many families agreed, the model's one-line reason with em dashes printed as commas, IBM's and the flagged transfer ids). Hovering a roster card outlines its ring in the graph. With prefers-reduced-motion the page opens on the end state and Play jumps to it.
+## The side rail
 
-URL switches for demos and screenshots: `?t=0..1` (position on the clock), `?model=moonshot/kimi-k3|v1`, `?play=1`, `?all=1`, `?hover=u06`.
+From top to bottom: What this is (two fixed lines); What it is doing now (large text that changes with the step and counts up live during the passes); What this means for you (plain, second person); Next (mirrors the button); one honest line, computed from the recorded latencies ("these 90 calls take about 12 minutes one at a time, about 35 seconds on 20 workers"); then Details, collapsed by default, which holds the model picker, the families dial, the key, the investigator note and the scored headline with its limit line. The rail fits 1280 by 900 without scrolling at every step with Details closed.
+
+## The action flow
+
+A plain load opens at the beginning: step 1, before the search, with the graph fully lit and the tray empty. Above the graph is a four-box funnel (Search, Ambiguous, Look closer, Settled), joined by arrows. Each box carries a live count computed from the data and is blank until that step is reached. The current box is lit, finished boxes are dim green and future boxes are grey; clicking a box jumps to the end of that step. Under the funnel, one caption says what is happening now and what the button does next. The one primary button (44 px, accent fill, one pulse on load) always names the next action: Start the search, Look closer at all 30, Show what was missed, Start over. The model picker and the families dial stay in the side rail as secondary controls.
+
+Funnel counts for Claude Sonnet 5.5 v4: Search "9 rings caught · 2 alarms · 16 cleared · 30 unsettled" (cleared means ruled ordinary outside the tray); Ambiguous "30 the first pass could not settle"; Look closer "investigated 30 of 30 · 23 cleared · 2 rings found"; Settled "11 rings for a human · 2 alarms · 9 missed".
+
+## Four stages (a strip at the top of the graph; the button always names the next stage)
+
+| Stage | Button that starts it | What it shows | Timing |
+|---|---|---|---|
+| 1 Search | Start the search | Opening hold 700 ms, then a 400 ms fade of the 1,626 transfers outside every neighborhood. Then 60 ms per neighborhood (plus 150 ms on each catch). The neighborhood being read gets a bright outline for 120 ms. Ruled ordinary, it fades to 8 percent over 400 ms. A catch traces green in place and its outline closes (450 ms). A false alarm turns red dashed (200 ms). A tray neighborhood gets an amber-grey outline, and a copy of its sub-graph flies to its tray card (560 ms). Status: read N of 60. | About 6.4 s for Claude Sonnet 5.5 v4 |
+| 2 Ambiguous | Reached automatically when the search ends | Everything ruled ordinary is faded, caught rings are green, and the 30 unsettled neighborhoods pulse slowly in amber. Status: "30 neighborhoods the first pass could not settle". | Pulse period about 3.3 s |
+| 3 Look closer | Look closer at all 30 (one click), or click any one card | A soft lens (translucent circle, thin ring) glides to each tray neighborhood in turn (220 ms ease-in-out), holds on it (180 ms) while its card sweeps "Investigating with Claude Opus 5.5", then the verdict lands on graph and card at the same instant. Cleared: the outline shrinks inward and the neighborhood fades (300 ms) and the card dims to "Cleared". Ring: the laundering transfers trace green and the outline snaps closed with a brief bright flash (350 ms), and the card turns green: "Ring: <IBM shape>". Status: investigated N of 30. | 400 ms per card plus a 200 ms gap: about 18 s for 30. A single card click takes 1.2 s, without the lens. With reduced motion, the stage jumps to its end. |
+| 4 Settled | Reached when the tray is done | Only the green rings and the two red alarms stay lit. Show what was missed then brings in the missed rings and transfers in amber dotted. Each missed tray card gets a "missed" tag. Status and tray line give the closing numbers. | Missed reveal 600 ms |
+
+Each stage label is a button that jumps to the end of that stage, and `?stage=1..4` opens the page there (for screenshots). Other switches: `?model=moonshot/kimi-k3|v1`, `?dial=6`, `?all=1`, `?hover=u06`, `?play=1`. With prefers-reduced-motion, every stage lands at once, with no pulse and no flight.
+
+Closing numbers (computed from the files): the first pass (Claude Sonnet 5.5 v4) caught 9 of 20 rings, traced 100 of 113 laundering transfers and raised 2 alarms. The investigator (Claude Opus 5.5, v5 framing) looked at 30, cleared all 23 ordinary ones, found 2 rings (u19 and u28, lone transfers) and raised 0 false alarms. It ruled the other 5 tray rings ordinary, and they show as missed.
+
+Before and after: when the investigation finishes, a Before / After toggle appears above the tray (After selected). Before shows the Ambiguous state (30 pulsing, the tray as it was); After shows Settled. Flipping it crossfades the graph (250 ms). The tally line comes from the data: "Before: 9 rings caught, 30 neighborhoods unsettled. After: 11 rings caught, 23 cleared, 0 false alarms from the investigator, 9 rings still missed (5 of them in the tray)." `?stage=4&missed=0` opens on After before the misses are shown, and `&view=before` opens on Before.
+
+The families dial ("Families that must agree", 1 to 9) reads the v2 vote table in panel.js. While it is in use, the headline gives the panel's numbers at that dial, and neighborhoods with fewer votes lose their outline. The tray does not change. Picking a model hands the headline back to that model.
+
+Green appears only where the model caught the ring (its own `ring_found`, never recounted). Outline thickness carries the family count.
 
 ## Layout
 
-`layout.js` is baked once by `node build_layout.mjs` from `layout_core.js` (seeded force layout), so nothing moves between loads and nothing lays out at page load (no jitter, no blocking compute). The page recomputes only if the bake is missing or stale. The main mass sits in the middle with a wider spread; the 13 small islands (3 to 36 accounts) sit on an orbit around it; the 350 lone pairs and the 60 accounts that only pay themselves are scattered as faint dust in an elliptical ring outside, not a grid.
-
-Correction to the brief: the eight single labeled transfers ("lone" rings) are not among the 350 disconnected pairs. They sit in small islands of 9 to 24 accounts (and one in the main mass), so they light where they are, and their neighborhoods carry the hover cards.
+`layout.js` is baked once by `node build_layout.mjs` from `layout_core.js` (a seeded force layout): frozen, with no layout work at load. The main mass sits in the middle. The 13 small islands orbit it, and the 350 lone pairs and the 60 accounts that only pay themselves are faint dust in an elliptical ring around it. The eight single labeled transfers are not among the pairs: seven sit in islands of 9 to 24 accounts and one sits in the main mass.
 
 ## Left out, and why
 
-- The shape thumbnails on roster cards: Alex asked (13:41) to see the real graph, not drawings of the shapes, so the roster is text only and every ring stays in the graph.
-- The original's gather-and-spread catch motion: it moves accounts away from their real places. The catch now happens in place.
-- The ten-day time scrub and the families-must-agree dial of the ops wall: this page has one clock, the model's pass.
-- Particles, glow, pulses, camera moves: none, per the brief.
+- The caught-rings roster: Alex moved the tray to the uncertain neighborhoods (13:49). Caught rings stay green in the graph.
+- Shape thumbnails that move rings out of the graph: the rings are always shown in place. Tray cards carry a small copy of the neighborhood's sub-graph.
+- Particles, glow and camera moves. The Ambiguous pulse is there because Alex asked for it.
 
 ## Known limits
 
-- The panel (family agreement) exists only for v1 and v2. For v2x, v3, v4 and v5 the hover card and outline width use the v2 panel and say so.
-- 1,626 of 2,824 transfers lie outside all 60 neighborhoods; they fade at the start because no model read them, not because a model cleared them. The badge and the status line say this.
-- A neighborhood that shares accounts with another stays lit until every neighborhood holding it has been ruled ordinary.
-- Inside a caught ring's neighborhood, the unlabeled traffic fades after the catch, including any unlabeled transfers the model also flagged there; the hover card lists them.
-- Fonts come from Google Fonts, loaded without blocking; offline it falls back to Georgia, Segoe UI and Consolas.
+- The tray and the investigation are recorded for the Claude Sonnet 5.5 v4 first pass only. With any other model there is no tray, and a note says so.
+- `uncertain_tray.json`'s "first pass called it a ring at low confidence" reasons (u03, u13, u19, u41) do not match Sonnet v4's own verdicts, which are ordinary on those four. They probably come from another version; the cards print the reasons as the file gives them.
+- The 1,626 transfers outside every neighborhood fade at the start because no model read them, not because one cleared them.
+- The panel (family agreement) exists only for v1 and v2; v2x to v5 use the v2 panel and say so.
+- `window.__clearing` is a read-only debug hook used by the screenshot checks.
 
-## Files
+## Screenshots (headless Edge over the DevTools protocol, JPG at quality 80)
 
-`index.html`, `clearing.css`, `clearing.js`, `layout_core.js`, `layout.js` (baked), `build_layout.mjs`, `shots/` (1280 by 900: `open_1280.png`, `mid_1280.png`, `end_1280.png`; plus `end_1440.png`). The screenshots came from headless Edge over the DevTools protocol. Live Play was checked there too: after 9 s the roster read 9 of 20 and the counter 38 of 40. No console errors at 1280 or 1440 by 900. `original/` is the ops-wall code this started from.
+`shots/open_1280.jpg` (stage 0, before the search), `shots/mid_1280.jpg` (mid-search), `shots/ambiguous_1280.jpg` (stage 2), `shots/after_1280.jpg` (stage 4, After, before the misses are shown), `shots/end_1280.jpg` and `shots/end_1440.jpg` (stage 4, misses shown). No console errors at 1280 or 1440 by 900. Live flow checked: the search reached Ambiguous, Look closer ran the cards, and the tray line read "Investigator: 30 looked at, 23 cleared, 2 rings found, 0 false alarms".

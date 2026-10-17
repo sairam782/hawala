@@ -3,17 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Rings clearing</title>
+<title>SMURF</title>
+<script>if (/[?&]motion=reduced/.test(location.search)) document.documentElement.classList.add('motion-reduced');</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap"></noscript>
-<link rel="stylesheet" href="clearing.css">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap"></noscript>
+<link rel="stylesheet" href="clearing.css?v=20261017-1545">
+<link rel="stylesheet" href="zoom.css?v=20261017-1545">
 </head>
 <body>
 <header class="top">
   <div class="brand">
-    <h1>Rings bench <span class="thin">· the clearing</span></h1>
+    <h1>SMURF <span class="thin">· the clearing</span></h1>
     <p class="sub">Every account is a dot and every transfer a line, from IBM's synthetic AMLworld data. As the model rules a neighborhood ordinary, it fades; what stays lit is worth a look.</p>
   </div>
   <div class="badges" id="badges"></div>
@@ -21,21 +23,54 @@
 
 <div class="wall">
   <section class="stagecol">
+    <div class="flow">
+      <ol class="funnel" id="funnel" aria-label="The four steps">
+        <li class="fbox" tabindex="0"><span class="ft"><b class="mono">1</b> Search</span><span class="fc" id="fc1"></span></li>
+        <li class="fbox" tabindex="0"><span class="ft"><b class="mono">2</b> Ambiguous</span><span class="fc" id="fc2"></span></li>
+        <li class="fbox" tabindex="0"><span class="ft"><b class="mono">3</b> Look closer</span><span class="fc" id="fc3"></span></li>
+        <li class="fbox" tabindex="0"><span class="ft"><b class="mono">4</b> Settled</span><span class="fc" id="fc4"></span></li>
+      </ol>
+      <div class="act"><p class="cap" id="caption" hidden></p><button class="btn cta" id="play" type="button">Start the search</button></div>
+    </div>
     <div class="stage" id="stage">
       <canvas id="cv" role="img" aria-label="Network of accounts and transfers; neighborhoods the model rules ordinary fade, and its catches, alarms and misses stay lit"></canvas>
       <div class="hovercard" id="hover" hidden></div>
     </div>
     <div class="scrub">
-      <button class="btn primary" id="play" type="button">Play the pass</button>
       <input type="range" id="time" min="0" max="1000" step="1" value="0" aria-label="Scrub through the pass">
       <div class="clock mono" id="clock" aria-live="polite"></div>
       <label class="tog"><input type="checkbox" id="all"> Show everything again</label>
     </div>
+    <section class="roster" aria-label="Needs a look">
+  <div class="rhead"><h2 class="tip" tabindex="0" title="Neighborhoods where the first pass was unsure: a call at low confidence, or model families split. They stay lit. Click a card to replay a stronger model's recorded verdict.">Needs a look</h2><span class="mono" id="rcount"></span><span class="small muted" id="rnote"></span></div>
+  <div class="strip" id="strip"></div>
+</section>
   </section>
 
   <aside class="rail">
+    <section class="r-block r-now" aria-live="polite">
+      <p class="eyebrow">What it is doing now</p>
+      <p class="big" id="nowBig"></p>
+      <p class="now" id="nowText"></p>
+      <p class="speed" id="nowSpeed"></p>
+    </section>
+    <section class="r-block r-you">
+      <p class="eyebrow">What this means for you</p>
+      <p id="youText"></p>
+    </section>
+    <p class="r-next" id="nextText"></p>
+    <div class="r-spacer"></div>
+    <section class="r-block r-what">
+      <p class="eyebrow">What this is</p>
+      <p>AI triage for laundering rings: a fast first pass, then a closer look, scored on IBM's labels.</p>
+    </section>
+    <p class="r-honest" id="honestText"></p>
+    <details class="r-details">
+      <summary>Details: model, families dial, key</summary>
+      <p class="small muted credit">Synthetic data: IBM AMLworld, CDLA-Sharing-1.0; labels are IBM's.</p>
+
     <div class="result">
-      <p class="eyebrow">What it caught, scored against IBM's labels</p>
+      <p class="eyebrow">Scored against IBM's labels</p>
       <h2 id="headline"></h2>
       <p class="limit" id="limit"></p>
       <p class="closer mono" id="closer"></p>
@@ -45,35 +80,39 @@
       <select id="model"></select>
       <p class="small muted" id="verNote"></p>
     </div>
+    <div class="ctl">
+      <div class="ctlhead2"><label for="dial">Families that must agree</label><span class="mono val" id="dialVal"></span></div>
+      <input type="range" id="dial" min="1" max="9" step="1" value="1">
+      <p class="small muted" id="dialNote"></p>
+    </div>
     <div class="legend" aria-label="Key">
       <p class="eyebrow">Key</p>
       <div class="lg"><svg width="38" height="16" aria-hidden="true"><line x1="3" y1="8" x2="35" y2="8" stroke="#A3ABB8" stroke-opacity=".55" stroke-width="1"/><circle cx="7" cy="8" r="2" fill="#E6E9EE"/><circle cx="31" cy="8" r="3.2" fill="#E6E9EE"/></svg><span>Account and transfer, not yet ruled on</span></div>
       <div class="lg"><svg width="38" height="16" aria-hidden="true"><line x1="3" y1="8" x2="35" y2="8" stroke="#A3ABB8" stroke-opacity=".14" stroke-width="1"/><circle cx="7" cy="8" r="2" fill="#E6E9EE" fill-opacity=".12"/><circle cx="31" cy="8" r="3.2" fill="#E6E9EE" fill-opacity=".12"/></svg><span>Ruled ordinary, so it fades</span></div>
-      <div class="lg"><svg width="38" height="16" aria-hidden="true"><path d="M3 8 Q19 -2 35 8 Q19 18 3 8Z" fill="none" stroke="#8FCB8A" stroke-width="2.6"/></svg><span>Ring it caught; outline as thick as the families that agreed</span></div>
+      <div class="lg"><svg width="38" height="16" aria-hidden="true"><path d="M3 8 Q19 -2 35 8 Q19 18 3 8Z" fill="none" stroke="#8FCB8A" stroke-width="2.6"/></svg><span>Ring it caught; thicker when more families agreed</span></div>
       <div class="lg"><svg width="38" height="16" aria-hidden="true"><line x1="3" y1="8" x2="35" y2="8" stroke="#8FCB8A" stroke-width="2"/></svg><span>Laundering transfer it flagged</span></div>
-      <div class="lg"><svg width="38" height="16" aria-hidden="true"><path d="M3 8 Q19 -2 35 8 Q19 18 3 8Z" fill="none" stroke="#E5736A" stroke-width="1.4" stroke-dasharray="5 3"/></svg><span>False alarm: an ordinary neighborhood it called a ring</span></div>
-      <div class="lg"><svg width="38" height="16" aria-hidden="true"><path d="M3 8 Q19 -2 35 8 Q19 18 3 8Z" fill="none" stroke="#E0A458" stroke-width="1.6" stroke-dasharray="1.5 3" stroke-linecap="round"/></svg><span>Ring or transfer it missed, shown when the pass ends</span></div>
+      <div class="lg"><svg width="38" height="16" aria-hidden="true"><path d="M3 8 Q19 -2 35 8 Q19 18 3 8Z" fill="none" stroke="#E5736A" stroke-width="1.4" stroke-dasharray="5 3"/></svg><span>False alarm on an ordinary neighborhood</span></div>
+      <div class="lg"><svg width="38" height="16" aria-hidden="true"><path d="M3 8 Q19 -2 35 8 Q19 18 3 8Z" fill="none" stroke="#E0A458" stroke-width="1.6" stroke-dasharray="1.5 3" stroke-linecap="round"/></svg><span>Missed, shown when the pass ends</span></div>
+      <div class="lg"><svg width="38" height="16" aria-hidden="true"><path d="M3 8 Q19 -2 35 8 Q19 18 3 8Z" fill="none" stroke="#B3A68C" stroke-width="1.4"/></svg><span>Needs a look: the first pass was unsure</span></div>
+      <p class="small muted keynote">Investigated by Claude Opus 5.5 (runs recorded earlier, replayed here).</p>
     </div>
+    </details>
   </aside>
 </div>
 
-<section class="roster" aria-label="Caught rings">
-  <div class="rhead"><h2>Caught</h2><span class="mono" id="rcount"></span><span class="small muted" id="rnote"></span></div>
-  <div class="strip" id="strip"></div>
-</section>
 
-<footer class="honest">
-  <p>Synthetic data: IBM's AMLworld generator made every transfer, and IBM's labels are the answer key.</p>
-  <p id="hEnrich">The slice is enriched (4.0 percent laundering against 0.10 in the full file), and its neighborhoods were cut around IBM's groups.</p>
-  <p>Every laundering transfer in the slice is ACH, a tell a model can lean on.</p>
-</footer>
 
-<script src="../../../data/slice.js"></script>
-<script src="../../../data/units.js"></script>
-<script src="../../../data/panel.js"></script>
-<script src="../../../data/bench_results.js"></script>
-<script src="layout.js"></script>
-<script src="layout_core.js"></script>
-<script src="clearing.js"></script>
+
+
+<script src="../../../data/slice.js?v=20261017-1545"></script>
+<script src="../../../data/units.js?v=20261017-1545"></script>
+<script src="../../../data/panel.js?v=20261017-1545"></script>
+<script src="../../../data/bench_results.js?v=20261017-1545"></script>
+<script src="../../../data/investigate.js?v=20261017-1545"></script>
+<script src="../../../data/traces_demo.js?v=20261017-1545"></script>
+<script src="layout.js?v=20261017-1545"></script>
+<script src="layout_core.js?v=20261017-1545"></script>
+<script src="clearing.js?v=20261017-1545"></script>
+<script src="zoom.js?v=20261017-1545"></script>
 </body>
 </html>
