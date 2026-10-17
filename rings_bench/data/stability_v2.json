@@ -1,0 +1,190 @@
+{
+ "slice": "main",
+ "version": "v2",
+ "runs": [
+  "bench",
+  "rep1",
+  "relabel"
+ ],
+ "written": "2026-10-17 14:56",
+ "models": [
+  {
+   "id": "anthropic/claude-sonnet-5-5",
+   "per_run": {
+    "bench": {
+     "f1": 0.6079,
+     "precision": 0.463,
+     "recall": 0.885,
+     "rings_found": 9,
+     "false_rings": 7,
+     "technical_failures": 0
+    },
+    "rep1": {
+     "f1": 0.5341,
+     "precision": 0.4018,
+     "recall": 0.7965,
+     "rings_found": 9,
+     "false_rings": 8,
+     "technical_failures": 0
+    },
+    "relabel": {
+     "f1": 0.4758,
+     "precision": 0.3219,
+     "recall": 0.9115,
+     "rings_found": 11,
+     "false_rings": 13,
+     "technical_failures": 0
+    }
+   },
+   "pairs": [
+    {
+     "a": "bench",
+     "b": "rep1",
+     "verdict_agreement": 0.9167,
+     "verdict_flips": [
+      "u07",
+      "u10",
+      "u28",
+      "u36",
+      "u41"
+     ],
+     "flips_on_rings": 2,
+     "flagged_jaccard_when_both_ring": 0.9634,
+     "rings_caught_by_both": 8,
+     "rings_caught_by_one": 2
+    },
+    {
+     "a": "bench",
+     "b": "relabel",
+     "verdict_agreement": 0.8333,
+     "verdict_flips": [
+      "u04",
+      "u05",
+      "u07",
+      "u18",
+      "u19",
+      "u20",
+      "u25",
+      "u28",
+      "u37",
+      "u41"
+     ],
+     "flips_on_rings": 4,
+     "flagged_jaccard_when_both_ring": 0.9012,
+     "rings_caught_by_both": 9,
+     "rings_caught_by_one": 2
+    },
+    {
+     "a": "rep1",
+     "b": "relabel",
+     "verdict_agreement": 0.85,
+     "verdict_flips": [
+      "u04",
+      "u05",
+      "u10",
+      "u18",
+      "u19",
+      "u20",
+      "u25",
+      "u36",
+      "u37"
+     ],
+     "flips_on_rings": 4,
+     "flagged_jaccard_when_both_ring": 0.9117,
+     "rings_caught_by_both": 9,
+     "rings_caught_by_one": 2
+    }
+   ],
+   "f1_spread": 0.1321
+  },
+  {
+   "id": "openai/gpt-6-sol",
+   "per_run": {
+    "bench": {
+     "f1": 0.6037,
+     "precision": 0.4605,
+     "recall": 0.8761,
+     "rings_found": 10,
+     "false_rings": 12,
+     "technical_failures": 0
+    },
+    "rep1": {
+     "f1": 0.578,
+     "precision": 0.4292,
+     "recall": 0.885,
+     "rings_found": 12,
+     "false_rings": 13,
+     "technical_failures": 0
+    },
+    "relabel": {
+     "f1": 0.5525,
+     "precision": 0.4016,
+     "recall": 0.885,
+     "rings_found": 11,
+     "false_rings": 12,
+     "technical_failures": 0
+    }
+   },
+   "pairs": [
+    {
+     "a": "bench",
+     "b": "rep1",
+     "verdict_agreement": 0.8833,
+     "verdict_flips": [
+      "u02",
+      "u03",
+      "u05",
+      "u08",
+      "u19",
+      "u36",
+      "u45"
+     ],
+     "flips_on_rings": 2,
+     "flagged_jaccard_when_both_ring": 0.9758,
+     "rings_caught_by_both": 10,
+     "rings_caught_by_one": 2
+    },
+    {
+     "a": "bench",
+     "b": "relabel",
+     "verdict_agreement": 0.8667,
+     "verdict_flips": [
+      "u01",
+      "u07",
+      "u08",
+      "u19",
+      "u44",
+      "u45",
+      "u46",
+      "u55"
+     ],
+     "flips_on_rings": 2,
+     "flagged_jaccard_when_both_ring": 0.96,
+     "rings_caught_by_both": 10,
+     "rings_caught_by_one": 1
+    },
+    {
+     "a": "rep1",
+     "b": "relabel",
+     "verdict_agreement": 0.85,
+     "verdict_flips": [
+      "u01",
+      "u02",
+      "u03",
+      "u05",
+      "u07",
+      "u36",
+      "u44",
+      "u46",
+      "u55"
+     ],
+     "flips_on_rings": 0,
+     "flagged_jaccard_when_both_ring": 0.9189,
+     "rings_caught_by_both": 11,
+     "rings_caught_by_one": 1
+    }
+   ],
+   "f1_spread": 0.0512
+  }
+ ]
+}
