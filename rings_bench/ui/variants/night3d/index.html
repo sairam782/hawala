@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rings at night</title>
+<meta name="description" content="Rings bench, three-dimensional variant: which of IBM's 20 labeled laundering groups each model caught, on the transfer network.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
+<link rel="stylesheet" href="night3d.css">
+<!-- three.js from the CDN; night3d.js loads the local copy (three.min.js) when this one fails -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js" onerror="window.__threeCdnFailed=true"></script>
+</head>
+<body>
+<div class="app">
+  <section class="stage" id="stage" aria-label="Transfer network in three dimensions">
+    <canvas id="cv" aria-hidden="true"></canvas>
+    <header class="masthead">
+      <h1>Rings, at the desk at night</h1>
+      <p class="sub" id="sub">Accounts are spheres, transfers are lines. IBM's synthetic AMLworld transfers, Sep 1 to 10, 2022.</p>
+      <span class="badge" id="srcBadge" hidden>SAMPLE</span>
+    </header>
+    <p class="hint" id="hint">Drag to turn. Scroll to zoom. Right-drag or Shift-drag to pan. Double-click to reset.</p>
+    <div class="hovercard" id="hover" role="status" hidden></div>
+    <div class="stagemsg" id="stageMsg" hidden></div>
+  </section>
+
+  <div class="scrub" id="scrubBar">
+    <button class="play" id="play" type="button">Play the ten days</button>
+    <div class="track">
+      <input type="range" id="scrub" min="0" max="1000" step="1" value="1000" aria-label="Time: reveal transfers up to this moment">
+      <div class="ticks" id="ticks" aria-hidden="true"></div>
+    </div>
+    <div class="clock">
+      <div class="when fig" id="when"></div>
+      <div class="count fig" id="count"></div>
+    </div>
+  </div>
+
+  <section class="roster" aria-label="Rings caught by the selected model">
+    <div class="roster-head">
+      <h2>Caught</h2>
+      <span class="fig" id="rosterCount">0 of 20</span>
+      <span class="muted small">one card per IBM ring the selected model caught, in the order its evidence completed</span>
+    </div>
+    <div class="roster-list" id="roster"><p class="empty" id="rosterEmpty">Caught rings land here as the selected model finds them.</p></div>
+  </section>
+
+  <aside class="panel" aria-label="Model and result">
+    <div class="pick">
+      <label class="eyebrow" for="modelPick">Model</label>
+      <select id="modelPick"></select>
+      <div class="eyebrow" id="verLabel">Version</div>
+      <div class="versions" id="versions" role="group" aria-labelledby="verLabel"></div>
+      <p class="vnote small muted" id="vnote"></p>
+    </div>
+    <div class="result">
+      <p class="headline" id="headline"></p>
+      <p class="limit small muted" id="limit"></p>
+      <p class="strong" id="strong"></p>
+    </div>
+    <div class="legend" aria-label="Key">
+      <div class="eyebrow">Key</div>
+      <div class="lg"><svg width="40" height="10" aria-hidden="true"><line x1="0" y1="5" x2="40" y2="5" class="k-hair"/></svg><span>a transfer nobody flagged</span></div>
+      <div class="lg"><svg width="40" height="10" aria-hidden="true"><line x1="0" y1="5" x2="40" y2="5" class="k-ok"/></svg><span>flagged, and IBM agrees: a caught ring closes in green</span></div>
+      <div class="lg"><svg width="40" height="10" aria-hidden="true"><line x1="0" y1="5" x2="40" y2="5" class="k-bad"/></svg><span>flagged, IBM labels it ordinary: a false alarm</span></div>
+      <div class="lg"><svg width="40" height="10" aria-hidden="true"><line x1="0" y1="5" x2="40" y2="5" class="k-miss"/></svg><span>IBM labels it laundering, the model missed it</span></div>
+      <div class="lg"><svg width="40" height="14" aria-hidden="true"><circle cx="8" cy="7" r="3" class="k-node"/><circle cx="26" cy="7" r="6" class="k-node"/></svg><span>an account, sized by its transfers</span></div>
+      <p class="small muted">Hover a lit line or sphere for its group: IBM's shape name, the model's one-sentence why, and the transfer ids.</p>
+    </div>
+    <p class="foot small muted" id="foot"></p>
+  </aside>
+</div>
+<script src="night3d.js"></script>
+</body>
+</html>
