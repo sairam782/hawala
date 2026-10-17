@@ -1,4 +1,4 @@
-# Rings bench: pitch draft v2 (about 3 minutes; Money Intelligence track)
+# SMURF: pitch draft v2 (about 3 minutes; Money Intelligence track)
 
 Pencil, Claude's draft at 14:05, rewritten for the staged demo (search, ambiguous, look closer, settled). The
 numbers come from `data/bench_results.json`, `data/panel.json` and `data/investigate.json`; the page reads them. Alex and
