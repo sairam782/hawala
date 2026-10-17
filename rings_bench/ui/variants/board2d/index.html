@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rings evidence board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
+<link rel="stylesheet" href="board.css">
+<script>
+(function () { var m = /[?&]theme=(light|dark)/.exec(location.search); if (m) document.documentElement.setAttribute('data-theme', m[1]); })();
+</script>
+</head>
+<body>
+<header class="top">
+  <div class="titles">
+    <p class="eyebrow">Rings bench <span class="badge" id="badge"></span></p>
+    <h1>The evidence board</h1>
+    <p class="headline" id="headline"></p>
+    <p class="limit" id="limit"></p>
+    <p class="strong" id="strong"></p>
+  </div>
+  <div class="counters" aria-live="polite">
+    <div class="ctr ok"><span class="num" id="nCaught">0</span><span class="of" id="nCaughtOf">of 20</span><span class="lab">IBM rings caught</span></div>
+    <div class="ctr bad"><span class="num" id="nAlarm">0</span><span class="of" id="nAlarmOf">of 40</span><span class="lab">alarms on ordinary neighborhoods</span></div>
+    <button class="btn" id="themeBtn" type="button" title="Switch light and dark">Dark</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="side">
+    <h2 class="sideh">Pick a model</h2>
+    <p class="sidenote">Each row is one model and prompt version. The number is IBM rings caught, then alarms on ordinary neighborhoods.</p>
+    <div class="models" id="models" role="listbox" aria-label="Models"></div>
+  </aside>
+
+  <main class="main">
+    <section class="key" aria-label="Key">
+      <h2 class="keyh">How to read a tile</h2>
+      <div class="keyrow">
+        <span class="k"><svg width="34" height="10" aria-hidden="true"><line x1="1" y1="5" x2="33" y2="5" class="e e-ok"/></svg>flagged, and IBM's label agrees</span>
+        <span class="k"><svg width="34" height="10" aria-hidden="true"><line x1="1" y1="5" x2="33" y2="5" class="e e-bad"/></svg>flagged, IBM says ordinary: a false alarm</span>
+        <span class="k"><svg width="34" height="10" aria-hidden="true"><line x1="1" y1="5" x2="33" y2="5" class="e e-miss"/></svg>IBM says laundering, the model missed it</span>
+        <span class="k"><svg width="34" height="10" aria-hidden="true"><line x1="1" y1="5" x2="33" y2="5" class="e e-bg"/></svg>ordinary traffic around the group</span>
+      </div>
+      <div class="keyrow">
+        <span class="k"><i class="sw sw-caught"></i>ring caught (half or more of IBM's transfers flagged)</span>
+        <span class="k"><i class="sw sw-missed"></i>ring missed</span>
+        <span class="k"><i class="sw sw-alarm"></i>ordinary neighborhood the model called a ring</span>
+        <span class="k muted">Hover a tile for the model's reason and transfer ids. Click to open it with a time scrub.</span>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="bh"><h2>IBM's labeled laundering rings</h2><span class="bn" id="ringNote"></span></div>
+      <div class="ringgrid" id="ringGrid"></div>
+    </section>
+
+    <section class="block">
+      <div class="bh"><h2>Ordinary neighborhoods</h2><span class="bn" id="ordNote"></span></div>
+      <div class="ordgrid" id="ordGrid"></div>
+    </section>
+
+    <section class="block roster">
+      <div class="bh"><h2 id="rosterH">Caught</h2><span class="bn" id="rosterNote"></span></div>
+      <div class="cards" id="cards"></div>
+    </section>
+    <footer class="foot" id="foot"></footer>
+  </main>
+</div>
+
+<div class="tray" id="tray" aria-label="Rings caught so far">
+  <span class="trayl">Caught <b id="trayN">0</b></span>
+  <div class="slots" id="slots"></div>
+</div>
+
+<div class="tip" id="tip" hidden></div>
+
+<div class="dlg" id="dlg" hidden>
+  <div class="dbox" role="dialog" aria-modal="true" aria-labelledby="dTitle">
+    <div class="dhead">
+      <div><h2 id="dTitle"></h2><p id="dSub" class="dsub"></p></div>
+      <button class="btn" id="dClose" type="button">Close</button>
+    </div>
+    <div class="dbody">
+      <div class="dleft">
+        <div id="dSvg" class="dsvg"></div>
+        <div class="scrub">
+          <button class="btn" id="dPlay" type="button">Play</button>
+          <input type="range" id="dRange" min="0" max="240" step="1" value="240" aria-label="Time">
+          <span class="dtime" id="dTime"></span>
+        </div>
+        <div class="dticks" id="dTicks"></div>
+      </div>
+      <div class="dright">
+        <p class="dwhy" id="dWhy"></p>
+        <div class="dlist" id="dList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../../../data/slice.js"></script>
+<script src="../../../data/units.js"></script>
+<script src="../../../data/bench_results.js"></script>
+<script src="board.js"></script>
+</body>
+</html>

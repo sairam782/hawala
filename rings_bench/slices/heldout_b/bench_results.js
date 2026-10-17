@@ -1,8 +1,8 @@
 window.BENCH = {
  "dataset": {
-  "name": "IBM AMLworld HI-Small (synthetic), 10-day slice cut by us (held-out slice heldout_b)",
-  "slice_transfers": 2824,
-  "slice_laundering": 113,
+  "name": "IBM AMLworld HI-Small (synthetic), held-out slice heldout_b",
+  "slice_transfers": 2591,
+  "slice_laundering": 115,
   "groups": 20,
   "shapes": {
    "fan-out": 2,
@@ -18,21 +18,19 @@ window.BENCH = {
   "ring_units": 20,
   "ordinary_units": 40,
   "notes": [
-   "Four ring units (u15 mesh, u26 scatter-gather, u49 cycle, u50 fan-in) have most of their labeled rows after 2022-09-10, in the file's tail where 59 percent of rows are labeled; a late timestamp is a tell there (R155).",
-   "Every laundering transfer in this slice is ACH; in the whole file it is 87 percent (R155).",
-   "Slice laundering rate 4.0 percent vs 0.10 percent in the file; labels are IBM's generator's; shape names are ours.",
-   "Every one of the 40 ordinary neighborhoods contains an account that sits in one of IBM's rings (the slice was cut around the rings), so a 'false ring' at the transfer level usually points at a real laundering account's unlabeled traffic; account_level reports that view."
+   "Held-out slice heldout_b: cut with its own seed, no account shared with the main slice; no prompt was tuned on it.",
+   "Labels are IBM's generator's; shape names are ours, checked against IBM's pattern file on the main slice; synthetic data; one run per cell."
   ]
  },
  "versions": {
   "v1": "model reads the raw transfers of a neighborhood",
   "v2": "code computes the neighborhood's facts (degrees, loops, bursts, pass-through chains, formats) and the model names the outcome",
   "v3": "v2 plus a real knowledge-base lookup of the pattern reference, logged as the retrieval step",
-  "v4": "v3 plus one rule: a ring call is kept only when the model's own confidence is not low (found on the main slice, confirmed on three held-out slices)",
+  "v4": "v3 plus a rule: keep a ring call only at medium or high confidence",
   "v5": "v3 with a framing that states the base rate, describes ordinary business, requires a cited fact and allows cannot tell",
   "v2x": "v2 with the payment format hidden from the model, to measure reliance on the ACH tell"
  },
- "written": "2026-10-17 13:08",
+ "written": "2026-10-17 13:12",
  "models": [
   {
    "id": "anthropic/claude-sonnet-5-5",

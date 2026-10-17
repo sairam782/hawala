@@ -502,22 +502,31 @@ def cmd_results(a):
             fails[r["shape"] if r["expected"] == "ring" else "false_ring"].append(
                 {"run_id": r["run_id"], "model": r["model"], "version": r["version"], "unit": r["unit"], "why": r["why"]})
     shapes = collections.Counter(u["shape"] for u in units if u["expected"] == "ring")
-    out = {"dataset": {"name": "IBM AMLworld HI-Small (synthetic), 10-day slice cut by us", "slice_transfers": 2824,
-                       "slice_laundering": 113, "groups": 20, "shapes": dict(shapes),
-                       "units": len(units), "ring_units": sum(shapes.values()), "ordinary_units": len(units) - sum(shapes.values()),
-                       "notes": ["Four ring units (u15 mesh, u26 scatter-gather, u49 cycle, u50 fan-in) have most of their labeled rows after 2022-09-10, in the file's tail where 59 percent of rows are labeled; a late timestamp is a tell there (R155).",
-                                 "Every laundering transfer in this slice is ACH; in the whole file it is 87 percent (R155).",
-                                 "Slice laundering rate 4.0 percent vs 0.10 percent in the file; labels are IBM's generator's; shape names are ours.",
-                                 "Every one of the 40 ordinary neighborhoods contains an account that sits in one of IBM's rings (the slice was cut around the rings), so a 'false ring' at the transfer level usually points at a real laundering account's unlabeled traffic; account_level reports that view."]},
+    t = (DATA_DIR / "slice.js").read_text(encoding="utf-8")
+    S = json.loads(t[t.index("{"):].rstrip().rstrip(";")); sl = S.get("slice", {})
+    ring_units = sum(shapes.values())
+    if SLICE == "random_clean":
+        notes = ["Forty ordinary neighborhoods cut from random accounts with no labeled row and no ring account in reach; every alarm here is a false alarm by construction. This slice measures restraint, not catches.",
+                 "Labels are IBM's generator's; synthetic data; one run per cell."]
+    elif SLICE:
+        notes = [f"Held-out slice {SLICE}: cut with its own seed, no account shared with the main slice; no prompt was tuned on it.",
+                 "Labels are IBM's generator's; shape names are ours, checked against IBM's pattern file on the main slice; synthetic data; one run per cell."]
+    else:
+        notes = ["Four ring units (u15 mesh, u26 scatter-gather, u49 cycle, u50 fan-in) have most of their labeled rows after 2022-09-10, in the file's tail where 59 percent of rows are labeled; a late timestamp is a tell there (R155).",
+                 "Every laundering transfer in this slice is ACH; in the whole file it is 87 percent (R155).",
+                 "Slice laundering rate 4.0 percent vs 0.10 percent in the file; labels are IBM's generator's; shape names are ours.",
+                 "Every one of the 40 ordinary neighborhoods contains an account that sits in one of IBM's rings (the slice was cut around the rings), so a 'false ring' at the transfer level usually points at a real laundering account's unlabeled traffic; account_level reports that view."]
+    out = {"dataset": {"name": "IBM AMLworld HI-Small (synthetic), " + (f"held-out slice {SLICE}" if SLICE else "10-day slice cut by us"),
+                       "slice_transfers": sl.get("rows", len(S.get("transfers", []))), "slice_laundering": sl.get("laundering", 0),
+                       "groups": len(S.get("ring_meta", {})), "shapes": dict(shapes),
+                       "units": len(units), "ring_units": ring_units, "ordinary_units": len(units) - ring_units, "notes": notes},
            "versions": {"v1": "model reads the raw transfers of a neighborhood",
                         "v2": "code computes the neighborhood's facts (degrees, loops, bursts, pass-through chains, formats) and the model names the outcome",
                         "v3": "v2 plus a real knowledge-base lookup of the pattern reference, logged as the retrieval step",
-                        "v4": "v3 plus one rule: a ring call is kept only when the model's own confidence is not low (found on the main slice, confirmed on three held-out slices)",
+                        "v4": "v3 plus a rule: keep a ring call only at medium or high confidence",
                         "v5": "v3 with a framing that states the base rate, describes ordinary business, requires a cited fact and allows cannot tell",
                         "v2x": "v2 with the payment format hidden from the model, to measure reliance on the ACH tell"},
            "written": time.strftime("%Y-%m-%d %H:%M"), "models": models, "runs": all_runs, "failures_by_shape": fails}
-    if SLICE:
-        out["dataset"]["name"] += f" (held-out slice {SLICE})"
     blob = json.dumps(out, ensure_ascii=False, indent=1)
     (DATA_DIR / "bench_results.json").write_text(blob, encoding="utf-8")
     # the UI thread's ask (11:29): a .js twin so the page opens from a double-click with no server
