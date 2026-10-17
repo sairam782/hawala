@@ -3,13 +3,42 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Rings bench</title>
+<title>SMURF: AML</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="hero.css">
 </head>
 <body>
+<div class="intro" id="intro" role="dialog" aria-label="Intro video">
+  <video class="introV" id="introV" src="media/intro.mp4" playsinline preload="auto"></video>
+  <button class="introPlay" id="introPlay" type="button" hidden>&#9654;&ensp;Play the intro</button>
+  <div class="introCtl">
+    <button class="introBtn" id="introSound" type="button" hidden>&#128264;&ensp;Sound on</button>
+    <button class="introBtn" id="introSkip" type="button">Skip intro&ensp;&rarr;</button>
+  </div>
+  <div class="introBar" aria-hidden="true"><i id="introBar"></i></div>
+</div>
+<section class="hero" id="hero" aria-label="SMURF: AML">
+  <div class="hframe" id="hFrame">
+    <video class="hvideo" id="hVideo" autoplay muted loop playsinline preload="auto" aria-hidden="true"
+      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/liquid-metal-video_yX6NvjdW-6bLYorR3Ihmlwjivg3pjA978qrSKRU.mp4"></video>
+    <div class="hshade" aria-hidden="true"></div>
+    <div class="hpills"><span>Made with</span><b>IBM AMLworld</b><span>+</span><b>PRISM</b><span>by</span><b>SMURF</b></div>
+    <div class="hcard" id="hCard">
+      <h2 class="htitle"><span class="ln">SMURF: AML</span><span class="ln hsub">Follow the money through every ring</span></h2>
+      <p class="hlede">Every AI model family we can reach hunts laundering rings in the same synthetic transfers, with no answer key, scored against IBM's own labels.</p>
+      <div class="hctas"><a class="hbtn" href="#s4" data-go="4">Follow the money</a><a class="hlink" href="#s1" data-go="1">See the result &rarr;</a><button class="hlink" id="introAgain" type="button">&#9654;&ensp;Replay the intro</button></div>
+    </div>
+  </div>
+  <a class="hlogo" href="#hero" aria-label="SMURF: AML"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 10h12v14l-6 12-6-12zM28 10h12v14l-6 12-6-12z" fill="currentColor"/></svg></a>
+  <a class="hprompt" href="#dash" data-go="">Open the bench</a>
+  <a class="hscroll" href="#dash" data-go="" aria-label="Scroll to the dashboard"><i></i></a>
+</section>
+<div id="dash">
 <header class="top">
   <div class="brand">
-    <h1>Rings bench</h1>
+    <h1>SMURF: AML</h1>
     <p class="sub">Many AI models hunt laundering in the same transfers, scored against IBM's own labels.</p>
   </div>
   <div class="badges" id="badges"></div>
@@ -94,6 +123,7 @@
   </aside>
 
 </div>
+</div>
 
 <aside id="drawer" class="drawer" hidden aria-label="The runs behind this number">
   <div class="dhead"><div><h2 id="dTitle"></h2><p id="dSub"></p></div><button id="dClose" class="btn sm" type="button">Close</button></div>
@@ -106,6 +136,8 @@
 (function () { var m = /[?&]slice=([\w-]+)/.exec(location.search); window.SLICE_NAME = m ? m[1] : ''; window.DATA_DIR = m ? '../slices/' + m[1] + '/' : '../data/';
   document.write('<script src="' + window.DATA_DIR + 'slice.js"><\/script>'); })();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="app.js"></script>
+<script src="hero.js"></script>
 </body>
 </html>

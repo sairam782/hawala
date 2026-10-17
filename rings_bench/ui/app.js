@@ -831,7 +831,7 @@ function showScreen(n) {
   CUR_S = n; document.querySelectorAll('.screen').forEach(sec => { sec.hidden = +sec.dataset.screen !== n; });
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', +b.dataset.n === n));
   if (history.replaceState) history.replaceState(null, '', '#s' + n);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const dash = document.getElementById('dash'); window.scrollTo({ top: dash ? dash.offsetTop : 0, behavior: 'smooth' });
 }
 function renderNav() {
   const nav = $('#nav'); nav.innerHTML = '';

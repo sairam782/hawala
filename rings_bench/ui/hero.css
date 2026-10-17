@@ -1,0 +1,89 @@
+/* Hero, after v0's "An unusual hero" (webrenew): a liquid-metal video inside a notched frame (an SVG path used as a
+   clip, cut so the logo tile, the credit pills and the indigo button sit in the black around it), a frosted glass card
+   at the bottom left, Space Grotesk throughout, a GSAP intro. The hero is always dark; the dashboard below borrows
+   its type, its indigo and its rounder corners. If the video or the fonts cannot load (offline, from a file), a
+   gradient and system fonts stand in. */
+:root {
+  --h-bg: #0a0a0d; --h-fg: #f1f1f6; --h-dim: rgb(241 241 246 / .72);
+  --h-indigo: #4f3df5; --h-indigo-hi: #6a5aff; --h-pill: rgb(255 255 255 / .82);
+  --font-hero: "Space Grotesk", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --h-pad: clamp(10px, 1vw, 18px);
+}
+
+.hero { position: relative; height: 100vh; height: 100svh; min-height: 560px; background: var(--h-bg); color: var(--h-fg); font-family: var(--font-hero); color-scheme: dark; overflow: hidden; }
+.hframe { position: absolute; inset: var(--h-pad); overflow: hidden; border-radius: 22px;
+  background: radial-gradient(120% 90% at 70% 30%, #6c63d8 0%, #2c2f7a 38%, #1b2350 62%, #0f1430 100%); }
+.hvideo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hshade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgb(10 10 20 / .25), transparent 25%, transparent 55%, rgb(10 10 20 / .45)); }
+
+/* the credit row, in the frame's top tab */
+.hpills { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; white-space: nowrap; font-size: 17px; color: var(--h-dim); z-index: 2; }
+.hpills b { font-weight: 600; color: var(--h-fg); border: 1.5px solid var(--h-pill); border-radius: 999px; padding: 5px 18px; font-size: 15px; }
+
+/* the logo tile and the button, in the black notches */
+.hlogo { position: absolute; left: calc(var(--h-pad) + 14px); top: calc(var(--h-pad) + 22px); width: 64px; height: 64px; border-radius: 10px; background: #1d1d22;
+  display: grid; place-items: center; color: #fff; z-index: 3; transition: background var(--dur-2); }
+.hlogo:hover { background: #2a2a31; }
+.hlogo svg { width: 36px; height: 36px; }
+.hprompt { position: absolute; right: var(--h-pad); top: var(--h-pad); z-index: 3; background: var(--h-indigo); color: #fff; text-decoration: none; border-radius: 999px; padding: 12px 22px;
+  font-size: 15px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; transition: background var(--dur-2), transform var(--dur-2); }
+.hprompt:hover { background: var(--h-indigo-hi); transform: translateY(-1px); }
+
+/* the glass card */
+.hcard { position: absolute; left: clamp(20px, 3.2vw, 48px); bottom: clamp(20px, 3.4vw, 50px); width: min(70%, 940px); z-index: 2;
+  padding: clamp(24px, 3.4vw, 54px) clamp(24px, 3.2vw, 50px); border-radius: 22px; border: 1px solid rgb(255 255 255 / .16);
+  background: linear-gradient(135deg, rgb(28 26 48 / .55), rgb(60 60 90 / .28)); -webkit-backdrop-filter: blur(26px) saturate(1.2); backdrop-filter: blur(26px) saturate(1.2);
+  box-shadow: 0 30px 80px -30px rgb(0 0 0 / .6); }
+.htitle { font-family: var(--font-hero); font-weight: 400; font-size: clamp(36px, 4.4vw, 76px); line-height: 1.12; letter-spacing: -.015em; margin: 0; }
+.htitle .ln { display: block; }
+.hlede { max-width: 60ch; margin: clamp(14px, 2vw, 26px) 0 clamp(18px, 2.2vw, 30px); font-size: clamp(14px, 1.15vw, 18px); line-height: 1.7; color: var(--h-dim); }
+.hctas { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+.hbtn { display: inline-block; font-size: 16px; font-weight: 500; letter-spacing: .02em; text-transform: uppercase; color: #fff; text-decoration: none;
+  padding: 14px 30px; border-radius: 999px; border: 1.5px solid rgb(140 128 255 / .7); background: rgb(40 30 100 / .55); transition: background var(--dur-2), border-color var(--dur-2); }
+.hbtn:hover { background: var(--h-indigo); border-color: var(--h-indigo-hi); }
+.hlink { color: var(--h-dim); text-decoration: none; font-size: 15px; } .hlink:hover { color: #fff; }
+
+.hscroll { position: absolute; right: calc(var(--h-pad) + 28px); bottom: calc(var(--h-pad) + 28px); z-index: 3; width: 26px; height: 42px; border-radius: 14px; border: 1.5px solid rgb(255 255 255 / .55); }
+.hscroll i { position: absolute; left: 50%; top: 8px; width: 4px; height: 8px; margin-left: -2px; border-radius: 2px; background: #fff; animation: hWheel 1.6s ease-in-out infinite; }
+@keyframes hWheel { 0% { opacity: 0; transform: translateY(0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(14px); } }
+@media (prefers-reduced-motion: reduce) { .hscroll i { animation: none; } }
+
+@media (max-width: 900px) {
+  .hpills { display: none; }
+  .hcard { width: auto; right: 16px; left: 16px; bottom: 16px; }
+  .hscroll { display: none; }
+  .hprompt { padding: 10px 16px; font-size: 13px; }
+}
+
+/* ---------- the dashboard below, dressed to match: Space Grotesk, the indigo, rounder corners ----------
+   The network keeps its own meaning colors (green caught, salmon false alarm, amber missed). */
+:root { --accent: #4433e0; --accent-hover: #3426b8; --accent-fg: #fff; --net-particle: #4433e0; --radius: 8px; --radius-lg: 16px; --radius-control: 999px;
+  --font-display: var(--font-hero); }
+:root[data-theme="dark"] { --bg: #0a0a0d; --surface: #121219; --surface-2: #191922; --muted: #1d1d28; --canvas: #0e0e15;
+  --hairline: #24243a; --hairline-strong: #3b3b58; --border: #5a5a7a; --muted-fg: #a3a3bd; --fg: #ececf4; --surface-fg: #ececf4;
+  --accent: #6a5aff; --accent-hover: #8a7dff; --accent-fg: #fff; --net-particle: #b7aeff; --net-edge: #2a2a40; --net-node: #5d5d80;
+  --info-bg: #17163a; --info-fg: #c4bdff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0a0a0d; --surface: #121219; --surface-2: #191922; --muted: #1d1d28; --canvas: #0e0e15;
+  --hairline: #24243a; --hairline-strong: #3b3b58; --border: #5a5a7a; --muted-fg: #a3a3bd; --fg: #ececf4; --surface-fg: #ececf4;
+  --accent: #6a5aff; --accent-hover: #8a7dff; --accent-fg: #fff; --net-particle: #b7aeff; --net-edge: #2a2a40; --net-node: #5d5d80;
+  --info-bg: #17163a; --info-fg: #c4bdff; } }
+.top h1, .card h2, #nav button, .btn, .eyebrow { font-family: var(--font-hero); }
+.top h1 { font-weight: 500; }
+.card h2 { font-weight: 500; font-size: 20px; }
+.topctl select, .searchrow input { border-radius: 10px; }
+.card { box-shadow: none; }
+
+/* ---------- the intro: the team's own 30 s film plays first, full screen, then hands over to the hero ---------- */
+html.introOn { overflow: hidden; }
+.intro { position: fixed; inset: 0; z-index: 100; background: #000; display: grid; place-items: center; font-family: var(--font-hero); }
+.intro[hidden] { display: none; }
+.introV { width: 100%; height: 100%; object-fit: contain; background: #000; }
+.introCtl { position: absolute; right: 24px; bottom: 28px; display: flex; gap: 10px; }
+.introBtn, .introPlay { font: inherit; font-size: 14px; font-weight: 500; letter-spacing: .03em; color: #fff; cursor: pointer; border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / .35); background: rgb(20 20 30 / .55); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); padding: 10px 18px; transition: background var(--dur-2), border-color var(--dur-2); }
+.introBtn:hover { background: rgb(79 61 245 / .85); border-color: var(--h-indigo-hi); }
+.introPlay { position: absolute; font-size: 18px; padding: 16px 30px; background: var(--h-indigo); border-color: var(--h-indigo-hi); }
+.introBar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgb(255 255 255 / .1); }
+.introBar i { display: block; height: 100%; width: 0; background: var(--h-indigo-hi); }
+button.hlink { font: inherit; font-size: 15px; background: none; border: 0; padding: 0; cursor: pointer; }
+.htitle .hsub { font-size: .52em; color: var(--h-dim); margin-top: .25em; letter-spacing: -.005em; }
