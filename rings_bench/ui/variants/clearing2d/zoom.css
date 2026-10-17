@@ -66,3 +66,31 @@
 .zm-clock { font-size: 11.5px; color: var(--muted, #A3ABB8); min-width: 230px; text-align: right; white-space: nowrap; }
 
 @media (prefers-reduced-motion: reduce) { .zm-root, .zm-graph, .zm-e { transition: none !important; } }
+
+/* money movement and follow the money */
+.zm-flow { position: absolute; left: 0; top: 0; pointer-events: none; }
+.zm-follow { margin-left: auto; font: 500 12.5px var(--sans, system-ui); color: var(--accent, #7FB7B0); background: transparent; border: 1px solid var(--accent, #7FB7B0); border-radius: 3px; padding: 4px 10px; cursor: pointer; }
+.zm-follow + .zm-close { margin-left: 0; }
+.zm-follow.on { background: var(--accent, #7FB7B0); color: var(--ground, #14181F); }
+.zm-follow:focus-visible, .zm-next:focus-visible { outline: 2px solid var(--accent, #7FB7B0); outline-offset: 2px; }
+.zm-pathline { margin: 5px 0 0; font-size: 12.5px; color: var(--ink, #E6E9EE); }
+.zm-pathline .muted { color: var(--muted, #A3ABB8); }
+.zm-next { font: 500 12px var(--sans, system-ui); color: var(--ink, #E6E9EE); background: transparent; border: 1px solid var(--rule, #2C3440); border-radius: 3px; padding: 1px 8px; margin-left: 6px; cursor: pointer; }
+.zm-next:hover { border-color: var(--accent, #7FB7B0); }
+.zm-warnnote { color: var(--warn, #E0A458); margin-left: 6px; }
+.zm-picking .zm-nhit { cursor: crosshair; }
+.zm-n.zm-pick .zm-dot { stroke: var(--accent, #7FB7B0); stroke-width: 3; }
+.zm-pathon .zm-e:not(.zm-onpath) { opacity: .08; }
+.zm-pathon .zm-n:not(.zm-onpath):not(.zm-pick) { opacity: .25; }
+.zm-pathon .zm-e.zm-onpath { opacity: 1; }
+.zm-pathon .zm-e.zm-onpath .zm-line { stroke-width: 3; stroke-opacity: 1; }
+.zm-pathon .zm-e.zm-later { opacity: 0; }
+.zm-pathon .zm-e.zm-onpath.zm-later { opacity: 1; }
+.zm-badge { pointer-events: none; }
+.zm-badge circle { fill: var(--ground, #14181F); stroke: var(--accent, #7FB7B0); stroke-width: 1.6; }
+.zm-badge text { font: 600 11px var(--mono, Consolas, monospace); fill: var(--ink, #E6E9EE); text-anchor: middle; }
+.zm-side { position: absolute; z-index: 1; right: 8px; top: 8px; bottom: 8px; width: 250px; overflow-y: auto; background: rgba(28, 34, 43, .95); border: 1px solid var(--rule, #2C3440); border-left: 3px solid var(--accent, #7FB7B0); border-radius: 3px; padding: 8px 10px; font-size: 12.5px; }
+.zm-side h4 { margin: 0 0 4px; font-size: 13px; font-weight: 600; }
+.zm-hop { display: flex; gap: 8px; padding: 6px 0; border-top: 1px solid var(--rule, #2C3440); }
+.zm-hop p { margin: 1px 0 0; }
+.zm-hopn { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--accent, #7FB7B0); font: 600 11px/17px var(--mono, Consolas, monospace); text-align: center; }

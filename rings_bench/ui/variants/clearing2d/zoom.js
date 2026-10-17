@@ -70,7 +70,7 @@
 
   function close(instant) {
     if (!cur || cur.closing) return; const c = cur; c.closing = true;
-    document.removeEventListener('keydown', c.onKey, true);
+    document.removeEventListener('keydown', c.onKey, true); if (c.stop) c.stop();
     const done = () => { if (c.root.parentNode) c.root.parentNode.removeChild(c.root); if (cur === c) cur = null; };
     if (instant || RM.matches) { done(); return; }
     c.root.classList.remove('zm-in'); c.root.classList.add('zm-out'); setTimeout(done, 210);
@@ -126,7 +126,9 @@
       (INV.ring_found ? ' <span class="zm-ok">found the ring</span>' : '') + (INV.why ? '<span class="zm-why" title="' + esc(clean(INV.why)) + '"> ' + esc(clean(INV.why)) + '</span>' : '') + '</p>' : '';
     head.innerHTML = '<div class="zm-title"><h3>Neighborhood around <span class="mono">' + esc(seed) + '</span></h3>' +
       '<span class="zm-count mono">' + esc(unitId) + ' · ' + plural(accts.length, 'account') + ' · ' + plural(rows.length, 'transfer') + '</span>' + lead +
-      '<button type="button" class="zm-close" aria-label="Close the close-up">Close <span aria-hidden="true">✕</span></button></div>' + fp + inv;
+      '<button type="button" class="zm-follow" aria-pressed="false" title="Pick one account, then a second, to trace money between them">Follow the money</button>' +
+      '<button type="button" class="zm-close" aria-label="Close the close-up">Close <span aria-hidden="true">✕</span></button></div>' +
+      '<p class="zm-pathline" hidden></p>' + fp + inv;
     panel.appendChild(head);
 
     const legend = document.createElement('div'); legend.className = 'zm-legend';
@@ -139,6 +141,8 @@
     const gwrap = document.createElement('div'); gwrap.className = 'zm-graph'; panel.appendChild(gwrap); panel.appendChild(legend);
     const svg = el('svg', { class: 'zm-svg', role: 'img', 'aria-label': plural(rows.length, 'transfer') + ' between ' + plural(accts.length, 'account') });
     gwrap.appendChild(svg);
+    const flow = document.createElement('canvas'); flow.className = 'zm-flow'; flow.setAttribute('aria-hidden', 'true'); gwrap.appendChild(flow);
+    const side = document.createElement('div'); side.className = 'zm-side'; side.hidden = true; gwrap.appendChild(side);
     const card = document.createElement('div'); card.className = 'zm-card'; card.hidden = true; gwrap.appendChild(card);
 
     const scrub = document.createElement('div'); scrub.className = 'zm-scrub';
@@ -166,7 +170,9 @@
       const g = groups[key];
       g.forEach((r, i) => {
         const a = pos[r[2]], b = pos[r[3]]; let d;
-        if (r[2] === r[3]) { const R = rad(r[2]); const s = 16 + i * 7; d = 'M' + (a.x - 4) + ',' + (a.y - R) + ' C' + (a.x - s) + ',' + (a.y - R - 2.2 * s) + ' ' + (a.x + s) + ',' + (a.y - R - 2.2 * s) + ' ' + (a.x + 4) + ',' + (a.y - R - 1); }
+        let geom;
+        if (r[2] === r[3]) { const R = rad(r[2]); const s = 16 + i * 7; d = 'M' + (a.x - 4) + ',' + (a.y - R) + ' C' + (a.x - s) + ',' + (a.y - R - 2.2 * s) + ' ' + (a.x + s) + ',' + (a.y - R - 2.2 * s) + ' ' + (a.x + 4) + ',' + (a.y - R - 1);
+          geom = { c: [{ x: a.x - 4, y: a.y - R }, { x: a.x - s, y: a.y - R - 2.2 * s }, { x: a.x + s, y: a.y - R - 2.2 * s }, { x: a.x + 4, y: a.y - R - 1 }] }; }
         else {
           const lo = r[2] < r[3] ? a : b, hi = r[2] < r[3] ? b : a; const dx = hi.x - lo.x, dy = hi.y - lo.y; const dist = Math.sqrt(dx * dx + dy * dy) || 1;
           const nx = -dy / dist, ny = dx / dist; const n = g.length; const step = n > 1 ? Math.min(16, 1.2 * dist / n) : 0; const off = (i - (n - 1) / 2) * step * 2;
@@ -174,6 +180,7 @@
           const sh = (p, R) => { const vx = p.x - cx, vy = p.y - cy; const l = Math.sqrt(vx * vx + vy * vy) || 1; return { x: p.x - vx / l * R, y: p.y - vy / l * R }; };
           const s0 = sh(a, rad(r[2]) + 1), e0 = sh(b, rad(r[3]) + 2.5);
           d = 'M' + s0.x.toFixed(1) + ',' + s0.y.toFixed(1) + ' Q' + cx.toFixed(1) + ',' + cy.toFixed(1) + ' ' + e0.x.toFixed(1) + ',' + e0.y.toFixed(1);
+          geom = { q: [s0, { x: cx, y: cy }, e0] };
         }
         const lab = truth.has(r[0]), mf = mflag.has(r[0]), inf = iflag.has(r[0]);
         const kind = mf ? 'model' : inf ? 'inv' : lab ? 'ibm' : 'plain';
@@ -183,7 +190,7 @@
         if (mf && inf) el('path', { d, class: 'zm-both', stroke: C.inv }, grp);
         const hit = el('path', { d, class: 'zm-hit' }, grp);
         hit.addEventListener('mouseenter', ev => showEdge(r, grp, ev)); hit.addEventListener('mousemove', ev => place(ev)); hit.addEventListener('mouseleave', hide);
-        edgeEls.push({ r, grp });
+        edgeEls.push({ r, grp, geom, dot: lab ? C.ibm : (mf || inf) ? C.model : C.plain });
       });
     });
     /* draw flagged lines last so they sit on top */
@@ -196,6 +203,7 @@
       if (a === seed || A[a].ringHere) { const t = el('text', { y: -(R + (a === seed ? 8 : 5)), class: 'zm-lbl' }, g); t.textContent = a; }
       el('circle', { r: Math.max(R + 4, 9), class: 'zm-nhit' }, g).addEventListener('mouseenter', ev => showNode(a, g, ev));
       g.lastChild.addEventListener('mousemove', ev => place(ev)); g.lastChild.addEventListener('mouseleave', hide);
+      g.lastChild.addEventListener('click', ev => { ev.stopPropagation(); pickAccount(a); });
     });
 
     /* ---------- hover cards ---------- */
@@ -235,16 +243,115 @@
     /* ---------- time scrub ---------- */
     const rng = scrub.querySelector('input'), clock = scrub.querySelector('.zm-clock');
     const applyT = () => { const t = times[+rng.value] || ''; let shown = 0;
-      edgeEls.forEach(e => { const on = !t || e.r[1] <= t; e.grp.classList.toggle('zm-later', !on); if (on) shown++; });
+      edgeEls.forEach(e => { const on = !t || e.r[1] <= t; e.grp.classList.toggle('zm-later', !on); e.later = !on; if (on) shown++; });
       clock.textContent = (t || 'no transfers') + ' · ' + shown + ' of ' + rows.length + ' shown'; };
     rng.addEventListener('input', applyT); applyT();
+
+    /* ---------- money movement: one canvas layer, dots travel payer to payee and loop ---------- */
+    const dpr = Math.min(window.devicePixelRatio || 1, 2); flow.width = Math.round(W * dpr); flow.height = Math.round(H * dpr); flow.style.width = W + 'px'; flow.style.height = H + 'px';
+    const fx = flow.getContext('2d');
+    const amts = rows.map(r => Math.log(Math.max(Number(r[4]), 0.01))); const lo = amts.length ? Math.min.apply(null, amts) : 0, hi = amts.length ? Math.max.apply(null, amts) : 1;
+    edgeEls.forEach((e, i) => { e.size = 2 + 3 * (hi > lo ? (Math.log(Math.max(Number(e.r[4]), 0.01)) - lo) / (hi - lo) : 0.5); e.phase = (i * 0.618034) % 1; });
+    const at = (g, t) => { if (g.q) { const p0 = g.q[0], p1 = g.q[1], p2 = g.q[2], u = 1 - t; return { x: u * u * p0.x + 2 * u * t * p1.x + t * t * p2.x, y: u * u * p0.y + 2 * u * t * p1.y + t * t * p2.y }; }
+      const p0 = g.c[0], p1 = g.c[1], p2 = g.c[2], p3 = g.c[3], u = 1 - t; return { x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x, y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y }; };
+    const TRIP = 1600; let running = !RM.matches, raf = 0;
+    function frame(now) {
+      if (!running) return;
+      fx.setTransform(dpr, 0, 0, dpr, 0, 0); fx.clearRect(0, 0, W, H);
+      const onPath = !!PS.path; const list = onPath ? PS.path : edgeEls; const focus = root.classList.contains('zm-focus');
+      for (let i = 0; i < list.length; i++) {
+        const e = list[i]; if (!onPath && e.later) continue;
+        /* along a path the dots relay: hop i starts when hop i-1 lands */
+        let t;
+        if (onPath) { const cyc = ((now / TRIP) % list.length); if (cyc < i || cyc >= i + 1) continue; t = cyc - i; }
+        else t = ((now / TRIP) + e.phase) % 1;
+        const p = at(e.geom, t);
+        fx.globalAlpha = onPath ? 1 : (focus && !e.grp.classList.contains('zm-hot') ? 0.15 : 0.95);
+        fx.beginPath(); fx.arc(p.x, p.y, onPath ? e.size + 1 : e.size, 0, 6.2832); fx.fillStyle = e.dot; fx.fill();
+      }
+      raf = requestAnimationFrame(frame);
+    }
+    if (running) raf = requestAnimationFrame(frame);
+
+    /* ---------- follow the money: pick two accounts, find directed paths in time order (up to 4 hops) ---------- */
+    const PS = { on: false, from: null, to: null, path: null, paths: [], k: 0, ordered: true };
+    const followBtn = head.querySelector('.zm-follow'), pathline = head.querySelector('.zm-pathline');
+    const gPath = el('g', { class: 'zm-pathg' }); svg.appendChild(gPath);
+    const outE = {}; edgeEls.forEach(e => { if (e.r[2] !== e.r[3]) (outE[e.r[2]] = outE[e.r[2]] || []).push(e); });
+    function findPaths(a, b, timed) {
+      const found = []; let budget = 60000;
+      const walk = (node, hops, seen) => {
+        const es = outE[node] || [];
+        for (let j = 0; j < es.length; j++) {
+          if (--budget < 0 || found.length >= 400) return;
+          const e = es[j], nx = e.r[3]; if (seen.has(nx)) continue;
+          if (timed && hops.length && e.r[1] < hops[hops.length - 1].r[1]) continue;
+          const h2 = hops.concat([e]);
+          if (nx === b) { found.push(h2); continue; }
+          if (h2.length < 4) { seen.add(nx); walk(nx, h2, seen); seen.delete(nx); }
+        }
+      };
+      walk(a, [], new Set([a]));
+      found.sort((x, y) => { const tx = x[x.length - 1].r[1], ty = y[y.length - 1].r[1]; return tx < ty ? -1 : tx > ty ? 1 : x.length - y.length; });
+      return found;
+    }
+    const sumCur = hs => { const o = {}; hs.forEach(e => { o[e.r[5]] = (o[e.r[5]] || 0) + Number(e.r[4]); }); const k = Object.keys(o);
+      return k.slice(0, 2).map(c => money(o[c]) + ' ' + esc(c)).join(' and ') + (k.length > 2 ? ' and more' : '') + ' moved'; };
+    const nodeEl = a => gN.querySelector('[data-acct="' + a + '"]');
+    function clearPath() {
+      PS.from = null; PS.to = null; PS.path = null; PS.paths = []; PS.k = 0; while (gPath.firstChild) gPath.removeChild(gPath.firstChild);
+      root.classList.remove('zm-pathon'); svg.querySelectorAll('.zm-onpath, .zm-pick').forEach(n => n.classList.remove('zm-onpath', 'zm-pick')); side.hidden = true;
+    }
+    function setFollow(on) {
+      PS.on = on; followBtn.setAttribute('aria-pressed', on ? 'true' : 'false'); followBtn.classList.toggle('on', on); root.classList.toggle('zm-picking', on);
+      clearPath(); pathline.hidden = !on; pathline.innerHTML = on ? 'Follow the money: click the account the money leaves from.' : '';
+    }
+    followBtn.addEventListener('click', () => setFollow(!PS.on));
+    function pickAccount(a) {
+      if (!PS.on) return;
+      if (!PS.from || PS.path) { clearPath(); PS.from = a; nodeEl(a).classList.add('zm-pick');
+        pathline.innerHTML = 'From <span class="mono">' + esc(a) + '</span>. Now click the account the money goes to.'; return; }
+      if (a === PS.from) return;
+      nodeEl(a).classList.add('zm-pick');
+      let paths = findPaths(PS.from, a, true); PS.ordered = true;
+      if (!paths.length) { paths = findPaths(PS.from, a, false); PS.ordered = false; }
+      PS.paths = paths; PS.k = 0; PS.to = a;
+      if (!paths.length) {
+        pathline.innerHTML = 'No directed path from <span class="mono">' + esc(PS.from) + '</span> to <span class="mono">' + esc(a) + '</span> within 4 hops here. Click an account to start again.';
+        PS.from = null; return; }
+      showPath();
+    }
+    function showPath() {
+      const hops = PS.paths[PS.k]; PS.path = hops;
+      svg.querySelectorAll('.zm-onpath').forEach(n => n.classList.remove('zm-onpath')); while (gPath.firstChild) gPath.removeChild(gPath.firstChild);
+      root.classList.add('zm-pathon'); hide();
+      hops.forEach((e, i) => {
+        e.grp.classList.add('zm-onpath'); nodeEl(e.r[2]).classList.add('zm-onpath'); nodeEl(e.r[3]).classList.add('zm-onpath');
+        e.grp.parentNode.appendChild(e.grp);
+        const m = at(e.geom, 0.5); const bg = el('g', { class: 'zm-badge', transform: 'translate(' + m.x.toFixed(1) + ',' + m.y.toFixed(1) + ')' }, gPath);
+        el('circle', { r: 9 }, bg); const tx = el('text', { y: 3.8 }, bg); tx.textContent = String(i + 1);
+      });
+      const n = PS.paths.length;
+      pathline.innerHTML = '<b>Path: <span class="mono">' + esc(PS.from) + '</span> to <span class="mono">' + esc(PS.to) + '</span>, ' + plural(hops.length, 'hop') + ', ' + sumCur(hops) + '</b>' +
+        (n > 1 ? ' <span class="muted">· ' + (PS.k + 1) + ' of ' + n + ' paths' + (n >= 400 ? ' (first 400 found)' : '') + '</span> <button type="button" class="zm-next">Next path</button>' : '') +
+        (PS.ordered ? '' : ' <span class="zm-warnnote">No path runs in time order, so this one ignores timing.</span>');
+      const nb = pathline.querySelector('.zm-next'); if (nb) nb.addEventListener('click', () => { PS.k = (PS.k + 1) % PS.paths.length; showPath(); });
+      side.innerHTML = '<h4>Hops in order</h4>' + hops.map((e, i) => {
+        const r = e.r, lab = truth.has(r[0]), mf = mflag.has(r[0]);
+        return '<div class="zm-hop"><span class="zm-hopn">' + (i + 1) + '</span><div><p class="mono small">' + esc(r[1]) + ' · ' + esc(r[0]) + '</p>' +
+          '<p><b class="mono">' + money(r[4]) + '</b> ' + esc(r[5]) + ' by ' + esc(r[6]) + '</p>' +
+          '<p class="small"><span class="mono">' + esc(r[2]) + '</span> to <span class="mono">' + esc(r[3]) + '</span></p>' +
+          '<p class="small">IBM: ' + (lab ? '<span class="zm-ibm">laundering</span>' : 'ordinary') + ' · ' + esc(pretty(model.id)) + ': ' + (run ? (mf ? '<span class="zm-ok">flagged</span>' : 'not flagged') : 'no run') + '</p></div></div>';
+      }).join('');
+      side.hidden = false;
+    }
 
     /* ---------- open / close wiring ---------- */
     head.querySelector('.zm-close').addEventListener('click', () => close());
     root.addEventListener('click', ev => { if (ev.target === root) close(); });
-    const onKey = ev => { if (ev.key === 'Escape') { ev.stopPropagation(); ev.preventDefault(); close(); } };
+    const onKey = ev => { if (ev.key === 'Escape') { ev.stopPropagation(); ev.preventDefault(); if (PS.on) setFollow(false); else close(); } };
     document.addEventListener('keydown', onKey, true);
-    cur = { root, onKey, closing: false };
+    cur = { root, onKey, closing: false, stop: () => { running = false; cancelAnimationFrame(raf); } };
 
     /* grow from the neighborhood's spot on the main graph (or the stage center) */
     const rb = root.getBoundingClientRect();
