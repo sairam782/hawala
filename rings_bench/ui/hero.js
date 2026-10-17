@@ -1,40 +1,8 @@
-/* Hero: cuts the notched frame (an SVG path used as the frame's clip, redrawn on resize), plays the GSAP intro when
-   GSAP loaded, and routes the hero's links to the dashboard's screens (window.ringsShow, from app.js). */
+/* Hero: plays the GSAP intro when GSAP loaded, and routes the hero's links to the dashboard's screens (window.ringsShow, from app.js). */
 (function () {
   'use strict';
   const frame = document.getElementById('hFrame');
-  const logo = document.querySelector('.hlogo'), btn = document.querySelector('.hprompt'), pills = document.querySelector('.hpills');
-
-  /* a polygon with every corner rounded: each vertex becomes a quadratic curve of radius r */
-  function rounded(pts, r) {
-    let d = '';
-    pts.forEach((p, i) => {
-      const a = pts[(i - 1 + pts.length) % pts.length], b = pts[(i + 1) % pts.length];
-      const k = (q, len) => { const dx = q[0] - p[0], dy = q[1] - p[1], L = Math.hypot(dx, dy) || 1, t = Math.min(len, L / 2) / L; return [p[0] + dx * t, p[1] + dy * t]; };
-      const s = k(a, r), e = k(b, r);
-      d += (i ? 'L' : 'M') + s[0].toFixed(1) + ' ' + s[1].toFixed(1) + 'Q' + p[0] + ' ' + p[1] + ' ' + e[0].toFixed(1) + ' ' + e[1].toFixed(1);
-    });
-    return d + 'Z';
-  }
-  function cut() {
-    /* layout boxes (offset*), not rendered ones, so the intro's scale does not skew the cut */
-    const w = frame.clientWidth, h = frame.clientHeight, box = el => ({ left: el.offsetLeft, top: el.offsetTop, right: el.offsetLeft + el.offsetWidth, bottom: el.offsetTop + el.offsetHeight });
-    const fr = box(frame), lb = box(logo), bb = box(btn);
-    const gap = 14;
-    const lw = lb.right - fr.left + gap, lh = lb.bottom - fr.top + gap;                       /* the logo's notch */
-    const sw = lw + Math.max(120, w * .11), sh = Math.max(34, (bb.bottom - fr.top) - 8);      /* the step beside it */
-    const rw = w - (bb.left - fr.left) + gap, rh = bb.bottom - fr.top + gap * .6;           /* the button's notch */
-    let pts;
-    if (pills && getComputedStyle(pills).display !== 'none') {
-      pts = [[0, lh], [lw, lh], [lw, sh], [sw, sh], [sw, 0], [w - rw, 0], [w - rw, rh], [w, rh], [w, h], [0, h]];
-    } else {
-      pts = [[0, lh], [lw, lh], [lw, 0], [w - rw, 0], [w - rw, rh], [w, rh], [w, h], [0, h]];
-    }
-    frame.style.clipPath = 'path("' + rounded(pts, 18) + '")';
-    frame.style.borderRadius = '0';
-  }
-  cut(); addEventListener('resize', cut);
-  if (document.fonts) document.fonts.ready.then(cut);
+  const pills = document.querySelector('.hpills');
 
   /* links: data-go="4" opens that screen, then scrolls to the dashboard */
   document.querySelectorAll('[data-go]').forEach(a => a.addEventListener('click', e => {
@@ -53,7 +21,6 @@
     const tl = g.timeline({ defaults: { ease: 'power3.out' } });
     tl.from(frame, { scale: 1.04, opacity: 0, duration: 1.3 })
       .from(v, { scale: 1.18, duration: 2.2, ease: 'power2.out' }, 0)
-      .from([logo, btn], { y: -16, opacity: 0, duration: .7, stagger: .08 }, .35)
       .from(pills ? pills.children : [], { y: -12, opacity: 0, duration: .5, stagger: .05 }, .45)
       .from('#hCard', { y: 60, opacity: 0, duration: 1 }, .55)
       .from('.htitle .ln', { yPercent: 60, opacity: 0, duration: .9, stagger: .12 }, .75)

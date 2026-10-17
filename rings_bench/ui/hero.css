@@ -1,5 +1,4 @@
-/* Hero, after v0's "An unusual hero" (webrenew): a liquid-metal video inside a notched frame (an SVG path used as a
-   clip, cut so the logo tile, the credit pills and the indigo button sit in the black around it), a frosted glass card
+/* Hero, after v0's "An unusual hero" (webrenew): a liquid-metal video inside a rounded frame, the credit pills on top, a frosted glass card
    at the bottom left, Space Grotesk throughout, a GSAP intro. The hero is always dark; the dashboard below borrows
    its type, its indigo and its rounder corners. If the video or the fonts cannot load (offline, from a file), a
    gradient and system fonts stand in. */
@@ -19,15 +18,6 @@
 /* the credit row, in the frame's top tab */
 .hpills { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; white-space: nowrap; font-size: 17px; color: var(--h-dim); z-index: 2; }
 .hpills b { font-weight: 600; color: var(--h-fg); border: 1.5px solid var(--h-pill); border-radius: 999px; padding: 5px 18px; font-size: 15px; }
-
-/* the logo tile and the button, in the black notches */
-.hlogo { position: absolute; left: calc(var(--h-pad) + 14px); top: calc(var(--h-pad) + 22px); width: 64px; height: 64px; border-radius: 10px; background: #1d1d22;
-  display: grid; place-items: center; color: #fff; z-index: 3; transition: background var(--dur-2); }
-.hlogo:hover { background: #2a2a31; }
-.hlogo svg { width: 36px; height: 36px; }
-.hprompt { position: absolute; right: var(--h-pad); top: var(--h-pad); z-index: 3; background: var(--h-indigo); color: #fff; text-decoration: none; border-radius: 999px; padding: 12px 22px;
-  font-size: 15px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; transition: background var(--dur-2), transform var(--dur-2); }
-.hprompt:hover { background: var(--h-indigo-hi); transform: translateY(-1px); }
 
 /* the glass card */
 .hcard { position: absolute; left: clamp(20px, 3.2vw, 48px); bottom: clamp(20px, 3.4vw, 50px); width: min(70%, 940px); z-index: 2;
@@ -52,7 +42,6 @@
   .hpills { display: none; }
   .hcard { width: auto; right: 16px; left: 16px; bottom: 16px; }
   .hscroll { display: none; }
-  .hprompt { padding: 10px 16px; font-size: 13px; }
 }
 
 /* ---------- the dashboard below, dressed to match: Space Grotesk, the indigo, rounder corners ----------
