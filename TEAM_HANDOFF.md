@@ -110,3 +110,17 @@ Everything above is in `rings_bench/bench.py` and `rings_bench/mi.py` with recei
   the held-out slices, then the page.
 - **The model screen** (`eval/model-screen` branch: `screen.py`, `evals.md`) scores the bench's way, so its rows and
   ours compare directly; its results file can sit beside the others under `data/` when it merges.
+
+## 14:58: our PRISM traces, exported, and how to import them into the team workspace
+
+`rings_bench/export/prism_traces_2026-10-17.jsonl.gz` holds every run the engine sent to PRISM today (2,697
+records: agent name, model, input, output, the tool steps, metadata, latency, original trace id). To put them in the
+team workspace without a single new model call:
+
+    python rings_bench/import_traces.py --key <team pt-sk key> --project <team project uuid>
+
+Standard library only. Tracing is free. Agent names are kept, so Knowledge Base assignments, alert rules and the
+evaluator attach to the same names (`rings-<family>-<version>[-<slice>]`). `--agents rings-anthropic-v3,rings-openai-v3`
+imports a subset; `--dry-run` shows what would go. Create any evaluator task BEFORE importing (a task only sees traces
+created after it). Then `bench.py analyze` and `bench.py rootcause` with the team key run Root Cause on a workspace
+that has only these runs, which is the fix for the timeout on the practice workspace.
