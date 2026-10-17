@@ -34,7 +34,8 @@ const Money = {
 
 /* ---------- the pattern shapes: a fan is a tree, a mesh is a web; only a cycle is a ring ---------- */
 const SHAPES = ['cycle', 'fan-out', 'fan-in', 'scatter-gather', 'chain', 'mesh', 'other', 'lone'];
-const SHAPE_WORDS = { cycle: 'a ring: money goes around and comes back', 'fan-out': 'a tree: one account pays many', 'fan-in': 'a tree, inverted: many accounts pay one', 'scatter-gather': 'two trees joined: one scatters to relays, the relays pay one', chain: 'a chain: hop to hop to hop', mesh: 'a web: a knot of accounts paying each other', other: 'another structure', lone: 'one labeled transfer on its own', ordinary: 'ordinary traffic' };
+const IBM_ORDER = ['cycle', 'fan-out', 'fan-in', 'scatter-gather', 'gather-scatter', 'stack', 'bipartite', 'no named shape'];
+const SHAPE_WORDS = { 'gather-scatter': 'the mirror of scatter-gather: many pay one, which then pays many', stack: 'a chain: money is passed along, each account forwarding soon after receiving', bipartite: 'a web: a group of accounts paying each other both ways', 'no named shape': 'IBM labels the transfer but names no pattern for it; a single transfer with no structure in reach', cycle: 'a ring: money goes around and comes back', 'fan-out': 'a tree: one account pays many', 'fan-in': 'a tree, inverted: many accounts pay one', 'scatter-gather': 'two trees joined: one scatters to relays, the relays pay one', chain: 'a chain: hop to hop to hop', mesh: 'a web: a knot of accounts paying each other', other: 'another structure', lone: 'one labeled transfer on its own', ordinary: 'ordinary traffic' };
 const dot = (x, y, r) => '<circle class="n" cx="' + x + '" cy="' + y + '" r="' + (r || 1.6) + '"/>';
 const GLYPH = {
   cycle: '<circle cx="12" cy="12" r="7"/><path d="M15.5 4.6l2.3 1.6-1.9 1.8"/>' + dot(12, 5) + dot(18.1, 15.5) + dot(5.9, 15.5),
@@ -555,11 +556,13 @@ function renderBoard() {
 /* ---------- failures by shape ---------- */
 function renderGrid() {
   let h = '<thead><tr><th class="l">Shape</th>' + MODELS.map(m => '<th title="' + esc(m.id + ' ' + m.version) + '"><span class="rot">' + esc(m.short) + ' <b>' + esc(m.version) + '</b></span></th>').join('') + '</tr></thead><tbody>';
-  SHAPES_HERE.forEach(s => {
-    const ibmNames = [...new Set(RING_IDS.filter(r => ringShape(r) === s).map(ibmBase))];
-    h += '<tr><th class="l sh" title="' + esc('IBM\'s names: ' + ibmNames.join(', ') + '. Our reading: ' + s + ', ' + SHAPE_WORDS[s] + '. ' + SHAPE_N[s].rings + ' rings, ' + SHAPE_N[s].edges + ' transfers.') + '">' + glyph(s) + '<span><b>' + esc(ibmNames.join(', ')) + '</b><small>' + (ibmNames.length === 1 && ibmNames[0] === s ? SHAPE_N[s].rings + ' rings' : 'ours: ' + s + ', ' + SHAPE_N[s].rings) + '</small></span></th>';
+  const names = [...new Set(RING_IDS.map(ibmBase))].sort((a, b) => (IBM_ORDER.indexOf(a) + 1 || 99) - (IBM_ORDER.indexOf(b) + 1 || 99));
+  names.forEach(s => {
+    const rows = RING_IDS.filter(r => ibmBase(r) === s); const ours = {}; rows.forEach(r => ours[ringShape(r)] = (ours[ringShape(r)] || 0) + 1); const ourList = Object.keys(ours).sort((a, b) => ours[b] - ours[a]);
+    const edgesN = rows.reduce((a, r) => a + RINGS[r].length, 0);
+    h += '<tr><th class="l sh" title="' + esc('IBM\'s name: ' + s + ', ' + (SHAPE_WORDS[s] || '') + '. Our reading: ' + ourList.join(', ') + '. ' + rows.length + ' rings, ' + edgesN + ' transfers.') + '">' + glyph(ourList[0]) + '<span><b>' + esc(s) + '</b><small>' + (ourList.length === 1 && ourList[0] === s ? rows.length + ' rings' : 'ours: ' + ourList.map(x => x === 'lone' ? 'single transfer' : x).join(', ') + ', ' + rows.length) + '</small></span></th>';
     MODELS.forEach(m => {
-      const b = (m.by_shape || {})[s]; const rings = b ? b.rings : SHAPE_N[s].rings; const ran = m.R.filter(r => r.expected === 'ring' && r.shape === s).length; const found = b && ran ? b.found : null;
+      const rings = rows.length; const ran = m.R.filter(r => r.expected === 'ring' && ibmBase(unitRing(r)) === s).length; const found = ran ? m.perRing.filter(p => rows.includes(p.r) && p.found).length : null;
       const frac = found == null || !rings ? null : found / rings; const cls = frac == null ? 'na' : frac === 0 ? 'c0' : frac < 0.5 ? 'c1' : frac < 1 ? 'c2' : 'c3';
       h += '<td><button type="button" class="' + cls + '" data-s="' + esc(s) + '" data-id="' + esc(m.id + '|' + m.version) + '" title="' + esc(m.short + ' ' + m.version + ': ' + (found == null ? 'has not run a ' + s + ' group yet' : found + ' of ' + rings + ' ' + s + ' patterns found (' + ran + ' of ' + rings + ' run)') + '. Click for the runs and the model\'s why.') + '">' + (found == null ? '–' : found + '/' + rings + (ran < rings ? '<small>' + ran + ' run</small>' : '')) + '</button></td>';
     });
@@ -568,7 +571,7 @@ function renderGrid() {
   const maxF = Math.max(1, ...MODELS.map(m => m.false_rings || 0));
   h += '<tr><th class="l sh" title="Candidate groups IBM labels ordinary that the model called a pattern">' + glyph('ordinary') + '<span><b>false alarms</b><small>ordinary, called a pattern</small></span></th>' + MODELS.map(m => '<td><button type="button" class="fr ' + ((m.false_rings || 0) / maxF > 0.6 ? 'hot' : '') + '" data-s="false" data-id="' + esc(m.id + '|' + m.version) + '" title="' + esc(m.short + ' ' + m.version + ': ' + num(m.false_rings) + ' false alarms. Click for each one.') + '">' + num(m.false_rings) + '</button></td>').join('') + '</tr>';
   $('#gridTable').innerHTML = h + '</tbody>';
-  $('#gridKey').innerHTML = '<span><i style="background:var(--cell-0)"></i>found none</span><span><i style="background:var(--cell-1)"></i>under half</span><span><i style="background:var(--cell-2)"></i>most</span><span><i style="background:var(--cell-3)"></i>all</span><span>Shape names are our reading of IBM\'s labeled edges. Hover a shape for what it is.</span>';
+  $('#gridKey').innerHTML = '<span><i style="background:var(--cell-0)"></i>caught none</span><span><i style="background:var(--cell-1)"></i>under half</span><span><i style="background:var(--cell-2)"></i>most</span><span><i style="background:var(--cell-3)"></i>all</span><span>Rows are IBM\'s own pattern names; our reading is the small line and the glyph. Hover a row for what it is.</span>';
   document.querySelectorAll('.grid button[data-id]').forEach(b => { b.onclick = () => { const [id, ver] = b.dataset.id.split('|'); const m = MODELS.find(x => x.id === id && x.version === ver); document.querySelectorAll('.grid button.on').forEach(x => x.classList.remove('on')); b.classList.add('on'); if (m) openDrawer(b.dataset.s === 'false' ? 'false' : 'cell', m, b.dataset.s); }; });
 }
 
@@ -592,7 +595,7 @@ function openDrawer(kind, m, shape) {
     const R = m.R.filter(r => r.expected !== 'ring' && r.verdict === 'ring'); title = name + ': ' + R.length + ' false alarms'; sub = 'Ordinary groups this model called a laundering pattern, with its own one-sentence why. Precision also drops for real patterns flagged with extra ordinary transfers.';
     html = R.length ? R.map(r => runRow(r)).join('') : '<p class="empty">No false alarms in the runs.</p>';
   } else if (kind === 'cell') {
-    const R = m.R.filter(r => r.expected === 'ring' && r.shape === shape); title = name + ' on ' + shape + ' (' + esc(SHAPE_WORDS[shape] || '') + ')'; sub = R.length + ' ' + shape + ' groups IBM marked. Found and missed, with the model\'s why.';
+    const R = m.R.filter(r => r.expected === 'ring' && (ibmBase(unitRing(r)) === shape || r.shape === shape)); title = name + ' on ' + shape + ' (' + esc(SHAPE_WORDS[shape] || '') + ')'; sub = R.length + ' rings IBM names ' + shape + '. Caught, called but swept, and missed, with the model\'s why.';
     html = R.length ? R.map(r => runRow(r)).join('') : '<p class="empty">No ' + esc(shape) + ' group run yet for this model' + (UNITS ? ' (' + m.R.length + ' of ' + UNITS + ' candidate groups run so far)' : '') + '.</p>';
   } else if (kind === 'cost') {
     const R = m.R.slice().sort((a, b) => (b.cost_usd || 0) - (a.cost_usd || 0)); title = name + ': ' + Money.fmt(m.cost_usd, 'USD') + ' across ' + R.length + ' runs'; sub = 'Most expensive runs first.';
