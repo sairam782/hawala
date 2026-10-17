@@ -23,8 +23,10 @@ const compact = v => v >= 1e9 ? (v / 1e9).toFixed(2) + 'B' : v >= 1e6 ? (v / 1e6
 function seeded(seed) { let s = seed >>> 0; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; }
 
 /* timings, ms: each one is what the README lists */
-const HOLD = 700, FADE = 400, STEP = 60, DWELL = 150, CATCH_MS = 450, GAP = 250, REVEAL_MS = 600, ALARM_MS = 200;
-const HOP_MS = 220, HOLD_MS = 180, VERDICT_GAP = 200, SNAP_MS = 350, SHRINK_MS = 300, XFADE_MS = 250;
+// Pacing (Alex, 14:44): the search takes about 20 s so people can follow it; Look closer runs at about real time
+// (about 1 s a card, 30 cards) so each cleared or flagged verdict is a solid beat.
+const HOLD = 700, FADE = 400, STEP = 280, DWELL = 250, CATCH_MS = 600, GAP = 250, REVEAL_MS = 600, ALARM_MS = 200;
+const HOP_MS = 320, HOLD_MS = 380, VERDICT_GAP = 300, SNAP_MS = 450, SHRINK_MS = 400, XFADE_MS = 250;
 const DIM = 0.08; const SWEEP_MS = 260, LOOK_MS = 300, LOOK_GAP = 50; /* a cleared account ends at 8 percent opacity */
 
 /* ---------- data, or a labeled SAMPLE ---------- */
@@ -436,7 +438,9 @@ function voteClause() {
   const pv = panelVer(ST.sel.ver); const V = pv && PA.versions[pv]; if (!V || !V.summary) return '';
   const fams = V.summary.families || []; const runs = (BE.runs || []).filter(r => (r.version || 'v1') === pv && fams.includes(r.model) && r.verdict != null && r.verdict !== '');
   if (!runs.length) return '';
-  return ' The ' + fams.length + '-family vote behind the tray is not replayed at all: live it is ' + runs.length + ' calls, about ' + fmtDur(liveSeconds(runs)) + '.';
+  const lo = runs.length, hi = Math.max(lo, runs.reduce((a, r) => a + (parseFloat(r.latency_ms) || 0), 0) / 1000 / 20);  /* 60 calls a minute, or 20 workers on the slow families */
+  const dur = Math.round(hi) > Math.round(lo) + 30 ? fmtDur(lo) + ' to ' + fmtDur(hi) : fmtDur(liveSeconds(runs));
+  return ' The ' + fams.length + '-family vote behind the tray is not replayed at all: live it is ' + runs.length + ' calls, about ' + dur + '.';
 }
 let HONEST = null;
 function honestLine() {

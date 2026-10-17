@@ -12,9 +12,9 @@ async def main():
         errs=[]; pg.on("pageerror", lambda e: errs.append(str(e))); pg.on("console", lambda m: errs.append(m.text) if m.type=="error" else None)
         await pg.goto(url); await pg.wait_for_timeout(1500); await shot(pg, "01_open")
         await click_text(pg, "Start the search"); await pg.wait_for_timeout(3000); await shot(pg, "02_searching")
-        await pg.wait_for_timeout(7000); await shot(pg, "03_ambiguous")
+        await pg.wait_for_timeout(20000); await shot(pg, "03_ambiguous")
         await click_text(pg, "Look closer"); await pg.wait_for_timeout(6000); await shot(pg, "04_looking_closer")
-        await pg.wait_for_timeout(16000); await shot(pg, "05_settled_after")
+        await pg.wait_for_timeout(28000); await shot(pg, "05_settled_after")
         try:
             await click_text(pg, "Before"); await pg.wait_for_timeout(600); await shot(pg, "06_before_toggle"); await click_text(pg, "After"); await pg.wait_for_timeout(600)
         except Exception as e: print("toggle:", e)
