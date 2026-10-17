@@ -165,6 +165,45 @@ Reading: on heldout_a Sonnet's own self-report already removes nearly every fals
 heldout_b Sonnet's self-report leaves 5 false rings and Jev's Score removes 3 more at no cost in rings found. Two
 held-out slices of 60 are too few to say which case is typical (each count carries about plus or minus 4).
 
+### Jev as a pre-filter: the LLM only sees neighborhoods above a Jev threshold
+
+Alex, 12:40: "only using the llms on ones that reach a certain threshold on jev." Jev runs first on all 60 (about 4
+seconds and half a cent per slice); only neighborhoods at or above the threshold go to Sonnet; the rest are closed as
+ordinary with no LLM call. On the verdict numbers this is the same arithmetic as the gate above (a closed neighborhood
+and a dropped ring call both end as "ordinary, nothing flagged"); what changes is the LLM calls, cost and time saved.
+Threshold 0 is Sonnet on all 60. Thresholds chosen on main against Sonnet v3, applied unchanged to heldout_a (Sonnet
+v2 there). Sonnet on all 60 costs about $0.90 and 7 to 8 minutes of model time per slice (per-run cost and latency from
+`bench_results.json`); Jev's own cost and time are already subtracted from the savings. Full sweep for three signals:
+`out\prefilter.md`, produced by `prefilter.py`.
+
+Set 1 evidence Score on the sentence state (the cleanest curve):
+
+| slice, Sonnet version | Jev threshold | sent to the LLM of 60 | rings found of 20 | false rings of 40 | rings the LLM never saw | LLM cost saved | LLM time saved |
+|---|---|---|---|---|---|---|---|
+| main v3 | 0 (all) | 60 | 13 | 5 | 0 | 0 | 0 |
+| main v3 | 60 | 39 | 13 | 3 | 2 | 28% | 121 s (28%) |
+| main v3 | 70 | 27 | 13 | 1 | 5 | 47% | 204 s (48%) |
+| main v3 | 75 | 20 | 11 | 0 | 7 | 60% | 260 s (62%) |
+| heldout_a v2 | 0 (all) | 60 | 10 | 11 | 0 | 0 | 0 |
+| heldout_a v2 | 60 | 40 | 10 | 8 | 2 | 26% | 129 s (27%) |
+| heldout_a v2 | 70 | 22 | 8 | 3 | 4 | 56% | 273 s (58%) |
+| heldout_a v2 | 75 | 18 | 8 | 2 | 6 | 62% | 300 s (64%) |
+
+Set 2 p(ring) on the facts-only state (sharper savings, more rings closed unseen):
+
+| slice, Sonnet version | Jev threshold | sent to the LLM of 60 | rings found of 20 | false rings of 40 | rings the LLM never saw | LLM cost saved | LLM time saved |
+|---|---|---|---|---|---|---|---|
+| main v3 | 0.5 | 21 | 10 | 2 | 8 | 62% | 259 s (61%) |
+| main v3 | 0.7 | 12 | 9 | 0 | 10 | 77% | 326 s (77%) |
+| heldout_a v2 | 0.5 | 24 | 8 | 5 | 7 | 53% | 256 s (55%) |
+| heldout_a v2 | 0.7 | 18 | 6 | 3 | 9 | 66% | 311 s (66%) |
+
+Reading: at a Score threshold of 70, the LLM reads fewer than half the neighborhoods, finds the same 13 rings on main
+and 8 of the 10 it would have found on heldout_a, and makes a quarter of the false ring calls, at about half the cost and
+time. The rings the pre-filter closes unseen are mostly the lone single-transfer rings, which the LLM mostly misses
+anyway (the "rings found" column barely moves while "rings never seen" climbs). Pushing the threshold higher buys more
+savings by closing rings the LLM would have found.
+
 ### Cost and latency per call
 
 | state variant | mean input tokens | mean cost per call | median latency |
