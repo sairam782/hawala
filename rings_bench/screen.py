@@ -29,6 +29,7 @@ sys.path.insert(0, str(HERE))
 import facts  # noqa: E402
 import prompts  # noqa: E402
 from prompts import build, SYSTEM  # noqa: E402
+import system_prompts  # noqa: E402
 
 # The screen keeps the v2 answer format every v2 run on the board was made with (prompts.py before 504e187 added
 # "cannot tell" for v5), so a model screened here and a model the bench ran saw the same words.
@@ -41,6 +42,8 @@ SLICE = os.environ.get("RINGS_SLICE", "").strip()
 DATA_DIR = (HERE / "slices" / SLICE) if SLICE else (HERE / "data")
 OUT = HERE / "out" / "screen"
 TAG = SLICE or "main"
+SYSTEM_ID = "S0"  # set by run --system: which candidate system prompt (system_prompts.py) the calls carry
+RUN_TAG = ""  # set by run --run-tag: a repeat or a transformed run lands beside the scored one, never in place of it
 SHAPES = ["cycle", "fan-out", "fan-in", "scatter-gather", "chain", "mesh", "other", "lone"]
 # bench.py's settings: reasoning families get a bigger cap and reasoning_effort low. The bench's own nine models keep
 # its caps exactly (default 3000); every other model gets at least 8000, because newer reasoning models spent all 3000
@@ -297,8 +300,9 @@ def load_units(subset=None):
     return units
 
 
-def batch_path(model, version):
-    return OUT / f"{TAG}__{model.replace('/', '_')}__{version}.jsonl"
+def batch_path(model, version, run_tag=None):
+    rt = RUN_TAG if run_tag is None else run_tag
+    return OUT / f"{TAG}{'-' + rt if rt else ''}__{model.replace('/', '_')}__{version}.jsonl"
 
 
 TRANSPORT = re.compile(r"^(HTTP (0|429|5\d\d)\b|HTTP 200 but not JSON|no answer)")
@@ -310,8 +314,8 @@ def is_transport(rec):
     return bool(rec.get("technical")) and bool(TRANSPORT.match(rec.get("error") or ""))
 
 
-def load_batch(model, version):
-    p = batch_path(model, version)
+def load_batch(model, version, run_tag=None):
+    p = batch_path(model, version, run_tag)
     recs = {}
     if p.exists():
         for line in p.read_text(encoding="utf-8").splitlines():
@@ -323,14 +327,39 @@ def load_batch(model, version):
     return recs
 
 
-def run_one(model, version, unit, key, limiter, pin, pout):
+def relabel(unit, seed=20261017):
+    """The same neighborhood in a new costume: fresh account ids and transfer ids (one mapping per unit, same id
+    style) and the rows shuffled. Amounts, times, formats and banks are untouched, so the structure is identical.
+    Returns the new unit and the map from new transfer ids back to the originals, for scoring."""
+    rnd = random.Random(f"{seed}:{unit['id']}")
+    accts = sorted({x for r in unit["rows"] for x in (r[2], r[3])})
+    amap, used = {}, set(accts)
+    for a in accts:
+        while True:
+            n = "%09X" % rnd.getrandbits(36)
+            if n not in used:
+                used.add(n); amap[a] = n; break
+    tids = [r[0] for r in unit["rows"]]
+    tmap = {t: f"T{n:04d}" for t, n in zip(tids, rnd.sample(range(1, 9999), len(tids)))}
+    rows = [[tmap[r[0]], r[1], amap[r[2]], amap[r[3]]] + list(r[4:]) for r in unit["rows"]]
+    rnd.shuffle(rows)
+    new = dict(unit, rows=rows, accounts=sorted(amap[a] for a in unit["accounts"] if a in amap),
+               truth_ids=[tmap[t] for t in unit["truth_ids"]])
+    return new, {v: k for k, v in tmap.items()}
+
+
+def run_one(model, version, unit, key, limiter, pin, pout, transform=None):
+    back = None
+    if transform == "relabel":
+        unit, back = relabel(unit)
     if version == "v2x":  # v2 with the payment format hidden, as in bench.py
         unit = dict(unit, rows=[list(r[:6]) + ["hidden"] + list(r[7:]) for r in unit["rows"]])
     f = facts.compute_facts(unit) if version in ("v2", "v2x") else None
     prompt = build(unit, "v2" if version == "v2x" else version, facts=f)
-    messages = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": prompt}]
+    system = SYSTEM if SYSTEM_ID == "S0" else system_prompts.get(SYSTEM_ID)
+    messages = [{"role": "system", "content": system}, {"role": "user", "content": prompt}]
     rec = {"unit": unit["id"], "model": model, "version": version, "slice": TAG, "at": time.strftime("%Y-%m-%d %H:%M:%S"),
-           "prompt_chars": len(prompt)}
+           "prompt_chars": len(prompt), "run_tag": RUN_TAG or None, "transform": transform, "system": SYSTEM_ID}
     try:
         data, ms = chat(model, messages, key, limiter, max_tokens_for(model))
     except Exception as e:  # noqa: BLE001
@@ -352,7 +381,12 @@ def run_one(model, version, unit, key, limiter, pin, pout):
     if parsed is None:
         rec.update({"ok": False, "technical": True, "error": "no JSON object in the answer"})
         return rec
-    return finish_record(rec, parsed, unit, from_reasoning)
+    rec = finish_record(rec, parsed, unit, from_reasoning)
+    if back:  # score against the original ids; keep what the model actually wrote
+        rec["flagged_as_written"] = rec["flagged"]
+        rec["flagged"] = [back.get(t, t) for t in rec["flagged"]]
+        rec["flagged_in_unit"] = [back[t] for t in rec["flagged_in_unit"] if t in back]
+    return rec
 
 
 # ---------------------------------------------------------------- scoring (bench.py's score_batch rules, plus F1)
@@ -405,6 +439,7 @@ def score(model, version, recs, units, source, pin=None, pout=None):
             "rings_found": found, "rings_total": rings_total, "false_rings": S("false_ring"),
             "verdict_right": S("right"), "pattern_named_ok": S("named"),
             "technical_failures": sum(1 for r in rs if r.get("technical")),
+            "provider_failures": sum(1 for r in rs if is_transport(r)),
             "flagged_outside_unit": sum(outside) if outside else None,
             "cost_usd": cost, "usd_per_ring_found": round(cost / found, 4) if found else None,
             "latency_ms_median": int(statistics.median(lats)) if lats else None,
@@ -511,6 +546,10 @@ def spent_so_far():
 
 
 def cmd_run(a):
+    global RUN_TAG, SYSTEM_ID
+    SYSTEM_ID = a.system
+    system_prompts.get(SYSTEM_ID)
+    RUN_TAG = a.run_tag or ("" if SYSTEM_ID == "S0" else SYSTEM_ID.lower())  # a candidate never lands in the scored file
     key, cat = api_key(), catalog()
     models = pick_models(a.models, cat, a.version)
     if a.skip_bad and (OUT / "probe.json").exists():
@@ -545,7 +584,7 @@ def cmd_run(a):
         if stop.is_set():
             return m, None
         pin, pout = price(cat[m])
-        rec = run_one(m, a.version, u, key, lim, pin, pout)
+        rec = run_one(m, a.version, u, key, lim, pin, pout, a.transform)
         with lock:
             with open(batch_path(m, a.version), "a", encoding="utf-8") as fh:
                 fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
@@ -626,7 +665,11 @@ def cmd_score(a):
                 runs.append(dict(r, source="bench"))
     if not models:
         sys.exit("nothing to score yet")
-    boot, draws = bootstrap(pers, uid, a.boot)
+    # a model the provider would not serve (429, 5xx, timeouts on more than a quarter of its calls) was not tested;
+    # it is listed, not ranked, rather than scored as if it had answered everything wrong
+    unranked = [m for m in models if m["provider_failures"] > len(units) / 4]
+    models = [m for m in models if m not in unranked]
+    boot, draws = bootstrap({m["id"]: pers[m["id"]] for m in models}, uid, a.boot)
     for m in models:
         m.update(boot[m["id"]])
     models.sort(key=lambda m: (-m["f1"], -m["rings_found"], m["false_rings"], m["cost_usd"]))
@@ -645,7 +688,7 @@ def cmd_score(a):
            "bootstrap": {"reps": a.boot, "paired_over_units": True, "seed": 20261017},
            "catalog": {"source": API + "/models", "chat_models": len(cat)},
            "units": len(units), "rings_total": sum(1 for u in units if u["expected"] == "ring"),
-           "models": models, "podium_pairs": pairs, "runs": runs}
+           "models": models, "unranked_provider_unavailable": unranked, "podium_pairs": pairs, "runs": runs}
     blob = json.dumps(out, ensure_ascii=False, indent=1)
     name = f"screen_results_{a.version}" + (f"_{a.subset}" if a.subset else "")
     (DATA_DIR / f"{name}.json").write_text(blob, encoding="utf-8")
@@ -659,6 +702,8 @@ def cmd_score(a):
               f"{m['technical_failures']:4} {m['cost_usd']:7.3f} {(m['usd_per_ring_found'] or 0):7.3f} {m['latency_ms_median'] or 0:6}")
     for p in pairs:
         print(f"  P({p['a']} beats {p['b']}) = {p['p_a_beats_b']}")
+    for m in unranked:
+        print(f"  not ranked, provider unavailable: {m['id']} ({m['provider_failures']} of {m['runs']} calls failed at the provider)")
     print("written", DATA_DIR / f"{name}.json")
 
 
@@ -673,6 +718,132 @@ def finish_record(rec, parsed, unit, from_reasoning=False):
                 "confidence": str(parsed.get("confidence", ""))[:10].lower(), "why": str(parsed.get("why", ""))[:600],
                 "from_reasoning": from_reasoning})
     return rec
+
+
+def _run_recs(model, version, tag, units):
+    """Per-unit records of one run: tag 'bench' = the bench's committed run, '' = the screen's, else a tagged run."""
+    if tag == "bench":
+        br = bench_results()
+        return {r["unit"]: normalize_bench_run(r) for r in br["runs"] if r["model"] == model and r["version"] == version}
+    return load_batch(model, version, tag)
+
+
+def cmd_stability(a):
+    """Same model, same neighborhoods, several runs: how much of the answer is the model and how much is the draw."""
+    units = load_units()
+    U = {u["id"]: u for u in units}
+    tags = [t.strip() for t in a.runs.split(",")]
+    out = {"slice": TAG, "version": a.version, "runs": tags, "written": time.strftime("%Y-%m-%d %H:%M"), "models": []}
+    for m in [x.strip() for x in a.models.split(",")]:
+        R = {t: _run_recs(m, a.version, t, units) for t in tags}
+        R = {t: r for t, r in R.items() if len(r) == len(units)}
+        if len(R) < 2:
+            print(f"{m}: fewer than two complete runs among {tags}; have {[t for t in tags if len(_run_recs(m, a.version, t, units)) == len(units)]}")
+            continue
+        per_run = {}
+        for t, recs in R.items():
+            summ, per = score(m, a.version, recs, units, t)
+            per_run[t] = {k: summ[k] for k in ("f1", "precision", "recall", "rings_found", "false_rings", "technical_failures")}
+        pairs = []
+        names = list(R)
+        for i in range(len(names)):
+            for j in range(i + 1, len(names)):
+                x, y = R[names[i]], R[names[j]]
+                same = [uid for uid in U if (None if x[uid].get("technical") else x[uid].get("verdict")) == (None if y[uid].get("technical") else y[uid].get("verdict"))]
+                both = [uid for uid in U if x[uid].get("verdict") == "ring" and y[uid].get("verdict") == "ring"
+                        and not x[uid].get("technical") and not y[uid].get("technical")]
+                jac = [len(set(x[u_]["flagged_in_unit"]) & set(y[u_]["flagged_in_unit"])) /
+                       max(1, len(set(x[u_]["flagged_in_unit"]) | set(y[u_]["flagged_in_unit"]))) for u_ in both]
+                caught_x = {u_ for u_ in U if unit_counts(x[u_], U[u_])["found"]}
+                caught_y = {u_ for u_ in U if unit_counts(y[u_], U[u_])["found"]}
+                flips = sorted(set(U) - set(same))
+                pairs.append({"a": names[i], "b": names[j], "verdict_agreement": round(len(same) / len(U), 4),
+                              "verdict_flips": flips, "flips_on_rings": sum(U[f]["expected"] == "ring" for f in flips),
+                              "flagged_jaccard_when_both_ring": round(sum(jac) / len(jac), 4) if jac else None,
+                              "rings_caught_by_both": len(caught_x & caught_y), "rings_caught_by_one": len(caught_x ^ caught_y)})
+        f1s = [v["f1"] for v in per_run.values()]
+        out["models"].append({"id": m, "per_run": per_run, "pairs": pairs,
+                              "f1_spread": round(max(f1s) - min(f1s), 4)})
+        print(f"\n{m} ({a.version}, {TAG})")
+        for t, v in per_run.items():
+            print(f"  {t:16} F1 {v['f1']:.3f}  precision {v['precision']:.2f}  recall {v['recall']:.2f}  rings {v['rings_found']:2}  false {v['false_rings']:2}  errors {v['technical_failures']}")
+        for pr in pairs:
+            print(f"  {pr['a']} vs {pr['b']}: same verdict on {pr['verdict_agreement']:.0%} ({len(pr['verdict_flips'])} flips, {pr['flips_on_rings']} on rings); "
+                  f"flagged overlap {pr['flagged_jaccard_when_both_ring']}; rings caught by both {pr['rings_caught_by_both']}, by only one {pr['rings_caught_by_one']}")
+    name = f"stability_{a.version}" + (f"_{a.name}" if a.name else "")
+    (DATA_DIR / f"{name}.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
+    print("\nwritten", DATA_DIR / f"{name}.json")
+
+
+def _baseline_tag(model):
+    return "bench" if model in BENCH_MODELS else ""
+
+
+def cmd_prompts(a):
+    """Candidate system prompts against S0 on the same models and neighborhoods; paired over both."""
+    units = load_units(a.subset)
+    U = {u["id"]: u for u in units}
+    uid = list(U)
+    models = [x.strip() for x in a.models.split(",")]
+    ids = [x.strip() for x in a.prompts.split(",")]
+    per = {}  # (prompt, model) -> {unit: counts}
+    for sid in ids:
+        for m in models:
+            tag = _baseline_tag(m) if sid == "S0" else sid.lower()
+            recs = _run_recs(m, a.version, tag, units)
+            recs = {k: v for k, v in recs.items() if k in U}
+            if len(recs) == len(U):
+                per[(sid, m)] = {k: unit_counts(recs[k], U[k]) for k in uid}
+    full = [m for m in models if all((sid, m) in per for sid in ids)]
+    if not full:
+        sys.exit("no model has every prompt on every unit yet")
+
+    def agg(sid, sample):
+        f1s, rings = [], 0
+        tot = collections.Counter()
+        for m in full:
+            c = per[(sid, m)]
+            tp = sum(c[u]["tp"] for u in sample); fp = sum(c[u]["fp"] for u in sample); fn = sum(c[u]["fn"] for u in sample)
+            f1s.append(f1(tp, fp, fn))
+            for k in ("found", "false_ring", "right"):
+                tot[k] += sum(c[u][k] for u in sample)
+        return sum(f1s) / len(f1s), tot, f1s
+
+    rnd = random.Random(20261017)
+    draws = {sid: [] for sid in ids}
+    for _ in range(a.boot):
+        sample = [rnd.choice(uid) for _ in uid]
+        for sid in ids:
+            draws[sid].append(agg(sid, sample)[0])
+    base = draws[ids[0]]
+    rows = []
+    for sid in ids:
+        mean_f1, tot, f1s = agg(sid, uid)
+        b0 = agg(ids[0], uid)[2]
+        d = sorted(x - y for x, y in zip(draws[sid], base))
+        sweeps = sum(1 for m in full for u in uid if U[u]["expected"] == "ring" and per[(sid, m)][u]["fp"] > max(2, len(U[u]["truth_ids"]))
+                     and per[(sid, m)][u]["tp"] >= math.ceil(len(U[u]["truth_ids"]) / 2))
+        rows.append({"prompt": sid, "label": system_prompts.CANDIDATES[sid][0], "models": len(full), "mean_f1": round(mean_f1, 4),
+                     "delta_vs_base": round(mean_f1 - agg(ids[0], uid)[0], 4),
+                     "delta_ci95": [round(d[int(0.025 * a.boot)], 4), round(d[int(0.975 * a.boot) - 1], 4)],
+                     "p_better_than_base": round(sum(x > 0 for x in d) / a.boot, 3),
+                     "models_improved": sum(x > y + 1e-9 for x, y in zip(f1s, b0)),
+                     "rings_found": tot["found"], "false_rings": tot["false_ring"], "verdicts_right": tot["right"], "sweeps": sweeps,
+                     "per_model_f1": {m: round(v, 4) for m, v in zip(full, f1s)}})
+    rows.sort(key=lambda r: -r["mean_f1"])
+    n_ring = sum(U[u]["expected"] == "ring" for u in uid)
+    print(f"{len(full)} models x {len(uid)} neighborhoods ({n_ring} rings, {len(uid) - n_ring} ordinary) per prompt; "
+          f"paired bootstrap over neighborhoods ({a.boot} draws)\n")
+    print(f"{'prompt':6} {'mean F1':>7} {'vs ' + ids[0]:>8} {'95% range':>16} {'P(better)':>9} {'models up':>9} {'rings':>6} {'false':>6} {'sweeps':>6}  label")
+    for r in rows:
+        print(f"{r['prompt']:6} {r['mean_f1']:7.3f} {r['delta_vs_base']:+8.3f} [{r['delta_ci95'][0]:+.3f},{r['delta_ci95'][1]:+.3f}] "
+              f"{r['p_better_than_base']:9.0%} {r['models_improved']:>4}/{len(full):<4} {r['rings_found']:6} {r['false_rings']:6} {r['sweeps']:6}  {r['label']}")
+    out = {"slice": TAG, "subset": a.subset, "version": a.version, "baseline": ids[0], "models": full, "units": len(uid),
+           "written": time.strftime("%Y-%m-%d %H:%M"), "prompts": rows,
+           "texts": {sid: system_prompts.get(sid) for sid in ids}}
+    name = "prompt_compare" + (f"_{a.name}" if a.name else "")
+    (DATA_DIR / f"{name}.json").write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
+    print("\nwritten", DATA_DIR / f"{name}.json")
 
 
 def cmd_reparse(a):
@@ -795,18 +966,27 @@ def cmd_report(a):
               "neighborhoods. It only decides who gets the full run, so the ranges are wide by design."
               + (" Bold models went on to all 60." if adv else ""), "",
               _board(r1["models"], r1["units"], r1["rings_total"], n_ord(r1), bold=lambda m: m["id"] in adv), ""]
+        un = r1.get("unranked_provider_unavailable") or []
+        if un:
+            L += ["**Not ranked: the provider would not serve them.** More than a quarter of these models' calls failed at the "
+                  "provider (rate limits, upstream timeouts) even after slow retries, so they were never really asked. "
+                  "Scoring them would rank an outage, not a model.", "",
+                  "| Model | Calls that failed at the provider |", "|---|---:|"]
+            L += [f"| {m['id']} | {m['provider_failures']} of {m['runs']} |" for m in un] + [""]
     L += ["## How to read the tables", "",
           "- **F1** balances precision and recall over individual transfers, scored against IBM's labels. It is the ranking rule, fixed before any run.",
           "- **95% range** comes from resampling the neighborhoods 2,000 times, the same draw for every model. Where two models' ranges overlap, their order could flip on other data.",
           "- **P(top 3)** is the share of resamples in which the model finished in the top 3.",
+          "- **Noise.** Rerunning the same model on the same cases changes 8 to 12% of verdicts and moves F1 by about 0.07 (test.md, section 5). A gap smaller than that between two models is not evidence.",
           "- **Rings caught** means the model called the neighborhood a ring, flagged at least half of IBM's labeled transfers, and did not sweep (its wrong flags did not outnumber the ring).",
-          "- **False alarms** are ordinary neighborhoods the model called a ring. **Errors** are calls that failed or gave no readable answer; they count as flagging nothing.",
+          "- **False alarms** are ordinary neighborhoods the model called a ring. **Errors** are calls that failed or gave no readable answer, after fair retries; they count as flagging nothing.",
           "- **Cost** is Nicrron's list price times the tokens each call reported. **Median** is the median time to answer.",
           "- † marks the nine models the bench ran earlier (data/bench_results.json), joined here and rescored with the same rules; every other row ran in this screen.", "",
           "## Method", "",
           "- Data: IBM AMLworld HI-Small, synthetic. Labels come from IBM's generator, not from us or from a model. Same 60 neighborhoods for every model (data/units.json).",
           "- Prompt: the bench's v2 (raw transfers plus code-computed facts: degrees, loops, bursts, pass-through chains), with the answer format every v2 run on the board used. Temperature 0, one run per model per neighborhood.",
-          "- Rounds: all 57 models the bench had not run were screened on the stratified 20. The ten best overall ran all 60. The top five then ran held-out C.",
+          "- Rounds: all 57 models the bench had not run were screened on the stratified 20. The ten best overall ran all 60, plus gpt-5 (11th, two of its calls lost to provider outages). The top five then ran held-out C.",
+          "- Fair retries: calls that failed at the provider (429, 5xx, timeouts) and calls that ran out of tokens were retried; a model that answered but unreadably was not re-asked. Answers rejected only for JSON style (comments, raw line breaks) were re-read from the stored text.",
           "- Limits: synthetic data; the slice is about 4% laundering where the file is 0.1%; every laundering transfer here is ACH, a shortcut a model can learn; ring neighborhoods are larger than ordinary ones; one run per cell.", "",
           "## Reproduce", "", "```",
           "cd rings_bench",
@@ -859,16 +1039,28 @@ def main():
     r.add_argument("--retry-length", action="store_true", help="retry calls that ran out of tokens before answering")
     r.add_argument("--skip-bad", action="store_true")
     r.add_argument("--subset", default=None, help="a subset name made by `screen.py subset` (e.g. screen20)")
+    r.add_argument("--run-tag", default="", help="write to <slice>-<tag>__... (a repeat or a transformed run), never scored as the model's result")
+    r.add_argument("--transform", default=None, choices=["relabel"], help="relabel: new account and transfer ids, rows shuffled")
+    r.add_argument("--system", default="S0", help="candidate system prompt id from system_prompts.py (S0 = the bench's own)")
     s = sub.add_parser("score")
     s.add_argument("--version", default="v2"); s.add_argument("--boot", type=int, default=2000)
     s.add_argument("--partial", action="store_true"); s.add_argument("--subset", default=None)
     sub.add_parser("report")
     sub.add_parser("reparse")
+    pc = sub.add_parser("prompts")
+    pc.add_argument("--models", required=True); pc.add_argument("--prompts", required=True, help="comma list, baseline first (S0)")
+    pc.add_argument("--version", default="v2"); pc.add_argument("--subset", default=None)
+    pc.add_argument("--boot", type=int, default=2000); pc.add_argument("--name", default="")
+    st = sub.add_parser("stability")
+    st.add_argument("--models", required=True); st.add_argument("--version", default="v2")
+    st.add_argument("--runs", required=True, help="comma list of run tags: bench, '' (the screen's), rep1, relabel ...")
+    st.add_argument("--name", default="")
     b = sub.add_parser("subset")
     b.add_argument("--name", default="screen20"); b.add_argument("--seed", type=int, default=20261017)
     a = ap.parse_args()
     {"catalog": cmd_catalog, "estimate": cmd_estimate, "probe": cmd_probe, "run": cmd_run, "score": cmd_score, "subset": cmd_subset,
-     "report": cmd_report, "reparse": cmd_reparse}[a.cmd](a)
+     "report": cmd_report, "reparse": cmd_reparse,
+     "stability": cmd_stability, "prompts": cmd_prompts}[a.cmd](a)
 
 
 if __name__ == "__main__":
