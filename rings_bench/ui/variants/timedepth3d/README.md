@@ -10,11 +10,16 @@ The first frame is built for a judge who has never seen the page. The icon row a
 
 ## What is on the page
 
-- **Icon row**: IBM's 20 groups, each drawn from IBM's own shape name (`ibm_shape` on the ring's neighborhood run) and sentence-cased: cycle, fan-out, fan-in, scatter-gather, gather-scatter, stack, bipartite, no named shape. Caught icons are solid green with arrows; missed icons are amber dotted. Click an icon to put that group on the stage.
+- **Icon row**: 13 items for IBM's 20 groups.
+  - 12 shape icons, each drawn from IBM's own shape name (`ibm_shape` on the ring's neighborhood run) and sentence-cased: cycle, fan-out, fan-in, scatter-gather, gather-scatter, stack.
+  - One wider item, "Single transfers: k of 8 caught", with one small mark per group. These are the seven groups IBM calls "no named shape" plus the one-row bipartite group.
+  - Caught is solid green with arrows; missed is amber dotted. Click an icon or a mark to put that group on the stage.
 - **Stage**, one group only, laid out from scratch:
   - The accounts sit on the map plane, and a cycle is placed on a circle in the order the money went round. Each transfer is a thick segment (3.8 px whatever the zoom) with an arrowhead, at the depth of its day and time.
   - Thin lines follow one account from one transfer to its next. The first sender's line is teal, labeled "starts here", and "back at the start" appears when the money returns.
-  - Day ticks run under the group, and the caption gives IBM's shape name, the counts and dates, and the model's one-sentence why.
+  - Day ticks run under the group, and a thin dashed circle labeled "map plane" marks where the accounts are laid out, on the group's first day.
+  - The caption gives IBM's shape name, the counts and dates, and the model's one-sentence why.
+  - When the engine says "missed" although the model flagged at least half of the ring (the sweep rule), the flagged transfers are drawn in muted green. The caption then adds "Flagged, but with too many wrong flags around it to count as caught", so the icon and the stage agree.
   - Nothing else is drawn unless "Neighborhood traffic" is on: then the ordinary transfers in the group's neighborhood appear at 10 percent opacity.
 - **Camera**: Map (top-down, time hidden) and Timeline (68 degrees round, 14 degrees up; days run left to right), with one eased transition and a tilt slider between them. Drag to pan, scroll to zoom, double-click to reset.
 - **Day scrub**: a slider that extrudes the group through its days. Each transfer grows from sender to receiver as its time passes.
@@ -24,7 +29,7 @@ The first frame is built for a judge who has never seen the page. The icon row a
   - The closing figure, from the bench's own `account_level`: "100 of the 134 accounts it flagged sit inside an IBM ring."
   - A three-item key.
   - "Read with care", in three lines: the data is synthetic and the labels are IBM's; the slice is enriched (4 percent laundering against 0.1 percent) and each neighborhood was cut around an IBM group; every laundering transfer in the slice is ACH, which is a tell.
-- **Caught roster**: a strip inside the first screen (checked at 1280x900 and 1440x900). One card per caught ring: icon, IBM's shape name, money moved. A card puts its group back on the stage.
+- **Caught roster**: a strip inside the first screen (checked at 1280x900 and 1440x900). One card per caught ring: icon, IBM's shape name, and money moved, given as the largest single-currency sum with its code plus how many other currencies (for example "45,159 USD + 3 currencies moved"). Clicking a card puts its group back on the stage.
 - **Hover** on a drawn transfer: its id, time, format, sender and receiver, amount, and whether the model flagged it.
 
 **Scoring** comes from the engine, not a recount:
@@ -57,8 +62,7 @@ With `prefers-reduced-motion` (or `?still=1`), every motion is instant, and Play
 
 - The time axis is per group, from the midnight before its first transfer to the midnight after its last, so the depth of one day differs from group to group. The day ticks show the scale for each one.
 - In the timeline view, a group with many accounts crowds vertically. The map view is the better read for the fans.
-- The engine may count a ring as not caught even when most of its transfers are flagged (the sweep rule). The stage still draws those flagged transfers in green, and the icon and caption say "Missed".
-- Money moved is shown in the one currency, or as "moved in N currencies"; values are not converted.
+- Money moved is not converted between currencies. "Largest" means the largest face value, so yen or rubles can outrank dollars.
 - The bundled three.js prints one deprecation warning in the console. There are no errors.
 - Frame rate: 142 frames per second while playing, in headless Edge with software WebGL. Not checked on a real GPU. The page only redraws when something changes.
 
@@ -70,5 +74,6 @@ With `prefers-reduced-motion` (or `?still=1`), every motion is instant, and Play
 - `shot_1280_map.jpg`: the same cycle in the map view, a closed loop
 - `shot_1280_after_play.jpg`: Play in progress, scatter-gather on the stage, eight cards in the roster
 - `shot_1280_neighborhood.jpg`: the same with neighborhood traffic on
+- `shot_1280_sweep_case.jpg`: kimi-k3 v1 on IBM's fan-in from Sep 10, which it flagged 12 of 12 but the engine counts as missed (sweep), drawn muted green with the one-line caption
 
 Address parameters: `?model=openai/gpt-6-sol&v=v4&group=0&view=map&still=1` (`tilt=0..68` also works).

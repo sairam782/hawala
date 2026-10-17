@@ -13,7 +13,7 @@
   --sans: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
   --mono: "IBM Plex Mono", Consolas, "SFMono-Regular", Menlo, monospace;
   --head-h: 62px;
-  --icons-h: 94px;
+  --icons-h: 90px;
   --controls-h: 46px;
   --roster-h: 100px;
   color-scheme: light;
@@ -39,8 +39,15 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 600; color: var(--ink); mar
 .ihead { margin: 0; width: 118px; flex: none; font-size: 13px; line-height: 1.35; color: var(--ink-2); }
 .ihead b { font-family: var(--mono); }
 .icons { display: flex; gap: 3px; flex: 1; min-width: 0; overflow-x: auto; }
-.icon { flex: 0 0 50px; width: 50px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 2px 3px; background: transparent; border: 1px solid transparent; border-radius: 3px; cursor: pointer; font: 10.5px var(--sans); color: var(--ink-2); }
-.icon span { max-width: 100%; text-align: center; line-height: 1.1; font-size: 10px; height: 33px; overflow: hidden; }
+.icon { flex: 0 0 62px; width: 62px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 2px 3px; background: transparent; border: 1px solid transparent; border-radius: 3px; cursor: pointer; font: 10.5px var(--sans); color: var(--ink-2); }
+.icon span { max-width: 100%; text-align: center; line-height: 1.15; font-size: 11px; height: 26px; overflow: hidden; }
+.icon.singles { flex: 0 0 150px; width: 150px; cursor: default; border-left: 1px solid var(--rule); border-radius: 0; margin-left: 4px; }
+.icon.singles:hover { background: transparent; border-color: transparent; border-left-color: var(--rule); }
+.marks { display: flex; gap: 2px; height: 40px; align-items: center; }
+.mark { padding: 2px 1px; background: transparent; border: 1px solid transparent; border-radius: 2px; cursor: pointer; line-height: 0; }
+.mark:hover { border-color: var(--rule); background: var(--card); }
+.mark.sel { border-color: var(--ink); background: var(--card); }
+.daylabels .plane { transform: translate(-100%, -100%); font-size: 11px; color: var(--ink-3); }
 .icon:hover { border-color: var(--rule); background: var(--card); }
 .icon.sel { border-color: var(--ink); background: var(--card); }
 .icon.miss svg { opacity: 0.85; }

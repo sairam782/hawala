@@ -228,7 +228,7 @@ function stageGroup(r) {
   /* the map plane: a faint disc outline at the group's first day, where the accounts are laid out */
   const ring = []; for (let k = 0; k <= 64; k++) { const a = k / 64 * 6.283; ring.push(Math.cos(a) * RADIUS * 1.35, Math.sin(a) * RADIUS * 1.35, 0); }
   const rg = new THREE.BufferGeometry(); rg.setAttribute('position', new THREE.Float32BufferAttribute(ring, 3));
-  S.plane = add(new THREE.Line(rg, new THREE.LineBasicMaterial({ color: C.ink, transparent: true, opacity: 0.12, depthWrite: false })));
+  S.plane = add(new THREE.Line(rg, new THREE.LineDashedMaterial({ color: C.ink, transparent: true, opacity: 0.28, dashSize: 0.9, gapSize: 0.9, depthWrite: false }))); S.plane.computeLineDistances();
   /* day ticks along the time axis: a short rule under the group at each midnight */
   const dt = []; for (let m = g.t0; m <= g.t1 + 1; m += 1440) { const z = g.z(m); dt.push(-RADIUS * 1.35, -RADIUS * 1.6, z, RADIUS * 1.35, -RADIUS * 1.6, z); }
   dt.push(0, -RADIUS * 1.6, 0, 0, -RADIUS * 1.6, g.depth);
@@ -247,7 +247,7 @@ function layoutStage() {
   const g = S.g; if (!g || !renderer) return;
   const px = V.upp; const R = 1.9 * px;          /* segments 3.8 px thick on screen, whatever the zoom */
   const cutT = g.t0 + V.cut * (g.t1 - g.t0); const grow = Math.max(30, (g.t1 - g.t0) * 0.04);
-  const colOk = inkC.clone().lerp(new THREE.Color(C.ok), S.resolve), colMiss = inkC.clone().lerp(new THREE.Color(C.amber), S.resolve);
+  const swept = !CUR.perRing[g.r].found; const colOk = inkC.clone().lerp(new THREE.Color(swept ? 0x8DB49A : C.ok), S.resolve), colMiss = inkC.clone().lerp(new THREE.Color(C.amber), S.resolve);
   S.ok.material.color.copy(colOk); S.okHead.material.color.copy(colOk); S.miss.material.color.copy(colMiss); S.missHead.material.color.copy(colMiss);
   let io = 0, im = 0, imh = 0, id = 0;
   g.segs.forEach(s => {
@@ -305,6 +305,7 @@ const labEl = $('#dayLabels'); let LABS = [];
 function buildLabels(g) {
   labEl.innerHTML = ''; LABS = [];
   for (let m = g.t0; m < g.t1; m += 1440) { const s = document.createElement('span'); s.className = 'day'; s.textContent = fmtDay(m); labEl.appendChild(s); LABS.push({ el: s, p: [0, -RADIUS * 1.6, g.z(m + 720)], day: true }); }
+  const pl = document.createElement('span'); pl.className = 'plane'; pl.textContent = 'map plane, ' + fmtDay(g.t0); labEl.appendChild(pl); LABS.push({ el: pl, p: [-RADIUS * 0.95, RADIUS * 0.95, 0], when: -1e12 });
   const st = document.createElement('span'); st.className = 'acct start'; st.innerHTML = 'starts here<br><span class="fig">' + esc(g.start) + '</span>'; labEl.appendChild(st);
   LABS.push({ el: st, p: [g.pos[g.start][0], g.pos[g.start][1], g.z(g.T[0].t)], when: g.T[0].t });
   if (g.ret) { const rt = document.createElement('span'); rt.className = 'acct ret'; rt.innerHTML = 'back at the start<br><span class="fig">' + esc(fmtTime(g.ret.t)) + '</span>'; labEl.appendChild(rt); LABS.push({ el: rt, p: [g.pos[g.start][0], g.pos[g.start][1], g.z(g.ret.t)], when: g.ret.t + 1, ret: true }); }
@@ -358,7 +359,8 @@ function money(r) {
   const m = {}; RINGS[r].forEach(id => { const t = BYID[id]; m[t.cur] = (m[t.cur] || 0) + (+t.paid || 0); });
   const cur = Object.keys(m).sort((a, b) => m[b] - m[a]);
   if (!cur.length) return '';
-  return cur.length === 1 ? fmtN(Math.round(m[cur[0]])) + ' ' + cur[0] + ' moved' : 'Moved in ' + cur.length + ' currencies';
+  const CODE = { 'US Dollar': 'USD', Euro: 'EUR', 'UK Pound': 'GBP', Yuan: 'CNY', Yen: 'JPY', Ruble: 'RUB', 'Swiss Franc': 'CHF', 'Australian Dollar': 'AUD', 'Canadian Dollar': 'CAD', Rupee: 'INR', 'Mexican Peso': 'MXN', 'Brazil Real': 'BRL', Shekel: 'ILS', 'Saudi Riyal': 'SAR', Bitcoin: 'BTC' };
+  return fmtN(Math.round(m[cur[0]])) + ' ' + (CODE[cur[0]] || cur[0]) + (cur.length > 1 ? ' + ' + (cur.length - 1) + (cur.length > 2 ? ' currencies' : ' currency') : '') + ' moved';
 }
 function addCard(r, fly, done) {
   if (cardsEl.querySelector('[data-r="' + r + '"]')) { if (done) done(); return; }
@@ -391,15 +393,23 @@ let selected = null;
 function renderIcons() {
   const row = $('#icons'); const n = CUR.found;
   $('#iconHead').innerHTML = 'IBM\'s ' + NRINGS + ' laundering groups: <b class="okc">' + n + ' caught</b> <span class="missc">' + (NRINGS - n) + ' missed</span>';
-  row.innerHTML = RING_IDS.map(r => { const pr = CUR.perRing[r]; return '<button type="button" class="icon' + (pr.found ? ' ok' : ' miss') + (r === selected ? ' sel' : '') + '" data-r="' + r + '" aria-pressed="' + (r === selected) + '" title="IBM group ' + r + ', ' + esc(ringName(r)) + ': ' + (pr.found ? 'caught' : 'missed') + ', ' + pr.hit + ' of ' + pr.n + ' transfers flagged">' + glyphSVG(ringShape(r), pr.found, 34) + '<span>' + esc(ringName(r).replace(/,.*$/, '')) + '</span></button>'; }).join('');
-  row.querySelectorAll('.icon').forEach(b => (b.onclick = () => { stopTour(); runGroup(b.dataset.r); }));
+  const single = RING_IDS.filter(r => ringBase(r) === 'no named shape' || RINGS[r].length === 1); const shaped = RING_IDS.filter(r => !single.includes(r));
+  const tip = r => esc(ringName(r)) + ': ' + (CUR.perRing[r].found ? 'caught' : 'missed') + ', ' + CUR.perRing[r].hit + ' of ' + CUR.perRing[r].n + ' transfers flagged';
+  let html = shaped.map(r => { const pr = CUR.perRing[r]; return '<button type="button" class="icon' + (pr.found ? ' ok' : ' miss') + (r === selected ? ' sel' : '') + '" data-r="' + r + '" aria-pressed="' + (r === selected) + '" title="' + tip(r) + '">' + glyphSVG(ringShape(r), pr.found, 40) + '<span>' + esc(ringName(r).replace(/,.*$/, '')) + '</span></button>'; }).join('');
+  if (single.length) {
+    const k = single.filter(r => CUR.perRing[r].found).length;
+    html += '<div class="icon singles"><div class="marks">' + single.map(r => { const pr = CUR.perRing[r]; return '<button type="button" class="mark' + (r === selected ? ' sel' : '') + '" data-r="' + r + '" aria-pressed="' + (r === selected) + '" title="' + tip(r) + '"><svg viewBox="0 0 14 30" width="14" height="30"><line x1="7" y1="4" x2="7" y2="26" stroke="' + (pr.found ? '#2F7A45' : '#9A5B13') + '" stroke-width="' + (pr.found ? 3 : 2.6) + '"' + (pr.found ? '' : ' stroke-dasharray="0.1 4.4" stroke-linecap="round"') + '/></svg></button>'; }).join('') + '</div><span>Single transfers: ' + k + ' of ' + single.length + ' caught</span></div>';
+  }
+  row.innerHTML = html;
+  row.querySelectorAll('[data-r]').forEach(b => (b.onclick = () => { stopTour(); runGroup(b.dataset.r); }));
 }
 function renderCaption() {
   const g = S.g, pr = CUR.perRing[g.r];
   $('#capShape').textContent = ringName(g.r);
   $('#capFacts').innerHTML = g.T.length + ' transfer' + (g.T.length > 1 ? 's' : '') + ' among ' + g.acc.length + ' accounts, ' + esc(fmtDay(g.T[0].t)) + (fmtDay(g.T[0].t) !== fmtDay(g.T[g.T.length - 1].t) ? ' to ' + esc(fmtDay(g.T[g.T.length - 1].t)) : '') +
     '. <b class="' + (pr.found ? 'okc' : 'missc') + '">' + (pr.found ? 'Caught' : 'Missed') + '</b>: ' + pr.hit + ' of ' + pr.n + ' flagged.';
-  $('#capWhy').textContent = pr.run ? 'Model\'s why: ' + firstSentence(pr.run.why, 170) : '';
+  const note = !pr.found && pr.hit / pr.n >= 0.5 ? 'Flagged, but with too many wrong flags around it to count as caught. ' : !pr.found && pr.hit ? 'Partly flagged: fewer than half of its transfers. ' : '';
+  $('#capWhy').textContent = note + (pr.run ? 'Model\'s why: ' + firstSentence(pr.run.why, 170) : '');
   $('#ctxToggle').disabled = !g.ctx.length;
 }
 
