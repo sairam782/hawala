@@ -7,7 +7,7 @@
   const NS = 'http://www.w3.org/2000/svg';
   const Q = new URLSearchParams(location.search);
   const RM = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const reduced = () => RM.matches || Q.get('motion') === 'off';
+  const reduced = () => RM.matches || Q.get('motion') === 'off' || !!Q.get('open');
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   function S(tag, attrs, parent) { const e = document.createElementNS(NS, tag); if (attrs) for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
   function H(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
@@ -43,7 +43,7 @@
   Object.keys(RINGS).forEach(r => { const s = new Set(); RINGS[r].forEach(id => { s.add(TX[id].from); s.add(TX[id].to); }); ringAccts[r] = s; });
   const ALL_RING_ACCTS = new Set(); Object.values(ringAccts).forEach(s => s.forEach(a => ALL_RING_ACCTS.add(a)));
 
-  const SHAPE_ORDER = ['cycle', 'fan-in', 'fan-out', 'scatter-gather', 'chain', 'stack', 'mesh', 'other', 'lone'];
+  const SHAPE_ORDER = ['cycle', 'fan-in', 'fan-out', 'scatter-gather', 'gather-scatter', 'stack', 'chain', 'bipartite', 'mesh', 'other', 'lone'];
   const SHAPE_WORDS = {
     'cycle': 'Cycle: money goes around a loop and returns to where it started.',
     'fan-in': 'Fan-in: many accounts pay one account in a short window.',
@@ -51,12 +51,35 @@
     'scatter-gather': 'Scatter-gather: one account splits money out, the middle accounts send it on to one collector.',
     'chain': 'Chain (stack): money passed along account to account, each forwarding soon after receiving.',
     'stack': 'Stack: money passed along in layers, each forwarding soon after receiving.',
+    'gather-scatter': 'Gather-scatter: many accounts pay one account, which then pays many.',
+    'bipartite': 'Bipartite: one set of accounts pays another set; IBM labels only part of it here.',
     'mesh': 'Mesh: a group trades back and forth among itself more than customers would.',
     'other': 'Other: a planted group that fits none of the named shapes.',
-    'lone': 'Lone transfer: a single laundering transfer with no visible structure around it.'
+    'lone': 'No named shape: IBM labels a single transfer here, with no visible structure around it.'
   };
+  const IBM_SHAPE = {};
+  (BE.runs || []).forEach(r => { if (r.ibm_shape && !IBM_SHAPE[r.unit || r.group_id]) IBM_SHAPE[r.unit || r.group_id] = r.ibm_shape; });
+  function ibmRaw(u) { return IBM_SHAPE[u.id] || (u.ring_id != null ? ringShape(u.ring_id) : ''); }
+  function ibmName(u) {
+    const raw = String(ibmRaw(u) || '');
+    if (/^no named shape/i.test(raw) || raw === 'lone') return 'No named shape';
+    return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+  }
+  function layoutShapeOf(u) {
+    const w = String(ibmRaw(u) || '').toLowerCase();
+    if (/^cycle/.test(w)) return 'cycle';
+    if (/^fan-in/.test(w)) return 'fan-in';
+    if (/^fan-out/.test(w)) return 'fan-out';
+    if (/^scatter-gather/.test(w)) return 'scatter-gather';
+    if (/^gather-scatter/.test(w)) return 'gather-scatter';
+    if (/^stack/.test(w)) return 'stack';
+    if (/^bipartite/.test(w)) return 'bipartite';
+    if (/^no named|^lone/.test(w)) return 'lone';
+    return u.ring_id != null ? ringShape(u.ring_id) : 'ordinary';
+  }
   const ringUnits = UN.units.filter(u => u.expected === 'ring' && u.ring_id != null && RINGS[u.ring_id]);
-  ringUnits.sort((a, b) => (SHAPE_ORDER.indexOf(ringShape(a.ring_id)) - SHAPE_ORDER.indexOf(ringShape(b.ring_id))) || (a.id < b.id ? -1 : 1));
+  const ord = u => { const i = SHAPE_ORDER.indexOf(layoutShapeOf(u)); return i < 0 ? 99 : i; };
+  ringUnits.sort((a, b) => (ord(a) - ord(b)) || (a.id < b.id ? -1 : 1));
   const ordUnits = UN.units.filter(u => u.expected !== 'ring').sort((a, b) => a.id < b.id ? -1 : 1);
   const NR = ringUnits.length, NO = ordUnits.length;
 
@@ -83,7 +106,7 @@
     ordUnits.forEach(u => { const r = R[u.id]; if (r && r.verdict === 'ring') { f++; const acc = r.ring_accounts_flagged || (r.flagged_accounts || []).filter(a => ALL_RING_ACCTS.has(a)); const touch = acc.length || (r.flagged_transfer_ids || []).some(id => TX[id] && (ALL_RING_ACCTS.has(TX[id].from) || ALL_RING_ACCTS.has(TX[id].to))); if (touch) g++; } });
     Object.values(R).forEach(r => (r.flagged_transfer_ids || []).forEach(id => flagged.add(id)));
     let tp = 0; flagged.forEach(id => { if (TX[id] && TX[id].label) tp++; });
-    return { k, f, g, tp: m.tp != null ? m.tp : tp };
+    return { k: m.rings_found != null ? m.rings_found : k, f: m.false_rings != null ? m.false_rings : f, g, tp: m.tp != null ? m.tp : tp };
   }
 
   /* ---------- layout (per unit, model independent) ---------- */
@@ -95,7 +118,7 @@
     const ids = r >= 0 ? RINGS[r] : [];
     const E = ids.map(id => TX[id]).filter(t => t.from !== t.to);
     const ra = r >= 0 ? [...ringAccts[r]] : [];
-    const shape = r >= 0 ? ringShape(r) : 'ordinary';
+    const shape = r >= 0 ? layoutShapeOf(u) : 'ordinary';
     const C = [0.5, 0.5], RX = 0.21, RY = 0.3;
     const ell = (list, rx, ry, a0) => list.forEach((a, i) => { const th = (a0 == null ? -Math.PI / 2 : a0) + i * 2 * Math.PI / list.length; pos[a] = [C[0] + rx * Math.cos(th), C[1] + ry * Math.sin(th)]; });
     const outN = {}, inN = {};
@@ -118,7 +141,7 @@
         /* layered: chain, stack, scatter-gather, mesh, other, lone */
         const d = {}; ra.forEach(a => d[a] = 0);
         for (let it = 0; it < ra.length; it++) { let ch = false; E.forEach(t => { if (d[t.to] < d[t.from] + 1 && d[t.from] + 1 < ra.length) { d[t.to] = d[t.from] + 1; ch = true; } }); if (!ch) break; }
-        if (shape === 'mesh') ra.forEach(a => { d[a] = (outN[a] ? outN[a].size : 0) >= (inN[a] ? inN[a].size : 0) ? 0 : 1; });
+        if (shape === 'mesh' || shape === 'bipartite') ra.forEach(a => { d[a] = (outN[a] ? outN[a].size : 0) >= (inN[a] ? inN[a].size : 0) ? 0 : 1; });
         const maxd = Math.max(0, ...ra.map(a => d[a]));
         const cols = {}; ra.forEach(a => (cols[d[a]] = cols[d[a]] || []).push(a));
         const span = shape === 'lone' ? 0.32 : Math.min(0.56, 0.2 * maxd + 0.16);
@@ -155,7 +178,16 @@
   function drawUnit(u, run, opt) {
     const W = opt.W, H0 = opt.H, pad = opt.pad;
     const L = layoutUnit(u);
-    const P = a => { const p = L.pos[a] || [0.5, 0.5]; return [pad + p[0] * (W - 2 * pad), pad + p[1] * (H0 - 2 * pad)]; };
+    let P = a => { const p = L.pos[a] || [0.5, 0.5]; return [pad + p[0] * (W - 2 * pad), pad + p[1] * (H0 - 2 * pad)]; };
+    if (opt.ringOnly && L.ring.size) {
+      /* shape only: lay out on a fixed 180 x 112 base so circles stay round, then scale it up to fill the box */
+      const base = a => { const p = L.pos[a] || [0.5, 0.5]; return [8 + p[0] * 164, 8 + p[1] * 96]; };
+      let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; L.ring.forEach(a => { const [x, y] = base(a); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); });
+      const bw = Math.max(x1 - x0, 1), bh = Math.max(y1 - y0, 1);
+      const s = Math.min((W - 2 * pad) / bw, (H0 - 2 * pad) / bh, (W - 2 * pad) / 40);
+      const mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
+      P = a => { const [x, y] = base(a); return [W / 2 + (x - mx) * s, H0 / 2 + (y - my) * s]; };
+    }
     const svg = S('svg', { viewBox: '0 0 ' + W + ' ' + H0, role: 'img' });
     if (opt.big) {
       const defs = S('defs', null, svg);
@@ -186,7 +218,7 @@
       const inRing = L.ring.has(a); if (opt.ringOnly && !inRing) return;
       const [x, y] = P(a);
       const cls = inRing ? 'n n-ring' : (flaggedAcc.has(a) ? 'n n-flag' : 'n n-bg');
-      const rr = opt.big ? (inRing ? 5 : 3) : (inRing ? (opt.small ? 2.2 : 3) : (opt.small ? 1.4 : 1.6));
+      const rr = opt.big ? (inRing ? 5 : 3) : opt.nodeR && inRing ? opt.nodeR : (inRing ? (opt.small ? 2.2 : 3) : (opt.small ? 1.4 : 1.6));
       const c = S('circle', { cx: x.toFixed(1), cy: y.toFixed(1), r: rr, class: cls }, inRing ? gR : gBg);
       nodes.push({ el: c, a, x, y, ring: inRing });
       if (opt.big && (inRing || flaggedAcc.has(a))) { const tx = S('text', { x: (x + 7).toFixed(1), y: (y - 6).toFixed(1), class: 'lbl' }, gR); tx.textContent = a; }
@@ -199,56 +231,68 @@
   const ST = {}; MODELS.forEach(m => ST[mkey(m)] = stats(m));
   let CUR = null;
   const TILES = [];
-  let SEQ = 0; const timers = []; let caughtN = 0, alarmN = 0;
+  let SEQ = 0; const timers = []; let caughtN = 0;
   function clearTimers() { while (timers.length) clearTimeout(timers.pop()); document.querySelectorAll('.fly').forEach(e => e.remove()); }
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
 
+  const FAM_NAMES = { anthropic: 'Anthropic', openai: 'OpenAI', deepseek: 'DeepSeek', mistral: 'Mistral', moonshot: 'Moonshot', xai: 'xAI', 'z-ai': 'Z.ai' };
+  function prettyName(m) {
+    let n = shortName(m.id);
+    const c = /^claude-(\w+)-(\d+)-(\d+)$/.exec(n);
+    if (c) n = 'Claude ' + c[1][0].toUpperCase() + c[1].slice(1) + ' ' + c[2] + '.' + c[3];
+    return n + ' ' + (m.version || 'v1');
+  }
   function renderModels() {
-    const box = $('#models'); box.innerHTML = '';
-    let fam = null;
-    MODELS.forEach(m => {
-      const f = m.family || famOf(m.id);
-      if (f !== fam) { fam = f; box.appendChild(H('div', 'fam', esc(f))); }
-      const s = ST[mkey(m)];
-      const b = H('button', 'mi', '<span class="mn">' + esc(shortName(m.id)) + '<span class="mv">' + esc(m.version || 'v1') + '</span></span><span class="ms"><span class="c">' + s.k + '</span> · <span class="a">' + s.f + '</span></span>');
-      b.type = 'button'; b.setAttribute('role', 'option'); b.dataset.k = mkey(m);
-      b.title = shortName(m.id) + ' ' + (m.version || 'v1') + ': caught ' + s.k + ' of ' + NR + ' rings, ' + s.f + ' alarms on ordinary neighborhoods' + ((BE.versions || {})[m.version] ? '. ' + BE.versions[m.version] : '');
-      b.onclick = () => select(m);
-      box.appendChild(b);
+    const sel = $('#pick'); sel.innerHTML = '';
+    const groups = {};
+    MODELS.forEach(m => { const f = m.family || famOf(m.id); (groups[f] = groups[f] || []).push(m); });
+    Object.keys(groups).forEach(f => {
+      const og = document.createElement('optgroup'); og.label = FAM_NAMES[f] || f;
+      groups[f].forEach(m => { const s = ST[mkey(m)]; const o = document.createElement('option'); o.value = mkey(m); o.textContent = prettyName(m) + ': ' + s.k + ' caught, ' + s.f + ' alarm' + (s.f === 1 ? '' : 's'); og.appendChild(o); });
+      sel.appendChild(og);
     });
+    sel.onchange = () => { const m = MODELS.find(x => mkey(x) === sel.value); if (m) select(m); };
   }
 
   function pickDefault() {
     const want = Q.get('model');
     if (want) { const m = MODELS.find(x => mkey(x) === want || x.id === want); if (m) return m; }
+    const dflt = MODELS.find(x => mkey(x) === 'anthropic/claude-sonnet-5-5@v4');
+    if (dflt) return dflt;
     return MODELS.slice().sort((a, b) => (ST[mkey(b)].k - ST[mkey(a)].k) || (ST[mkey(a)].f - ST[mkey(b)].f))[0];
   }
 
+  function stripHtml(s) {
+    const more = '<span class="more">' + ($('#ordWrap').hidden ? 'Show the ' + NO : 'Hide') + '</span>';
+    return s.f === 0 ? '<span><b>No</b> alarms on the ' + NO + ' ordinary neighborhoods.</span>' + more
+      : '<span><b>' + s.f + '</b> alarm' + (s.f === 1 ? '' : 's') + ' on ordinary neighborhoods, <b>' + s.g + '</b> on accounts inside a ring.</span>' + more;
+  }
   function renderHeadline(m) {
-    const s = ST[mkey(m)]; const name = shortName(m.id) + ' ' + (m.version || 'v1');
+    const s = ST[mkey(m)]; const name = prettyName(m);
     const alarms = s.f === 0 ? 'it raised no alarms on ordinary neighborhoods.' : 'it raised <b>' + s.f + '</b> alarm' + (s.f === 1 ? '' : 's') + ' on ordinary neighborhoods, <b>' + s.g + '</b> of them on accounts that sit inside a ring.';
     $('#headline').innerHTML = esc(name) + ' caught <b>' + s.k + '</b> of IBM\'s ' + NR + ' laundering rings and traced <b>' + s.tp + '</b> of ' + NTRUTH + ' laundering transfers; ' + alarms;
     const ds = BE.dataset || {}; const rate = ds.slice_transfers ? (NTRUTH / ds.slice_transfers * 100).toFixed(1) : (NTRUTH / Object.keys(TX).length * 100).toFixed(1);
-    $('#limit').textContent = SAMPLE ? 'Limit: these numbers come from a SAMPLE the page made up because ' + missing.join(', ') + ' did not load; nothing here is a measurement.'
-      : 'Limit: IBM\'s synthetic data, a 10-day slice enriched to ' + rate + ' percent laundering and one run per neighborhood, so in real data a far larger share of alarms would be false.';
     const pr = s.k / (NR || 1), pt = s.tp / (NTRUTH || 1);
-    $('#strong').innerHTML = pt >= pr ? 'It traced <b>' + Math.round(pt * 100) + '</b> percent of IBM\'s laundering transfers.' : 'It caught <b>' + Math.round(pr * 100) + '</b> percent of IBM\'s laundering rings.';
-    $('#nCaughtOf').textContent = 'of ' + NR; $('#nAlarmOf').textContent = 'of ' + NO;
-    $('#rosterH').textContent = 'Caught by ' + name;
+    const strong = pt >= pr ? 'It traced <b>' + Math.round(pt * 100) + '</b> percent of IBM\'s laundering transfers.' : 'It caught <b>' + Math.round(pr * 100) + '</b> percent of IBM\'s laundering rings.';
+    $('#limit').innerHTML = (SAMPLE ? 'Limit: a SAMPLE the page made up because ' + esc(missing.join(', ')) + ' did not load; nothing here is a measurement. '
+      : 'Limit: IBM\'s synthetic data, a slice enriched to ' + rate + ' percent laundering, one run per neighborhood. ') + strong;
+    $('#nCaughtOf').textContent = 'of ' + NR; $('#trayOf').textContent = ' of ' + NR;
+    $('#rosterH').textContent = 'The rings ' + name + ' caught, as cards';
+    const strip = $('#strip'); strip.classList.toggle('quiet', s.f === 0); strip.innerHTML = stripHtml(s);
   }
+  $('#strip').onclick = () => { const w = $('#ordWrap'); w.hidden = !w.hidden; $('#strip').setAttribute('aria-expanded', w.hidden ? 'false' : 'true'); if (CUR) $('#strip').innerHTML = stripHtml(ST[mkey(CUR)]); };
 
   function buildTiles(m) {
     const R = RUNS[mkey(m)] || {};
     TILES.length = 0;
     const rg = $('#ringGrid'), og = $('#ordGrid'); rg.innerHTML = ''; og.innerHTML = '';
     ringUnits.forEach(u => {
-      const run = R[u.id]; const shape = ringShape(u.ring_id); const n = RINGS[u.ring_id].length;
-      const d = drawUnit(u, run, { W: 180, H: 112, pad: 8 });
+      const run = R[u.id]; const shape = ringShape(u.ring_id);
+      const d = drawUnit(u, run, { W: 240, H: 118, pad: 14, ringOnly: true, nodeR: 4 });
       const t = H('div', 'tile rt'); t.tabIndex = 0;
       const found = ringFound(run, u);
-      t.appendChild(H('div', 'th', '<span class="sh">' + esc(shape) + '</span><span class="st"></span>'));
+      t.appendChild(H('div', 'th', '<span class="sh">' + esc(ibmName(u).replace(/\s*\(.*\)$/, '')) + '</span><span class="st"></span>'));
       t.appendChild(d.svg);
-      t.appendChild(H('div', 'tf', '<span>' + esc(u.id) + '</span><span>' + n + ' tx · ' + ringAccts[u.ring_id].size + ' accts</span>'));
       if (!run || !run.verdict) t.classList.add('noans');
       const T = { el: t, u, run, ring: true, found, d, alarm: false };
       wireTile(T); rg.appendChild(t); TILES.push(T);
@@ -257,15 +301,11 @@
       const run = R[u.id];
       const d = drawUnit(u, run, { W: 96, H: 64, pad: 6, small: true });
       const t = H('div', 'tile ot'); t.tabIndex = 0;
-      t.appendChild(H('span', 'oid', esc(u.id)));
       t.appendChild(d.svg);
       if (!run || !run.verdict) t.classList.add('noans');
       const T = { el: t, u, run, ring: false, found: false, d, alarm: !!(run && run.verdict === 'ring') };
       wireTile(T); og.appendChild(t); TILES.push(T);
     });
-    const s = ST[mkey(m)];
-    $('#ringNote').textContent = NR + ' groups IBM\'s simulator planted and labeled, drawn in their own shape, with the neighborhood\'s ordinary traffic faint behind';
-    $('#ordNote').textContent = NO + ' neighborhoods with no laundering label; a dashed red tile is one the model called a ring (' + s.f + ' here)';
   }
 
   function setStatus(T) {
@@ -278,24 +318,23 @@
   }
 
   function select(m) {
-    CUR = m; const my = ++SEQ; clearTimers();
-    document.querySelectorAll('.mi').forEach(b => { const on = b.dataset.k === mkey(m); b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+    CUR = m; const my = ++SEQ; clearTimers(); tip.hidden = true;
+    $('#pick').value = mkey(m);
     renderHeadline(m); buildTiles(m);
-    caughtN = 0; alarmN = 0; $('#nCaught').textContent = '0'; $('#nAlarm').textContent = '0';
+    caughtN = 0; $('#nCaught').textContent = '0';
     resetRoster();
+    TILES.filter(T => !T.ring).forEach(setStatus); /* ordinary tiles sit behind the strip; they need no sequence */
+    const rings = TILES.filter(T => T.ring);
     if (reduced()) {
-      TILES.forEach(T => { setStatus(T); if (T.found) { caughtN++; addCaught(T, null); } if (T.alarm) alarmN++; });
-      $('#nCaught').textContent = caughtN; $('#nAlarm').textContent = alarmN; return;
+      rings.forEach(T => { setStatus(T); if (T.found) { caughtN++; addCaught(T, null); } });
+      $('#nCaught').textContent = caughtN; return;
     }
-    let t = 120;
-    TILES.forEach(T => {
+    rings.forEach((T, i) => {
       later(() => {
         if (my !== SEQ) return;
         setStatus(T);
         if (T.found) { caughtN++; $('#nCaught').textContent = caughtN; catchMoment(T, my); }
-        if (T.alarm) { alarmN++; $('#nAlarm').textContent = alarmN; }
-      }, t);
-      t += 40 + (T.found ? 160 : 0);
+      }, 120 + i * 60);
     });
   }
 
@@ -333,32 +372,45 @@
     for (let i = 0; i < NR; i++) { const b = H('button', 'slot'); b.type = 'button'; b.tabIndex = -1; b.setAttribute('aria-label', 'empty'); sl.appendChild(b); }
     $('#trayN').textContent = '0';
     $('#cards').innerHTML = '<p class="empty" id="noCards">Nothing caught yet. Cards land here as the model catches IBM\'s rings.</p>';
-    $('#rosterNote').textContent = '';
   }
   function nextSlot() { return [...document.querySelectorAll('.slot')].find(s => !s.classList.contains('full') && !s.dataset.reserved); }
   function moneyLine(ids) {
     const by = {}; ids.forEach(id => { const t = TX[id]; by[t.cur] = (by[t.cur] || 0) + t.paid; });
     const cs = Object.keys(by).sort((a, b) => by[b] - by[a]);
-    return cs.slice(0, 2).map(c => compact(by[c]) + ' ' + c).join(' + ') + (cs.length > 2 ? ' + ' + (cs.length - 2) + ' more currencies' : '');
+    return cs.slice(0, 2).map(c => compact(by[c]) + ' ' + curCode(c)).join(' + ') + (cs.length > 2 ? ' + ' + (cs.length - 2) + ' more' : '');
+  }
+  function isSwept(T) {
+    if (!T.ring || T.found || !T.run) return false;
+    const fl = new Set(T.run.flagged_transfer_ids || []); const ids = RINGS[T.u.ring_id];
+    return ids.filter(i => fl.has(i)).length / ids.length >= 0.5;
+  }
+  function plural(n, w) { return n + ' ' + w + (n === 1 ? '' : 's'); }
+  function flagLine(T) {
+    const fl = (T.run && T.run.flagged_transfer_ids) || []; const truth = new Set(RINGS[T.u.ring_id]);
+    const hit = fl.filter(i => truth.has(i)).length; const other = fl.filter(i => TX[i] && !TX[i].label).length;
+    return 'Flagged ' + plural(fl.length, 'transfer') + ': ' + hit + ' of IBM\'s ' + truth.size + ', ' + other + ' ordinary';
+  }
+  function alsoLine(T) {
+    const fam = CUR ? (CUR.family || famOf(CUR.id)) : '';
+    const others = [...(FAM_CAUGHT[T.u.id] || [])].filter(f => f !== fam).sort().map(f => FAM_NAMES[f] || f);
+    return others.length ? 'Also caught by ' + others.length + ' of ' + (ALL_FAMS.length - 1) + ' other families: ' + esc(others.join(', ')) : 'No other family caught this one.';
   }
   function addCaught(T, slot) {
     slot = slot || nextSlot(); const id = 'card-' + T.u.id;
     if (document.getElementById(id)) return;
-    if (slot) { slot.innerHTML = ''; slot.appendChild(miniShape(T)); slot.classList.add('full'); slot.tabIndex = 0; slot.setAttribute('aria-label', ringShape(T.u.ring_id) + ' ' + T.u.id); slot.title = ringShape(T.u.ring_id) + ' (' + T.u.id + '): open its card'; slot.onclick = () => { const c = document.getElementById(id); if (c) c.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'center' }); }; }
+    if (slot) { slot.innerHTML = ''; slot.appendChild(miniShape(T)); slot.classList.add('full'); slot.tabIndex = 0; slot.setAttribute('aria-label', ibmName(T.u) + ', caught'); slot.title = ibmName(T.u) + ': open it'; slot.onclick = () => openDlg(T); }
     const n = document.querySelectorAll('.slot.full').length; $('#trayN').textContent = n;
     const nc = $('#noCards'); if (nc) nc.remove();
     const r = T.u.ring_id, ids = RINGS[r];
-    const fam = CUR ? (CUR.family || famOf(CUR.id)) : '';
-    const others = [...(FAM_CAUGHT[T.u.id] || [])].filter(f => f !== fam).sort();
     const c = H('div', 'card'); c.id = id;
     c.appendChild(miniShape(T));
-    c.appendChild(H('h3', null, esc(ringShape(r)) + ' <span class="cm">' + esc(T.u.id) + '</span>'));
-    c.appendChild(H('div', 'cm', ringAccts[r].size + ' accounts · ' + ids.length + ' transfers'));
+    c.appendChild(H('h3', null, esc(ibmName(T.u))));
+    c.appendChild(H('div', 'cm', plural(ringAccts[r].size, 'account') + ' · ' + plural(ids.length, 'transfer')));
     c.appendChild(H('div', 'cm', esc(moneyLine(ids)) + ' moved'));
-    c.appendChild(H('div', 'also', others.length ? 'Also caught by ' + others.length + ' of ' + (ALL_FAMS.length - 1) + ' other families: ' + esc(others.join(', ')) : 'No other family caught this one.'));
+    c.appendChild(H('div', 'cm', esc(flagLine(T))));
+    c.appendChild(H('div', 'also', alsoLine(T)));
     c.appendChild(H('div', 'why', esc(firstSentence(T.run && T.run.why))));
     $('#cards').appendChild(c);
-    $('#rosterNote').textContent = n + ' of ' + NR + ' rings, in the order the model caught them';
   }
 
   /* ---------- hover ---------- */
@@ -370,15 +422,15 @@
     Object.values(byCat).forEach(a => a.sort());
     let h;
     if (T.ring) {
-      const shape = ringShape(T.u.ring_id);
-      h = '<h4>IBM\'s shape: ' + esc(shape) + '</h4><p>' + esc(SHAPE_WORDS[shape] || '') + '</p>';
+      const ids = RINGS[T.u.ring_id];
+      h = '<h4>IBM\'s shape: ' + esc(ibmName(T.u)) + '</h4><p>' + esc(SHAPE_WORDS[layoutShapeOf(T.u)] || '') + '</p><p class="cnt">' + plural(ids.length, 'laundering transfer') + ', ' + plural(ringAccts[T.u.ring_id].size, 'account') + '</p>' + (run && run.verdict ? '<p class="cnt">' + esc(flagLine(T)) + '</p>' : '') + (isSwept(T) ? '<p>It flagged IBM\'s transfers here, but inside a sweep: more wrong flags in this neighborhood than the ring has transfers, so the engine does not count it as caught.</p>' : '');
     } else h = '<h4>Ordinary neighborhood ' + esc(T.u.id) + '</h4><p>IBM labels none of these transfers as laundering.</p>';
     if (!run) h += '<p><i>No run for this model here.</i></p>';
     else if (!run.verdict) h += '<p><i>No answer: ' + esc(firstSentence(run.error || 'the model returned nothing usable')).slice(0, 140) + '</i></p>';
     else h += '<p><b>Model said: ' + esc(run.verdict) + (run.pattern ? ', ' + esc(run.pattern) : '') + '.</b> ' + esc(firstSentence(run.why)) + '</p>';
-    if (byCat.ok.length) h += '<div class="ids">Flagged, IBM agrees: ' + idList(byCat.ok, 'g', 16) + '</div>';
-    if (byCat.bad.length) h += '<div class="ids">Flagged, IBM says ordinary: ' + idList(byCat.bad, 'r', 16) + '</div>';
-    if (byCat.miss.length) h += '<div class="ids">Missed: ' + idList(byCat.miss, 'y', 16) + '</div>';
+    if (byCat.ok.length) h += '<div class="ids">Flagged, IBM agrees: ' + idList(byCat.ok, 'g', 10) + '</div>';
+    if (byCat.bad.length) h += '<div class="ids">Flagged, IBM says ordinary: ' + idList(byCat.bad, 'r', 10) + '</div>';
+    if (byCat.miss.length) h += '<div class="ids">Missed: ' + idList(byCat.miss, 'y', 10) + '</div>';
     if (!byCat.ok.length && !byCat.bad.length && !byCat.miss.length) h += '<div class="ids">No transfers flagged.</div>';
     return h;
   }
@@ -394,25 +446,33 @@
   let DLG = null, playTimer = null;
   function openDlg(T) {
     tip.hidden = true;
-    const u = T.u; const big = drawUnit(u, T.run, { W: 720, H: 440, pad: 26, big: true });
+    const u = T.u;
+    $('#dCtx').checked = !T.ring; $('#dCtxWrap').hidden = !T.ring;
+    const big = drawUnit(u, T.run, { W: 720, H: 440, pad: 34, big: true, ringOnly: T.ring });
     const box = $('#dSvg'); box.innerHTML = ''; box.appendChild(big.svg);
+    $('#dCard').innerHTML = T.ring ? '<div class="cm">' + plural(ringAccts[u.ring_id].size, 'account') + ' · ' + plural(RINGS[u.ring_id].length, 'laundering transfer') + ' · ' + esc(moneyLine(RINGS[u.ring_id])) + ' moved</div>' + (T.run && T.run.verdict ? '<div class="cm">' + esc(flagLine(T)) + '</div>' : '') + '<div class="cm">' + alsoLine(T) + '</div>' : '';
     const ids = unitRowIds(u).sort((a, b) => TX[a].ms - TX[b].ms);
     const t0d = new Date(TX[ids[0]].ms); const start = Date.UTC(t0d.getUTCFullYear(), t0d.getUTCMonth(), t0d.getUTCDate());
     const last = TX[ids[ids.length - 1]].ms; const days = Math.max(10, Math.ceil((last - start) / 864e5));
     const hours = days * 24; const rng = $('#dRange'); rng.max = hours; rng.value = hours;
     $('#dTicks').innerHTML = [0, Math.round(days / 2), days].map(d => '<span>' + fmtDay(start + d * 864e5) + '</span>').join('');
-    const shape = T.ring ? ringShape(u.ring_id) : 'ordinary neighborhood';
-    $('#dTitle').textContent = (T.ring ? 'IBM ring, ' + shape : 'Ordinary neighborhood') + ' (' + u.id + ')';
+    const shape = T.ring ? ibmName(u) : 'ordinary neighborhood';
+    $('#dTitle').textContent = T.ring ? shape + ', one of IBM\'s laundering rings' : 'Ordinary neighborhood';
     const stat = T.ring ? (T.found ? 'caught' : (T.run && T.run.verdict ? 'missed' : 'no answer')) : (T.alarm ? 'called a ring: a false alarm' : (T.run && T.run.verdict ? 'left alone' : 'no answer'));
-    $('#dSub').textContent = shortName(CUR.id) + ' ' + (CUR.version || 'v1') + ': ' + stat + ' · ' + ids.length + ' transfers among ' + Object.keys(layoutUnit(u).pos).length + ' accounts · scrub ' + days + ' days for this group only';
+    $('#dSub').textContent = prettyName(CUR) + ': ' + stat + ' · ' + ids.length + ' transfers among ' + Object.keys(layoutUnit(u).pos).length + ' accounts · scrub ' + days + ' days for this group only';
     $('#dWhy').innerHTML = T.run ? ('<b>The model\'s reason.</b> ' + esc(T.run.why || T.run.error || 'none given')) : 'No run for this model here.';
     const L = $('#dList'); L.innerHTML = '';
     const rows = ids.map(id => { const t = TX[id]; const c = big.cats[id]; const row = H('div', 'row c-' + c, '<span class="dot"></span><span>' + esc(id) + '</span><span>' + esc(fmtTime(t.ms)) + '</span><span>' + esc(t.from) + ' to ' + esc(t.to) + '</span><span class="amt">' + esc(compact(t.paid)) + ' ' + esc(curCode(t.cur)) + '</span>'); row.title = { ok: 'flagged, IBM agrees', bad: 'flagged, IBM says ordinary', miss: 'IBM says laundering, missed', bg: 'ordinary, not flagged' }[c] + ' · ' + t.fmt + ' · ' + t.paid + ' ' + t.cur; L.appendChild(row); return { row, ms: t.ms }; });
-    DLG = { big, rows, start, hours };
+    DLG = { big, rows, start, hours, T };
     rng.oninput = () => scrubTo(+rng.value);
     scrubTo(hours);
     $('#dlg').hidden = false; $('#dClose').focus();
   }
+  $('#dCtx').onchange = () => {
+    if (!DLG) return;
+    const big = drawUnit(DLG.T.u, DLG.T.run, { W: 720, H: 440, pad: 34, big: true, ringOnly: !$('#dCtx').checked });
+    $('#dSvg').innerHTML = ''; $('#dSvg').appendChild(big.svg); DLG.big = big; scrubTo(+$('#dRange').value);
+  };
   function scrubTo(h) {
     if (!DLG) return; const t = DLG.start + h * 36e5;
     DLG.big.edges.forEach(e => { e.el.classList.toggle('later', e.p.ms > t); e.el.classList.toggle('fresh', e.p.ms <= t && e.p.ms > t - 12 * 36e5 && h < DLG.hours); });
@@ -441,8 +501,18 @@
   const badge = $('#badge');
   if (SAMPLE) { badge.textContent = 'SAMPLE'; badge.classList.add('sample'); badge.title = 'Could not load ' + missing.join(', ') + '; the page made up a small sample.'; }
   else { badge.textContent = (BE.written ? 'runs written ' + BE.written : 'real runs'); badge.title = 'Read from ../../../data/: slice.js, units.js, bench_results.js'; }
-  $('#foot').textContent = SAMPLE ? 'SAMPLE data made up by this page; ' + missing.join(', ') + ' did not load.'
-    : 'Data: ' + ((BE.dataset || {}).name || 'IBM AMLworld (synthetic)') + '. Labels and shapes of the planted groups are IBM\'s simulator\'s; a ring counts as caught when the model flags half or more of its labeled transfers. ' + MODELS.length + ' model versions, ' + (BE.runs || []).length + ' runs, one per model per neighborhood.';
+  (function honest() {
+    const foot = $('#foot');
+    if (SAMPLE) { foot.innerHTML = '<p>SAMPLE data made up by this page; ' + esc(missing.join(', ')) + ' did not load. Nothing here is a measurement.</p>'; return; }
+    const sl = SL.slice || {}; const all = Object.keys(TX).length;
+    const rate = ((BE.dataset || {}).slice_transfers ? NTRUTH / BE.dataset.slice_transfers : NTRUTH / all) * 100;
+    const full = sl.full_rows ? (sl.full_laundering / sl.full_rows * 100) : 0.1;
+    const lab = Object.values(TX).filter(t => t.label); const ach = lab.filter(t => t.fmt === 'ACH').length;
+    const achLine = ach === lab.length ? 'Every laundering transfer in the slice is ACH, a tell a model can lean on.' : Math.round(ach / lab.length * 100) + ' percent of the laundering transfers in the slice are ACH, a tell a model can lean on.';
+    foot.innerHTML = '<p>Synthetic data: IBM\'s AMLworld simulator made the transfers and labeled the laundering; we planted nothing, and the labels are IBM\'s.</p>'
+      + '<p>The slice is enriched: ' + rate.toFixed(1) + ' percent laundering against ' + (full < 1 ? full.toFixed(1) : full.toFixed(2)) + ' percent in the whole file, and its neighborhoods were cut around IBM\'s groups.</p>'
+      + '<p>' + achLine + '</p>';
+  })();
   renderModels();
   select(pickDefault());
   const op = Q.get('open'); if (op) { const T = TILES.find(x => x.u.id === op); if (T) { if (Q.get('at')) { openDlg(T); $('#dRange').value = Q.get('at'); scrubTo(+Q.get('at')); } else openDlg(T); } }

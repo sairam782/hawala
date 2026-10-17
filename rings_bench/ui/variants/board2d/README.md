@@ -1,68 +1,96 @@
-# Rings bench, variant "board2d": the evidence board
+# Rings bench, variant "board2d": the evidence board (loop 1)
 
 Open `index.html` by double-click. It reads `../../../data/slice.js`, `units.js` and `bench_results.js`. If any of the three is missing, the page builds a small made-up network and labels it SAMPLE in the header badge, the limit line and the footer.
 
 ## What this variant argues, in three sentences
 
-The case is twenty separate pieces of evidence, not one hairball: each of IBM's labeled laundering rings gets its own tile, drawn in the shape IBM's simulator gave it, so you can see at a glance which shapes a model catches and which it misses. The forty ordinary neighborhoods sit underneath as small gray tiles, so a false alarm is a visible object (a red dashed tile) that you can count and open, not a percentage. Every caught ring leaves the board and joins a roster at the bottom, so the result reads as what the model found first and what it got wrong second.
+One number and twenty shapes: the first frame says how many of IBM's 20 laundering rings the model caught, in a large green numeral, and shows each ring as one large drawing in IBM's own shape, green when caught and amber dotted when missed. A judge can read "9 caught" and name "cycle" and "fan-in" without reading a sentence, because the shapes are the labels and nothing else on the screen competes with them. False alarms stay true but quiet: one line under the rings gives their count and opens the 40 ordinary neighborhoods only when someone asks.
 
-## Elements added
+## The opening screen, and what sits behind a click
 
-- Header headline in the agreed shape: "<model> caught k of IBM's 20 laundering rings and traced m of 113 laundering transfers; it raised f alarms on ordinary neighborhoods, g of them on accounts that sit inside a ring." One limit line, then a closing line with the strongest true number (the larger of rings caught or transfers traced, as a percent).
-- Two running counters (rings caught, alarms) that tick as tiles light.
-- Model list on the left, grouped by family, each row showing rings caught and alarms.
-- A key that reads as the legend: the four edge states (green solid, red dashed, amber dotted, faint gray) and the three tile states (caught, missed, false alarm).
-- Ring grid: 20 tiles, sorted by IBM shape. Layout matches the shape: a loop for a cycle (ordered by following the money in time), a star for fan-in and fan-out (hub is the account with the most distinct senders or receivers), columns for scatter-gather, chain (stack), mesh, other and lone (accounts placed by how many hops from a source). The neighborhood's ordinary traffic sits faint on an outer ring, each account placed near the ring account it trades with.
-- Ordinary grid: 40 small gray tiles; dashed red when the model called that neighborhood a ring, with the flagged transfers dashed red inside.
-- Hover on any tile: IBM's shape name and a one-line meaning, what the model said, its first sentence of why, and the transfer ids split into flagged-and-right, flagged-but-ordinary and missed.
-- Click on any tile: a larger drawing with arrows and account ids, the model's full reason, every transfer in time order, and a time scrub (with Play) for that group only.
-- The catch moment and the caught roster: a fixed tray at the bottom with one slot per ring; each caught ring's shape flies into the next slot, then a card lands in the "Caught by <model>" section with IBM's shape name, accounts, transfer count, money moved (by currency), which other families also caught it, and the model's one-line why.
-- URL switches for demos and screenshots: `?model=openai/gpt-6-sol@v4`, `?theme=dark` or `light`, `?open=u26&at=100` (open a tile at hour 100 of its scrub), `?motion=off`.
+On screen at 1280 x 900 with no scrolling, all of the following fit; the top edge of the alarm strip also shows above the tray:
 
-## Deliberately left out
+- One line of controls: a single model picker (a select grouped by family, each option showing rings caught and alarms) and a light/dark switch.
+- The large "rings caught" numeral, which ticks up as rings are caught, beside the headline sentence. The headline shape is: "<Model> caught k of IBM's 20 laundering rings and traced m of 113 laundering transfers; it raised f alarms on ordinary neighborhoods, g of them on accounts that sit inside a ring." Under it is one limit line that ends on the strongest true number.
+- A three-item key on one line: caught, missed, false alarm.
+- The 20 ring tiles, five across. Each tile holds one shape drawn large with no ordinary traffic behind it. The only text on a tile is IBM's shape name and the status (caught or missed).
+- The caught tray at the bottom: a ticking count and one 44 px icon per caught ring, showing the outline of its shape.
 
-- One big network of all transfers: it is the hairball this variant argues against, and the flat page already has it.
-- Precision, recall, cost and latency tables: the flat page has them; here the counts are visible objects instead.
-- Animation on misses and false alarms: they light with the same 180 ms color change as everything else and do nothing more, so motion only ever means "caught".
-- Gradients, glow, drop shadows, confetti, sound. The only depth is a hairline border and a 2 px top rule on caught tiles.
-- Panel voting and held-out slices: they belong to the flat page's story and would crowd the board.
+Behind a click:
+
+- **Hover a tile:** IBM's shape name in full (for example "Gather-scatter (11 of 12)"), what the shape means, the counts (laundering transfers, accounts, and how many were flagged right and wrong), the model's one-sentence reason, and the transfer ids.
+- **Click a tile or a tray icon:** a larger drawing with arrows and account ids, a time scrub with Play, a switch to show the ordinary traffic around the ring (off by default), and the ring's card. The card gives accounts, transfers, money moved by currency, what the model flagged, and which other families also caught it. Every transfer is listed in time order.
+- **The alarm strip under the rings:** for example "2 alarms on ordinary neighborhoods, 2 on accounts inside a ring". Click it to open the 40 ordinary neighborhoods as small tiles; a red dashed tile is one the model called a ring.
+- **"The caught rings as cards":** a closed section holding one card per catch.
+- **The honest panel, at the foot, in three lines:**
+  1. The data is synthetic, and the labels are IBM's.
+  2. The slice is enriched (4.0 percent laundering against 0.1 percent in the whole file), and its neighborhoods were cut around IBM's groups.
+  3. Every laundering transfer in the slice is ACH, which is a tell.
+
+  All three are computed from the data files.
+
+## Changes in this loop, and why
+
+- **One screen at a time.** The model list became one select, the "how to read a tile" box became a three-item key, and the 40 ordinary tiles and the cards moved behind a click.
+- **Larger tiles.** Tiles are 1.3 times wider than before. The drawn shape is about 2 to 2.4 times wider, because it now fills the tile instead of sharing it with background traffic. Tile height was held so that all 20 tiles and the tray fit in 1280 x 900.
+- **IBM's names.** Tiles, hover, cards and the expanded view use each run's `ibm_shape` (IBM's own name, in sentence case). The slice's `ring_meta` name is no longer shown anywhere. Layout follows IBM's name: a loop for a cycle, a star for fan-in and fan-out, and columns for scatter-gather, gather-scatter, stack and bipartite. When IBM names no shape, the tile reads "No named shape" and draws the single transfer.
+- **The engine's catch rule.** "Caught" is the run's `ring_found`, and the headline counts come from each model row's `rings_found` and `false_rings`. That includes the 13:22 no-sweep rule: wrong flags in the unit may not outnumber the ring, and at most 2 are allowed. A ring whose transfers were flagged inside a sweep shows as missed, and its hover explains why.
+- **Default model.** It opens on Claude Sonnet 5.5 v4 (9 caught, 2 alarms in the 13:20 file). `?model=` opens any other.
+- **Review fixes folded in (REVIEW_1.md).**
+  - The alarm counter is gone. Ordinary tiles light at once, behind the strip, so the sequence ends on the last catch.
+  - Cards now say what was flagged ("Flagged 11 transfers: 11 of IBM's 12, 0 ordinary").
+  - Counts use the singular when there is one ("1 transfer").
+  - Money is shown in currency codes on one line.
+  - The hover card closes on model change.
+  - `?open=` lands the end state at once.
+  - The smallest text went from 10 to 11 px.
+- **Common fixes from all four reviews.**
+  - Google Fonts loads without blocking the page (`media="print"`, switched to all on load), over the real fallback stack.
+  - No internal unit ids appear in headers, cards or tiles.
+  - Shape names are in sentence case.
+  - There is no alarm counter, so the sequence ends on the last catch.
+  - No account-level figure is printed.
+
+## Left out on purpose
+
+- **One network of all transfers:** it is the hairball this variant argues against.
+- **The precision, recall, cost and latency table, panel voting and held-out slices:** the flat page carries them.
+- **Motion on misses and false alarms:** they get the same 180 ms color change and nothing more.
+- **Gradients, glow, drop shadows, confetti and sound:** the only depth is hairline borders and the dialog's backdrop tint.
 
 ## Animation, how long and what it carries
 
 | Motion | Duration | What it carries |
 |---|---|---|
-| Tiles light in sequence on model change | 40 ms stagger, 180 ms ease-out color change each | The model's verdict arriving tile by tile; rings first, then ordinary neighborhoods |
-| Extra pause after each caught ring | 160 ms | Lets each catch read on its own instead of as a swarm. Full sequence: about 4 s for a 10-ring model, about 5.5 s for a 19-ring model |
-| Counters tick | instant step per tile | Running total of rings caught and alarms raised, in step with the tiles |
-| Catch resolve: accounts move from the tile center into the shape | 300 ms, ease-out | The group "snaps into" IBM's shape when the model gets it |
-| Catch resolve: the caught transfers draw along their paths | 440 ms, starts 30 percent in, ease-out | The loop closing, the star filling in |
-| The shape flies to the tray | 520 ms, starts 380 ms after the tile lights | "This one is caught and kept"; a card joins the roster as it lands |
+| Ring tiles light in sequence on model change | 60 ms stagger, 180 ms ease-out color change each | The verdict arriving, ring by ring. 20 tiles take 1.3 s, and the last flight lands by about 2.2 s, under the 3 s budget |
+| Caught counter and tray count tick | one step per catch | The running total, in step with the tiles |
+| Catch resolve: accounts move from the tile center into the shape | 300 ms, ease-out | The ring snapping into IBM's shape when it is caught |
+| Catch resolve: the caught transfers draw along their paths | 440 ms, starting 30 percent in, ease-out | The loop closing, the star filling in |
+| The shape flies into the tray | 520 ms, starting 380 ms after the tile lights | "Caught and kept"; the card is added as it lands |
 | Time scrub Play (user-started) | 2 hours of data per 40 ms | When each transfer happened; the last 12 hours draw thicker |
 
-`prefers-reduced-motion: reduce` (or `?motion=off`) turns all of it off: tiles, counters, tray and roster land at once with no flights. CSS transitions are also removed in that mode.
+Ordinary tiles do not animate. `prefers-reduced-motion: reduce` (or `?motion=off`) lands everything at once with no flights.
 
 ## Known limits
 
-- "Caught" is the bench's own `ring_found` (half or more of IBM's labeled transfers in that neighborhood flagged by that run). "Other families also caught it" counts any version of a family.
-- "Accounts that sit inside a ring" uses each run's `ring_accounts_flagged`.
-- Edges are one line per account pair per state, so repeated transfers between the same two accounts draw as one line; the expanded view lists each transfer.
-- The scrub is ten days from the group's first day, stretched when its transfers run later (the slice runs Sep 1 to Sep 16, so some groups show 14 days).
-- Lone rings are a single transfer, so their tiles are mostly ordinary traffic; that is the honest picture.
-- The default model is the one with the most rings caught (kimi-k3 v1), which also raises many alarms; use `?model=` to open a different one.
-- Fonts come from Google Fonts; offline the page falls back to Georgia, Segoe UI and Consolas. A missing data file shows up as one failed script load in the console, by design, and the page switches to SAMPLE.
-- The models' own reasons are shown verbatim, including any punctuation they used.
-- The tray holds 20 slots; under about 1180 px wide the last slots clip.
+- "Other families also caught it" counts any version of a family.
+- In a missed tile, a green line is a transfer the model did flag inside a sweep; the hover says so.
+- The scrub runs ten days from the group's first day, stretched when its transfers run later (the slice runs Sep 1 to Sep 16).
+- The animation was checked in headless Edge, whose virtual clock does not advance Web Animations in step with timers. Smoothness in a real browser has not been watched.
+- Fonts come from Google Fonts. Offline, the page falls back to Georgia, Segoe UI and Consolas.
+- The models' reasons are quoted verbatim.
 
 ## Checks done
 
-- Headless Edge, file:// URL, at 1280 and 1440: no script errors (window error and console.error captured into the page and read back), in light, dark, with a tile open, and with bench_results.js removed (SAMPLE mode; only the expected missing-file load error).
-- Folder size about 500 KB including screenshots.
+Headless Edge, file:// URL, at 1280 and 1440, with board.js inlined into a scratch copy so errors carry their text. There were no script errors in the default view, with `?open=u29`, in dark mode with `?model=moonshot/kimi-k3@v1`, or with bench_results.js removed (SAMPLE mode; the only error is the expected missing-file load). The scratch copies were deleted afterwards.
 
-## Screenshots (headless Edge, `msedge --headless=new --screenshot`)
+## Screenshots (headless Edge, `msedge --headless=new --screenshot`, data written 13:20)
 
-- `shot_1280_light.webp`: 1280 wide, light, end state of the default model.
-- `shot_1280_dark.webp`: 1280 wide, dark.
-- `shot_1280_expanded.webp`: 1280 wide, a scatter-gather ring opened with the scrub at Sep 5.
-- `shot_1440_light.webp`: 1440 wide, gpt-6-sol v4.
+Taken with `?motion=off`, which lands the same end state as the animated run; headless Edge sometimes freezes transitions partway.
 
-Not captured: a frame mid-animation. Headless Edge's virtual clock does not advance the Web Animations timeline in step with timers, so a mid-sequence capture shows caught tiles with their lines not yet drawn, which is not what a real browser shows. The end states above are reliable.
+- `shot_1280_light.webp`: 1280 x 900, light, default model, end state.
+- `shot_1280_dark.webp`: 1280 x 900, dark.
+- `shot_1280_expanded.webp`: the gather-scatter ring opened, scrub at Sep 14.
+- `shot_1440_light.webp`: 1440 x 900, light.
+
+Not captured: a frame mid-animation, for the virtual-clock reason above.
