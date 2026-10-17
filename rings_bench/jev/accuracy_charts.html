@@ -1,0 +1,181 @@
+<title>Rings Bench Accuracy</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* layout: one column of chart cards, each chart = title, one-line reading, SVG, table behind a disclosure */
+:root {
+  --bg: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --jev: #6250d6;
+  --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --jev: #9085e9; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --jev: #9085e9; color-scheme: dark; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font); margin: 0;
+  padding-block: 28px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main { max-width: 920px; margin: 0 auto; display: grid; gap: 28px; }
+h1 { font-size: 26px; line-height: 1.2; margin: 0 0 6px; text-wrap: balance; }
+h2 { font-size: 18px; margin: 0 0 4px; text-wrap: balance; }
+p { margin: 0; max-width: 68ch; color: var(--ink-2); }
+.lead { color: var(--ink); font-size: 16px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px 18px 12px; min-width: 0; }
+.card .read { margin-top: 2px; }
+svg { display: block; width: 100%; height: auto; margin-top: 12px; font-family: var(--font); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; font-size: 13px; color: var(--ink-2); }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; background: var(--c); }
+details { margin-top: 10px; font-size: 13px; color: var(--ink-2); }
+summary { cursor: pointer; }
+table { border-collapse: collapse; margin-top: 8px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 3px 12px 3px 0; border-bottom: 1px solid var(--grid); }
+th { color: var(--muted); font-weight: 500; }
+.tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 5px 8px; border-radius: 4px; display: none; z-index: 2; }
+.tip[hidden] { display: none; }
+.foot { font-size: 13px; }
+</style>
+
+<main>
+  <header>
+    <h1>Where the ring hunters go wrong</h1>
+    <p class="lead">Each neighborhood is 60 transfers at most. 20 of 60 hold an IBM-labeled laundering ring; 40 are ordinary traffic. A model is right when it calls the ring and flags at least half its transfers, and wrong twice over when it calls an ordinary neighborhood a ring. The charts read from the bench's own scoring files at 12:57.</p>
+  </header>
+
+  <section class="card" id="c1">
+    <h2>Every model on the main slice: rings found against false alarms</h2>
+    <p class="read">The top left corner is the goal. Most families sit to the right: they find most rings by calling nearly everything a ring. Only the versions with code facts and a confidence rule move left, and they give up one to three rings to do it.</p>
+    <div id="scatter"></div>
+    <div class="legend"><span style="--c: var(--s1)">v1, model reads raw rows</span><span style="--c: var(--s2)">v2, code facts added</span><span style="--c: var(--s3)">v3 to v5, facts plus a rule or lookup</span><span style="--c: var(--jev)">Jev and the code-only rule (squares)</span></div>
+    <details><summary>The numbers</summary><div id="t1"></div></details>
+  </section>
+
+  <section class="card" id="c2">
+    <h2>Claude Sonnet, version by version, main slice</h2>
+    <p class="read">Each version trades false alarms for rings. From v1 to v5 false rings fall from 9 to 0 while rings found fall from 14 to 11. The missing rings are mostly the eight single-transfer rings, which no version finds reliably.</p>
+    <div id="ladder"></div>
+    <div class="legend"><span style="--c: var(--s1)">rings found, of 20</span><span style="--c: var(--s2)">false rings, of 40</span></div>
+    <details><summary>The numbers</summary><div id="t2"></div></details>
+  </section>
+
+  <section class="card" id="c3">
+    <h2>Does it hold off the tuning slice? False rings per slice</h2>
+    <p class="read">The main slice is where the versions were tuned. On the three held-out slices Sonnet's false rings are 5 to 17 of 40 for v1 and v2, and 1 to 7 for v4. Random clean is 40 ordinary neighborhoods with no ring anywhere near, so every ring call there is a false alarm.</p>
+    <div id="slices"></div>
+    <div class="legend"><span style="--c: var(--s1)">Sonnet v1</span><span style="--c: var(--s2)">Sonnet v2</span><span style="--c: var(--s3)">Sonnet v4</span></div>
+    <details><summary>The numbers</summary><div id="t3"></div></details>
+  </section>
+
+  <section class="card" id="c4">
+    <h2>Jev as a second check on Sonnet's ring calls</h2>
+    <p class="read">Jev scores each neighborhood's structure in a tenth of a second. Keeping a Sonnet ring call only when Jev's score clears a bar set on the main slice removes half or more of the false alarms on every slice. Rings found after the gate: 13 of 13 on main, 8 of 10 on heldout A, 12 of 13 on heldout B.</p>
+    <div id="gate"></div>
+    <div class="legend"><span style="--c: var(--s1)">Sonnet alone</span><span style="--c: var(--s2)">with the Jev gate</span><span style="--c: var(--s3)">Jev gate plus Sonnet's own low-confidence drop</span></div>
+    <details><summary>The numbers</summary><div id="t4"></div></details>
+  </section>
+
+  <p class="foot">Synthetic data (IBM AMLworld HI-Small); labels are IBM's; one run per cell; 60 units per slice means every count carries about plus or minus 4. Sonnet v3 exists only on the main slice and random clean, so the held-out rows use v2. Sources: rings_bench data and slices bench_results.json, rings_bench/jev/out.</p>
+</main>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+(function () {
+  const S = getComputedStyle(document.documentElement);
+  const C = { s1: 'var(--s1)', s2: 'var(--s2)', s3: 'var(--s3)', jev: 'var(--jev)', ink: 'var(--ink)', ink2: 'var(--ink-2)', muted: 'var(--muted)', grid: 'var(--grid)', axis: 'var(--axis)', surface: 'var(--surface)' };
+  const tip = document.getElementById('tip');
+  function hover(el, text) {
+    el.addEventListener('mousemove', e => { tip.textContent = text; tip.hidden = false; tip.style.display = 'block'; tip.style.left = (e.clientX + 12) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+    el.addEventListener('mouseleave', () => { tip.hidden = true; tip.style.display = 'none'; });
+  }
+  const NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, text) { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (text != null) n.textContent = text; return n; }
+  function table(id, head, rows) {
+    const t = document.createElement('table'); const tr = document.createElement('tr');
+    head.forEach(h => { const th = document.createElement('th'); th.textContent = h; tr.appendChild(th); }); t.appendChild(tr);
+    rows.forEach(r => { const x = document.createElement('tr'); r.forEach(v => { const td = document.createElement('td'); td.textContent = v; x.appendChild(td); }); t.appendChild(x); });
+    document.getElementById(id).appendChild(t);
+  }
+
+  // ---------- chart 1: scatter, main slice, every model-version
+  const MAIN = [
+    ['Haiku v1', 'v1', 24, 15], ['Haiku v2', 'v2', 24, 14],
+    ['Sonnet v1', 'v1', 9, 14], ['Sonnet v2', 'v2', 7, 12], ['Sonnet v3', 'v3', 5, 13], ['Sonnet v4', 'v3', 2, 12], ['Sonnet v5', 'v3', 0, 11],
+    ['DeepSeek v1', 'v1', 28, 15], ['DeepSeek v2', 'v2', 21, 13],
+    ['Mistral v1', 'v1', 38, 16], ['Mistral v2', 'v2', 26, 15],
+    ['Kimi v1', 'v1', 32, 19], ['Kimi v2', 'v2', 35, 17],
+    ['GPT-6 Luna v1', 'v1', 8, 11], ['GPT-6 Luna v2', 'v2', 10, 11],
+    ['GPT-6 Sol v1', 'v1', 12, 14], ['GPT-6 Sol v2', 'v2', 12, 13], ['GPT-6 Sol v3', 'v3', 4, 10], ['GPT-6 Sol v4', 'v3', 2, 10], ['GPT-6 Sol v5', 'v3', 0, 7],
+    ['Grok v1', 'v1', 2, 6], ['Grok v2', 'v2', 2, 8],
+    ['GLM v1', 'v1', 20, 15], ['GLM v2', 'v2', 24, 17],
+    ['Jev, first question set', 'jev', 29, 18], ['Jev, with rulings', 'jev', 8, 12], ['Code-only rule', 'jev', 0, 9],
+  ];
+  (function () {
+    const W = 880, H = 440, L = 48, R = 20, T = 16, B = 44;
+    const x = v => L + v / 40 * (W - L - R), y = v => T + (1 - v / 20) * (H - T - B);
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Rings found against false rings for every model version on the main slice' });
+    for (let g = 0; g <= 20; g += 5) { svg.appendChild(el('line', { x1: L, x2: W - R, y1: y(g), y2: y(g), stroke: C.grid })); svg.appendChild(el('text', { x: L - 8, y: y(g) + 4, 'text-anchor': 'end', fill: C.muted, 'font-size': 12 }, g)); }
+    for (let g = 0; g <= 40; g += 10) { svg.appendChild(el('line', { x1: x(g), x2: x(g), y1: T, y2: H - B, stroke: C.grid })); svg.appendChild(el('text', { x: x(g), y: H - B + 18, 'text-anchor': 'middle', fill: C.muted, 'font-size': 12 }, g)); }
+    svg.appendChild(el('text', { x: (L + W - R) / 2, y: H - 6, 'text-anchor': 'middle', fill: C.ink2, 'font-size': 13 }, 'ordinary neighborhoods called a ring (false rings, of 40)'));
+    svg.appendChild(el('text', { x: 14, y: (T + H - B) / 2, transform: `rotate(-90 14 ${(T + H - B) / 2})`, 'text-anchor': 'middle', fill: C.ink2, 'font-size': 13 }, 'rings found, of 20'));
+    svg.appendChild(el('text', { x: L + 6, y: T + 14, fill: C.muted, 'font-size': 12 }, 'goal: top left'));
+    const col = { v1: C.s1, v2: C.s2, v3: C.s3, jev: C.jev };
+    // label placement, set by hand for the crowded corner: [dx, dy, anchor]
+    const POS = { 'Sonnet v5': [8, -10, 'start'], 'Sonnet v4': [8, 18, 'start'], 'Sonnet v2': [-8, -8, 'end'], 'Grok v1': [8, 16, 'start'], 'Grok v2': [8, 16, 'start'],
+      'GPT-6 Sol v3': [8, 16, 'start'], 'GPT-6 Sol v5': [8, 16, 'start'], 'GPT-6 Sol v2': [8, 16, 'start'], 'GPT-6 Luna v2': [8, 16, 'start'],
+      'Haiku v1': [8, 16, 'start'], 'Haiku v2': [8, 16, 'start'], 'Mistral v1': [-8, -8, 'end'], 'Mistral v2': [-8, -8, 'end'] };
+    MAIN.forEach(([name, kind, fx, ry]) => {
+      const cx = x(fx), cy = y(ry);
+      const g = el('g', {});
+      g.appendChild(el(kind === 'jev' ? 'rect' : 'circle', kind === 'jev' ? { x: cx - 5, y: cy - 5, width: 10, height: 10, fill: col[kind], stroke: C.surface, 'stroke-width': 2 } : { cx, cy, r: 5.5, fill: col[kind], stroke: C.surface, 'stroke-width': 2 }));
+      const [dx, dy, anchor] = POS[name] || [8, -8, 'start'];
+      g.appendChild(el('text', { x: cx + dx, y: cy + dy + 4, 'text-anchor': anchor, fill: C.ink2, 'font-size': 11.5 }, name));
+      hover(g, `${name}: ${ry} of 20 rings found, ${fx} of 40 ordinary called ring`);
+      svg.appendChild(g);
+    });
+    document.getElementById('scatter').appendChild(svg);
+    table('t1', ['model', 'version', 'rings found of 20', 'false rings of 40'], MAIN.map(m => [m[0], m[1] === 'jev' ? 'Jev' : m[1], m[3], m[2]]));
+  })();
+
+  // ---------- grouped bars helper
+  function grouped(id, groups, series, maxV, yLabel, ariaLabel) {
+    const W = 880, H = 300, L = 40, R = 16, T = 16, B = 46;
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': ariaLabel });
+    const y = v => T + (1 - v / maxV) * (H - T - B);
+    for (let g = 0; g <= maxV; g += maxV / 4) { svg.appendChild(el('line', { x1: L, x2: W - R, y1: y(g), y2: y(g), stroke: C.grid })); svg.appendChild(el('text', { x: L - 8, y: y(g) + 4, 'text-anchor': 'end', fill: C.muted, 'font-size': 12 }, g)); }
+    svg.appendChild(el('text', { x: 12, y: (T + H - B) / 2, transform: `rotate(-90 12 ${(T + H - B) / 2})`, 'text-anchor': 'middle', fill: C.ink2, 'font-size': 13 }, yLabel));
+    const gw = (W - L - R) / groups.length, bw = Math.min(26, (gw - 24) / series.length);
+    groups.forEach((g, gi) => {
+      const x0 = L + gi * gw + (gw - bw * series.length - 2 * (series.length - 1)) / 2;
+      series.forEach((s, si) => {
+        const v = g.values[si]; if (v == null) return;
+        const bx = x0 + si * (bw + 2), by = y(v), h = y(0) - by;
+        const r = el('rect', { x: bx, y: by, width: bw, height: Math.max(h, 0), fill: s.color, rx: h > 0 ? 3 : 0 });
+        if (h > 0) { const clip = el('path', { d: `M${bx},${y(0)} v${-h + 3} a3,3 0 0 1 3,-3 h${bw - 6} a3,3 0 0 1 3,3 v${h - 3} z`, fill: s.color }); hover(clip, `${g.name}, ${s.name}: ${v}`); svg.appendChild(clip); }
+        else { const z = el('rect', { x: bx, y: y(0) - 2, width: bw, height: 2, fill: s.color }); hover(z, `${g.name}, ${s.name}: 0`); svg.appendChild(z); }
+        svg.appendChild(el('text', { x: bx + bw / 2, y: by - 5, 'text-anchor': 'middle', fill: C.ink2, 'font-size': 12 }, v));
+      });
+      svg.appendChild(el('text', { x: L + gi * gw + gw / 2, y: H - B + 18, 'text-anchor': 'middle', fill: C.ink2, 'font-size': 12.5 }, g.name));
+      if (g.sub) svg.appendChild(el('text', { x: L + gi * gw + gw / 2, y: H - B + 34, 'text-anchor': 'middle', fill: C.muted, 'font-size': 11.5 }, g.sub));
+    });
+    svg.appendChild(el('line', { x1: L, x2: W - R, y1: y(0), y2: y(0), stroke: C.axis }));
+    document.getElementById(id).appendChild(svg);
+  }
+
+  // ---------- chart 2: Sonnet ladder on main
+  const LADDER = [['v1', 'raw rows', 14, 9], ['v2', 'code facts', 12, 7], ['v3', 'facts + lookup', 13, 5], ['v4', 'confidence rule', 12, 2], ['v5', 'tighter rule', 11, 0]];
+  grouped('ladder', LADDER.map(r => ({ name: 'Sonnet ' + r[0], sub: r[1], values: [r[2], r[3]] })), [{ name: 'rings found of 20', color: C.s1 }, { name: 'false rings of 40', color: C.s2 }], 20, 'neighborhoods', 'Claude Sonnet versions on the main slice');
+  table('t2', ['version', 'what changed', 'rings found of 20', 'false rings of 40'], LADDER);
+
+  // ---------- chart 3: false rings per slice, Sonnet v1 v2 v4
+  const SL = [['main', 'tuned here', 9, 7, 2], ['heldout A', '', 12, 11, 1], ['heldout B', '', 17, 17, 5], ['heldout C', '', 10, 12, 7], ['random clean', 'no rings at all', null, null, 8]];
+  grouped('slices', SL.map(r => ({ name: r[0], sub: r[1], values: [r[2], r[3], r[4]] })), [{ name: 'Sonnet v1', color: C.s1 }, { name: 'Sonnet v2', color: C.s2 }, { name: 'Sonnet v4', color: C.s3 }], 20, 'false rings, of 40', 'False rings per slice for Sonnet v1, v2 and v4');
+  table('t3', ['slice', 'Sonnet v1', 'Sonnet v2', 'Sonnet v4', 'rings found v1 / v2 / v4 (of 20)'], [['main', 9, 7, 2, '14 / 12 / 12'], ['heldout A', 12, 11, 1, '9 / 10 / 8'], ['heldout B', 17, 17, 5, '14 / 13 / 12'], ['heldout C', 10, 12, 7, '13 / 12 / 11'], ['random clean (v1, v2 not run)', '', '', 8, 'no rings in the slice']]);
+
+  // ---------- chart 4: Jev gate
+  const G = [['main, Sonnet v3', 'Jev bar 70.5, set here', 5, 0, 0], ['heldout A, Sonnet v2', 'same bar', 11, 2, 0], ['heldout B, Sonnet v2', 'rulings set, bar 30.2', 17, 8, 2], ['random clean, Sonnet v3', 'no rings at all', 12, 6, 5]];
+  grouped('gate', G.map(r => ({ name: r[0], sub: r[1], values: [r[2], r[3], r[4]] })), [{ name: 'Sonnet alone', color: C.s1 }, { name: 'with the Jev gate', color: C.s2 }, { name: 'gate plus low-confidence drop', color: C.s3 }], 20, 'false rings, of 40', 'False rings before and after the Jev gate');
+  table('t4', ['slice', 'Sonnet alone', 'with the Jev gate', 'gate plus low drop', 'rings found alone, then gated (of 20)'], [['main, v3', 5, 0, 0, '13, 13'], ['heldout A, v2', 11, 2, 0, '10, 8'], ['heldout B, v2', 17, 8, 2, '13, 12'], ['random clean, v3', 12, 6, 5, 'none to find']]);
+})();
+</script>
