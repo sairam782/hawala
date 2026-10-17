@@ -1,4 +1,6 @@
-# Hawala: the Rings bench
+# Hawala: Smurf
+https://smurf-aml.vercel.app/
+
 
 Money Talks 2 hackathon, New York, October 17, 2026. Track: Money Intelligence.
 
