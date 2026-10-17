@@ -6,7 +6,7 @@
 (function () {
   'use strict';
   const SVGNS = 'http://www.w3.org/2000/svg';
-  const RM = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+  const RM = { matches: /[?&]motion=reduced/.test(location.search) };  // demo page: reduced motion only on request
   const C = { ibm: '#D2C46A', model: '#8FCB8A', inv: '#4DB89A', plain: '#A3ABB8' };
   const NAMES = { 'claude-haiku-5-5': 'Claude Haiku 5.5', 'claude-sonnet-5-5': 'Claude Sonnet 5.5', 'claude-opus-5-5': 'Claude Opus 5.5', 'deepseek-v4-pro': 'DeepSeek V4 Pro', 'mistral-large-4': 'Mistral Large 4', 'kimi-k3': 'Kimi K3', 'gpt-6-luna': 'GPT-6 Luna', 'gpt-6-sol': 'GPT-6 Sol', 'grok-4.7': 'Grok 4.7', 'glm-5.3': 'GLM 5.3' };
   let cur = null; /* { root, onKey, closing } */
